@@ -1,0 +1,9 @@
+{
+  "name": "Daily Rhythm",
+  "short_name": "Rhythm",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#15171b",
+  "theme_color": "#15171b",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#15171b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg">
+<title>Daily Rhythm</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+:root{
+  --bg:#15171b; --surface:#1c1f24; --surface-2:#22262c; --text:#ece8e1; --muted:#8b8780;
+  --strength:#b5562f; --cardio:#3f7d6c; --recovery:#6d7280; --gold:#d9a441; --line: rgba(236,232,225,0.08);
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans', sans-serif;padding:24px 16px 60px;min-height:100vh;}
+.wrap{max-width:520px;margin:0 auto;}
+h1{font-family:'Space Grotesk', sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:-0.01em;margin:0 0 2px;}
+.sub{color:var(--muted);font-size:0.85rem;margin:0 0 20px;}
+
+.tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--surface);border-radius:10px;padding:4px;}
+.tab-btn{flex:1;background:none;border:none;color:var(--muted);padding:9px 0;border-radius:7px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.tab-btn.active{background:var(--surface-2);color:var(--gold);}
+.tabpane{display:none;} .tabpane.active{display:block;}
+
+.rhythm{display:flex;align-items:flex-end;gap:8px;height:90px;margin-bottom:8px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;}
+.bar{width:100%;border-radius:5px 5px 3px 3px;transition:opacity 0.2s;}
+.bar.today{box-shadow:0 0 0 2px var(--gold);animation:pulse 2.2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.35);}}
+.daylabel{font-size:0.65rem;color:var(--muted);}
+.daylabel.today{color:var(--gold);font-weight:600;}
+.legend{display:flex;gap:14px;margin:12px 0 24px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--muted);}
+.dot{width:8px;height:8px;border-radius:50%;}
+
+.streak-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.streak-num{font-family:'Space Grotesk';font-size:1.7rem;font-weight:700;color:var(--gold);line-height:1;}
+.streak-label{font-size:0.7rem;color:var(--muted);margin-top:2px;}
+.streak-note{font-size:0.74rem;color:var(--muted);max-width:180px;text-align:right;}
+
+.section-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:0 0 10px;}
+.day-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+.day-card.today{border-color:var(--gold);}
+.day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.day-name{font-weight:600;font-size:0.9rem;}
+.type-tag{font-size:0.63rem;padding:2px 8px;border-radius:20px;font-weight:600;}
+
+.task-row{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line);}
+.task-row:last-of-type{border-bottom:none;}
+.checkbox{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.checkbox.checked{background:var(--gold);border-color:var(--gold);}
+.checkbox.checked::after{content:'\2713';font-size:11px;color:var(--bg);font-weight:700;}
+.task-label{font-size:0.8rem;flex:1;cursor:pointer;}
+.task-label .set-info{color:var(--muted);font-size:0.71rem;display:block;}
+.task-label.done{color:var(--muted);text-decoration:line-through;}
+.task-actions{display:flex;gap:4px;flex-shrink:0;}
+.icon-btn{background:var(--surface-2);border:none;color:var(--muted);width:28px;height:28px;border-radius:7px;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.icon-btn:active{background:var(--gold);color:var(--bg);}
+
+.life-pillars{display:flex;gap:8px;margin-top:12px;}
+.pill{flex:1;background:var(--surface-2);border:1px solid transparent;border-radius:8px;padding:8px 6px;text-align:center;cursor:pointer;font-size:0.68rem;color:var(--muted);}
+.pill.done{background:rgba(217,164,65,0.12);border-color:var(--gold);color:var(--gold);font-weight:600;}
+.pill-icon{font-size:0.88rem;display:block;margin-bottom:3px;}
+
+/* calendar */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cal-header button{background:var(--surface);border:1px solid var(--line);color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:0.9rem;}
+.cal-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;}
+.cal-dow{text-align:center;font-size:0.62rem;color:var(--muted);padding-bottom:4px;}
+.cal-cell{aspect-ratio:1;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:0.75rem;cursor:pointer;position:relative;border:1px solid transparent;color:var(--text);}
+.cal-cell.empty{background:none;cursor:default;}
+.cal-cell.complete{background:rgba(217,164,65,0.18);border-color:var(--gold);color:var(--gold);font-weight:700;}
+.cal-cell.selected{border-color:var(--text);}
+.cal-cell.istoday{box-shadow:0 0 0 1px var(--gold) inset;}
+
+/* reminders */
+.reminder-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;}
+.reminder-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.reminder-row input[type=time]{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;font-family:inherit;}
+.reminder-row label{font-size:0.8rem;flex:1;}
+.btn-primary{background:var(--gold);color:var(--bg);border:none;padding:9px 16px;border-radius:8px;font-weight:600;font-size:0.78rem;cursor:pointer;font-family:inherit;}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);padding:9px 16px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:inherit;}
+.note{font-size:0.72rem;color:var(--muted);margin-top:8px;line-height:1.5;}
+.status-ok{color:var(--gold);}
+
+.reset{display:block;margin:24px auto 0;background:none;border:1px solid var(--line);color:var(--muted);font-size:0.7rem;padding:8px 14px;border-radius:8px;cursor:pointer;}
+
+/* timer modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:50;padding:20px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px;max-width:320px;width:100%;text-align:center;}
+.modal h3{font-family:'Space Grotesk';margin:0 0 4px;font-size:1.05rem;}
+.modal .sets{color:var(--muted);font-size:0.78rem;margin-bottom:18px;}
+.timer-display{font-family:'Space Grotesk';font-size:2.6rem;font-weight:700;color:var(--gold);margin:10px 0 18px;}
+.timer-controls{display:flex;gap:8px;justify-content:center;margin-bottom:10px;}
+.modal-close{margin-top:14px;background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;}
+.adjust-row{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
+.adjust-row button{width:34px;height:34px;border-radius:8px;background:var(--surface-2);border:none;color:var(--text);font-size:1rem;cursor:pointer;}
+
+.loading{text-align:center;color:var(--muted);padding:40px 0;font-size:0.85rem;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"><div class="loading">Loading your week...</div></div>
+
+<div class="modal-overlay" id="timerModal">
+  <div class="modal">
+    <h3 id="timerTitle">Exercise</h3>
+    <div class="sets" id="timerSets"></div>
+    <div class="timer-display" id="timerDisplay">00:00</div>
+    <div class="adjust-row" id="adjustRow">
+      <button id="minus10">-10s</button>
+      <button id="plus10">+10s</button>
+    </div>
+    <div class="timer-controls">
+      <button class="btn-primary" id="timerStart">Start</button>
+      <button class="btn-secondary" id="timerReset">Reset</button>
+    </div>
+    <button class="modal-close" id="timerClose">Close</button>
+  </div>
+</div>
+
+<script>
+const DAY_META = [
+  {name:'Monday',    type:'Strength A',    tag:'strength'},
+  {name:'Tuesday',   type:'Cardio + Core', tag:'cardio'},
+  {name:'Wednesday', type:'Strength B',    tag:'strength'},
+  {name:'Thursday',  type:'Active Recovery', tag:'recovery'},
+  {name:'Friday',    type:'Strength A',    tag:'strength'},
+  {name:'Saturday',  type:'Cardio + Core', tag:'cardio'},
+  {name:'Sunday',    type:'Mobility + Recovery', tag:'recovery'},
+];
+
+const TASKS = [
+  [
+    {id:'squats', label:'Squats', sets:'3 sets x 12-15', seconds:60},
+    {id:'incline_pushup', label:'Incline push-ups', sets:'3 sets x 8-10, slow and controlled', seconds:60},
+    {id:'glute_bridge', label:'Glute bridge', sets:'3 sets x 15', seconds:45},
+    {id:'plank', label:'Plank hold', sets:'3 sets x 30-40s', seconds:35},
+    {id:'lunges', label:'Lunges', sets:'3 sets x 10 each leg', seconds:60},
+    {id:'pullups', label:'Pull-ups (or negatives/dead hangs)', sets:'3-4 sets, max effort each', seconds:30},
+  ],
+  [
+    {id:'cardio_jog', label:'Brisk walk / jog / jump rope', sets:'20-25 min', seconds:1200},
+    {id:'leg_raises', label:'Leg raises', sets:'3 sets x 12', seconds:45},
+    {id:'bicycle_crunch', label:'Bicycle crunches', sets:'3 sets x 20', seconds:45},
+    {id:'side_plank', label:'Side plank', sets:'3 sets x 20s each side', seconds:20},
+  ],
+  [
+    {id:'bulgarian_split', label:'Bulgarian split squat', sets:'3 sets x 10 each leg', seconds:60},
+    {id:'incline_pushup_b', label:'Incline push-ups', sets:'3 sets x 8-10, slow and controlled', seconds:60},
+    {id:'single_leg_bridge', label:'Single-leg glute bridge', sets:'3 sets x 12 each leg', seconds:45},
+    {id:'wall_sit', label:'Wall sit', sets:'3 sets x 30s', seconds:30},
+    {id:'superman', label:'Superman hold', sets:'3 sets x 20s', seconds:20},
+    {id:'pullups_b', label:'Pull-ups (or negatives/dead hangs)', sets:'3-4 sets, max effort each', seconds:30},
+  ],
+  [
+    {id:'light_walk_thu', label:'Light walk', sets:'20 min, easy pace', seconds:1200},
+    {id:'hip_mobility', label:'Hip mobility work', sets:'5 min', seconds:300},
+    {id:'hamstring_stretch', label:'Hamstring stretch', sets:'5 min', seconds:300},
+    {id:'shoulder_mobility', label:'Shoulder mobility work', sets:'5 min, go gentle given the shoulder', seconds:300},
+  ],
+  [
+    {id:'squats_f', label:'Squats', sets:'3 sets x 12-15', seconds:60},
+    {id:'incline_pushup_f', label:'Incline push-ups', sets:'3 sets x 8-10, slow and controlled', seconds:60},
+    {id:'glute_bridge_f', label:'Glute bridge', sets:'3 sets x 15', seconds:45},
+    {id:'plank_f', label:'Plank hold', sets:'3 sets x 30-40s', seconds:35},
+    {id:'lunges_f', label:'Lunges', sets:'3 sets x 10 each leg', seconds:60},
+    {id:'pullups_f', label:'Pull-ups (or negatives/dead hangs)', sets:'3-4 sets, max effort each', seconds:30},
+  ],
+  [
+    {id:'cardio_stairs', label:'Stairs / cycling / sprints', sets:'20-25 min', seconds:1200},
+    {id:'leg_raises_s', label:'Leg raises', sets:'3 sets x 12', seconds:45},
+    {id:'bicycle_crunch_s', label:'Bicycle crunches', sets:'3 sets x 20', seconds:45},
+    {id:'side_plank_s', label:'Side plank', sets:'3 sets x 20s each side', seconds:20},
+  ],
+  [
+    {id:'light_walk_sun', label:'Light walk', sets:'15-20 min', seconds:900},
+    {id:'full_stretch', label:'Full body stretch routine', sets:'10 min', seconds:600},
+    {id:'reflect_plan', label:'Reflect & plan next week', sets:'2 min', seconds:120},
+  ],
+];
+
+const COLORS = {strength:'var(--strength)', cardio:'var(--cardio)', recovery:'var(--recovery)'};
+const HEIGHTS = {strength:'100%', cardio:'62%', recovery:'34%'};
+const LIFE_PILLARS = [
+  {key:'sleep', icon:'\u25CF', label:'7-9h sleep'},
+  {key:'food',  icon:'\u25A0', label:'Protein meals'},
+];
+
+let entries = {};
+let activeTab = 'today';
+let calMonth = new Date();
+let selectedCalDate = null;
+let timerState = {seconds:0, remaining:0, running:false, interval:null, label:''};
+
+function isoDate(d){ return d.toISOString().slice(0,10); }
+function getWeekDates(){
+  const today = new Date();
+  const dow = (today.getDay()+6)%7;
+  const monday = new Date(today);
+  monday.setDate(today.getDate()-dow);
+  const dates=[];
+  for(let i=0;i<7;i++){ const d=new Date(monday); d.setDate(monday.getDate()+i); dates.push(isoDate(d)); }
+  return {dates, todayIso: isoDate(today)};
+}
+function weekdayIndex(iso){
+  const d = new Date(iso+'T00:00:00');
+  return (d.getDay()+6)%7;
+}
+
+async function loadEntries(){
+  try{ const res = await window.storage.get('tracker:entries', false); entries = res ? JSON.parse(res.value) : {}; }
+  catch(e){ entries = {}; }
+}
+async function saveEntries(){
+  try{ await window.storage.set('tracker:entries', JSON.stringify(entries), false); }
+  catch(e){ console.error('save failed', e); }
+}
+async function loadReminder(){
+  try{ const res = await window.storage.get('tracker:reminder', false); return res ? JSON.parse(res.value) : null; }
+  catch(e){ return null; }
+}
+async function saveReminder(data){
+  try{ await window.storage.set('tracker:reminder', JSON.stringify(data), false); }
+  catch(e){ console.error(e); }
+}
+
+function dayComplete(iso){
+  const e = entries[iso]; if(!e) return false;
+  const taskList = TASKS[weekdayIndex(iso)];
+  const allTasksDone = taskList.every(t => e.tasks && e.tasks[t.id]);
+  return allTasksDone && e.sleep && e.food;
+}
+function computeStreak(todayIso){
+  let streak=0; let cursor = new Date(todayIso+'T00:00:00');
+  while(true){
+    const iso = isoDate(cursor);
+    if(dayComplete(iso)){ streak++; cursor.setDate(cursor.getDate()-1); } else break;
+  }
+  return streak;
+}
+
+function fmtTime(sec){
+  const m = Math.floor(sec/60).toString().padStart(2,'0');
+  const s = Math.floor(sec%60).toString().padStart(2,'0');
+  return m+':'+s;
+}
+
+function openTimer(label, seconds){
+  clearInterval(timerState.interval);
+  timerState = {seconds, remaining:seconds, running:false, interval:null, label};
+  document.getElementById('timerTitle').textContent = label;
+  document.getElementById('timerSets').textContent = 'Tap start when ready';
+  document.getElementById('timerDisplay').textContent = fmtTime(seconds);
+  document.getElementById('timerStart').textContent = 'Start';
+  document.getElementById('timerModal').classList.add('open');
+}
+function closeTimer(){
+  clearInterval(timerState.interval);
+  document.getElementById('timerModal').classList.remove('open');
+}
+function beep(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880; g.gain.value = 0.15;
+    o.start(); setTimeout(()=>{o.stop(); ctx.close();}, 400);
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+function toggleTimerStart(){
+  if(timerState.running){
+    clearInterval(timerState.interval);
+    timerState.running = false;
+    document.getElementById('timerStart').textContent = 'Resume';
+  } else {
+    timerState.running = true;
+    document.getElementById('timerStart').textContent = 'Pause';
+    timerState.interval = setInterval(()=>{
+      timerState.remaining--;
+      document.getElementById('timerDisplay').textContent = fmtTime(Math.max(0,timerState.remaining));
+      if(timerState.remaining<=0){
+        clearInterval(timerState.interval);
+        timerState.running = false;
+        document.getElementById('timerStart').textContent = 'Start';
+        document.getElementById('timerSets').textContent = 'Done \u2014 nice work';
+        beep();
+      }
+    }, 1000);
+  }
+}
+function adjustTimer(delta){
+  if(timerState.running) return;
+  timerState.remaining = Math.max(0, timerState.remaining + delta);
+  timerState.seconds = timerState.remaining;
+  document.getElementById('timerDisplay').textContent = fmtTime(timerState.remaining);
+}
+function resetTimer(){
+  clearInterval(timerState.interval);
+  timerState.running = false;
+  timerState.remaining = timerState.seconds;
+  document.getElementById('timerDisplay').textContent = fmtTime(timerState.remaining);
+  document.getElementById('timerStart').textContent = 'Start';
+}
+
+function youtubeSearch(label){
+  const q = encodeURIComponent(label.replace(/\(.*?\)/g,'') + ' proper form tutorial');
+  window.open('https://www.youtube.com/results?search_query='+q, '_blank');
+}
+
+function renderDayCard(iso, isToday, showDateLabel){
+  const dow = weekdayIndex(iso);
+  const meta = DAY_META[dow];
+  const e = entries[iso] || {tasks:{}};
+  const taskList = TASKS[dow];
+  let tasksHtml = '';
+  taskList.forEach(t=>{
+    const done = !!(e.tasks && e.tasks[t.id]);
+    tasksHtml += `
+      <div class="task-row">
+        <div class="checkbox ${done?'checked':''}" data-action="task" data-date="${iso}" data-taskid="${t.id}"></div>
+        <div class="task-label ${done?'done':''}" data-action="task" data-date="${iso}" data-taskid="${t.id}">
+          ${t.label}<span class="set-info">${t.sets}</span>
+        </div>
+        <div class="task-actions">
+          <button class="icon-btn" data-action="timer" data-label="${t.label.replace(/"/g,'&quot;')}" data-seconds="${t.seconds}" title="Timer">\u23F1</button>
+          <button class="icon-btn" data-action="youtube" data-label="${t.label.replace(/"/g,'&quot;')}" title="YouTube">\u25B6</button>
+        </div>
+      </div>`;
+  });
+  let lifeHtml = '<div class="life-pillars">';
+  LIFE_PILLARS.forEach(p=>{
+    const done = !!e[p.key];
+    lifeHtml += `<div class="pill ${done?'done':''}" data-action="pillar" data-date="${iso}" data-key="${p.key}"><span class="pill-icon">${p.icon}</span>${p.label}</div>`;
+  });
+  lifeHtml += '</div>';
+  const label = showDateLabel ? `${meta.name}, ${iso}` : `${meta.name}${isToday?' \u2014 today':''}`;
+  return `
+    <div class="day-card ${isToday?'today':''}">
+      <div class="day-head">
+        <span class="day-name">${label}</span>
+        <span class="type-tag" style="background:${COLORS[meta.tag]}22;color:${COLORS[meta.tag]};">${meta.type}</span>
+      </div>
+      ${tasksHtml}
+      ${lifeHtml}
+    </div>`;
+}
+
+function renderToday(){
+  const {dates, todayIso} = getWeekDates();
+  const streak = computeStreak(todayIso);
+  let rhythmHtml = '<div class="rhythm">';
+  dates.forEach((iso,i)=>{
+    const meta = DAY_META[i]; const isToday = iso===todayIso;
+    rhythmHtml += `<div class="bar-col"><div class="bar ${isToday?'today':''}" style="height:${HEIGHTS[meta.tag]};background:${COLORS[meta.tag]};"></div><div class="daylabel ${isToday?'today':''}">${meta.name.slice(0,3)}</div></div>`;
+  });
+  rhythmHtml += '</div>';
+  const legendHtml = `<div class="legend">
+    <div class="legend-item"><span class="dot" style="background:var(--strength);"></span>Strength</div>
+    <div class="legend-item"><span class="dot" style="background:var(--cardio);"></span>Cardio + core</div>
+    <div class="legend-item"><span class="dot" style="background:var(--recovery);"></span>Recovery / mobility</div>
+  </div>`;
+  const streakHtml = `<div class="streak-card">
+    <div><div class="streak-num">${streak}</div><div class="streak-label">day streak &middot; full day complete</div></div>
+    <div class="streak-note">${streak===0 ? "Tick off everything today to start one." : "Every task, sleep, and food \u2014 all landed."}</div>
+  </div>`;
+  let daysHtml = '<div class="section-label">This week</div>';
+  dates.forEach(iso => { daysHtml += renderDayCard(iso, iso===todayIso, false); });
+  return `${rhythmHtml}${legendHtml}${streakHtml}${daysHtml}<button class="reset" id="resetBtn">Reset this week</button>`;
+}
+
+function renderCalendar(){
+  const year = calMonth.getFullYear(), month = calMonth.getMonth();
+  const first = new Date(year, month, 1);
+  const startOffset = (first.getDay()+6)%7;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayIso = isoDate(new Date());
+  const monthName = calMonth.toLocaleString('default',{month:'long', year:'numeric'});
+
+  let grid = '<div class="cal-grid">';
+  ['Mo','Tu','We','Th','Fr','Sa','Su'].forEach(d=> grid += `<div class="cal-dow">${d}</div>`);
+  for(let i=0;i<startOffset;i++) grid += '<div class="cal-cell empty"></div>';
+  for(let day=1; day<=daysInMonth; day++){
+    const iso = isoDate(new Date(year, month, day));
+    const complete = dayComplete(iso);
+    const isToday = iso===todayIso;
+    const isSelected = iso===selectedCalDate;
+    grid += `<div class="cal-cell ${complete?'complete':''} ${isToday?'istoday':''} ${isSelected?'selected':''}" data-action="calday" data-date="${iso}">${day}</div>`;
+  }
+  grid += '</div>';
+
+  const header = `<div class="cal-header">
+    <button data-action="calprev">\u2039</button>
+    <div class="cal-title">${monthName}</div>
+    <button data-action="calnext">\u203A</button>
+  </div>`;
+
+  let detail = '';
+  if(selectedCalDate){
+    detail = renderDayCard(selectedCalDate, selectedCalDate===todayIso, true);
+  } else {
+    detail = '<p class="note">Tap a date to view or log that day.</p>';
+  }
+
+  return `${header}${grid}${detail}`;
+}
+
+async function renderReminders(){
+  const r = await loadReminder();
+  const time = r ? r.time : '18:00';
+  const enabled = r ? r.enabled : false;
+  const permission = ('Notification' in window) ? Notification.permission : 'unsupported';
+  let statusHtml = '';
+  if(permission === 'granted') statusHtml = '<span class="status-ok">Notifications allowed on this device.</span>';
+  else if(permission === 'unsupported') statusHtml = 'Notifications aren\u2019t supported in this browser context.';
+  else statusHtml = 'Tap "Enable notifications" and allow when your browser asks.';
+
+  return `
+    <div class="reminder-card">
+      <div class="section-label" style="margin-bottom:14px;">Workout reminder</div>
+      <div class="reminder-row">
+        <label for="reminderTime">Remind me at</label>
+        <input type="time" id="reminderTime" value="${time}">
+      </div>
+      <div class="reminder-row">
+        <button class="btn-primary" id="enableNotif">Enable notifications</button>
+        <button class="btn-secondary" id="saveReminder">Save time</button>
+      </div>
+      <p class="note">${statusHtml}<br><br>
+      This fires while the app is open/installed on your phone \u2014 Android can still delay or drop it in the background, so this is a helper, not a guarantee. For a reminder you can't miss, also set 1-2 alarms on your phone for your actual training window.</p>
+    </div>`;
+}
+
+async function render(){
+  const todayHtml = renderToday();
+  const calHtml = renderCalendar();
+  const remHtml = await renderReminders();
+  document.getElementById('app').innerHTML = `
+    <h1>Daily Rhythm</h1>
+    <p class="sub">No skipped days \u2014 the effort just changes shape.</p>
+    <div class="tabs">
+      <button class="tab-btn ${activeTab==='today'?'active':''}" data-tab="today">Today</button>
+      <button class="tab-btn ${activeTab==='calendar'?'active':''}" data-tab="calendar">Calendar</button>
+      <button class="tab-btn ${activeTab==='reminders'?'active':''}" data-tab="reminders">Reminders</button>
+    </div>
+    <div class="tabpane ${activeTab==='today'?'active':''}" id="pane-today">${todayHtml}</div>
+    <div class="tabpane ${activeTab==='calendar'?'active':''}" id="pane-calendar">${calHtml}</div>
+    <div class="tabpane ${activeTab==='reminders'?'active':''}" id="pane-reminders">${remHtml}</div>
+  `;
+  attachHandlers();
+}
+
+function attachHandlers(){
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{ activeTab = btn.dataset.tab; render(); });
+  });
+
+  document.querySelectorAll('[data-action="task"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const date = el.dataset.date, taskid = el.dataset.taskid;
+      if(!entries[date]) entries[date] = {tasks:{}};
+      if(!entries[date].tasks) entries[date].tasks = {};
+      entries[date].tasks[taskid] = !entries[date].tasks[taskid];
+      await saveEntries(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="pillar"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const date = el.dataset.date, key = el.dataset.key;
+      if(!entries[date]) entries[date] = {tasks:{}};
+      entries[date][key] = !entries[date][key];
+      await saveEntries(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="timer"]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); openTimer(el.dataset.label, parseInt(el.dataset.seconds)); });
+  });
+  document.querySelectorAll('[data-action="youtube"]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); youtubeSearch(el.dataset.label); });
+  });
+
+  const resetBtn = document.getElementById('resetBtn');
+  if(resetBtn) resetBtn.addEventListener('click', async ()=>{
+    const {dates} = getWeekDates();
+    dates.forEach(iso=>{ delete entries[iso]; });
+    await saveEntries(); render();
+  });
+
+  document.querySelectorAll('[data-action="calday"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ selectedCalDate = el.dataset.date; render(); activeTab='calendar'; });
+  });
+  const prevBtn = document.querySelector('[data-action="calprev"]');
+  if(prevBtn) prevBtn.addEventListener('click', ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); render(); });
+  const nextBtn = document.querySelector('[data-action="calnext"]');
+  if(nextBtn) nextBtn.addEventListener('click', ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1); render(); });
+
+  const enableBtn = document.getElementById('enableNotif');
+  if(enableBtn) enableBtn.addEventListener('click', async ()=>{
+    if('Notification' in window){
+      const perm = await Notification.requestPermission();
+      render();
+    }
+  });
+  const saveBtn = document.getElementById('saveReminder');
+  if(saveBtn) saveBtn.addEventListener('click', async ()=>{
+    const time = document.getElementById('reminderTime').value;
+    await saveReminder({time, enabled:true});
+    scheduleReminderCheck();
+    alert('Reminder set for ' + time + ' \u2014 keep this tab/app open or installed for it to fire.');
+  });
+
+  document.getElementById('timerStart').onclick = toggleTimerStart;
+  document.getElementById('timerReset').onclick = resetTimer;
+  document.getElementById('timerClose').onclick = closeTimer;
+  document.getElementById('minus10').onclick = ()=>adjustTimer(-10);
+  document.getElementById('plus10').onclick = ()=>adjustTimer(10);
+}
+
+let lastFiredDate = null;
+function scheduleReminderCheck(){
+  setInterval(async ()=>{
+    const r = await loadReminder();
+    if(!r || !r.enabled) return;
+    const now = new Date();
+    const hh = now.getHours().toString().padStart(2,'0');
+    const mm = now.getMinutes().toString().padStart(2,'0');
+    const current = `${hh}:${mm}`;
+    const todayIso = isoDate(now);
+    if(current === r.time && lastFiredDate !== todayIso){
+      lastFiredDate = todayIso;
+      if('Notification' in window && Notification.permission === 'granted'){
+        new Notification('Daily Rhythm', { body: "Time to train \u2014 today's list is waiting.", icon: 'icon.svg' });
+      }
+    }
+  }, 20000);
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+
+(async ()=>{ await loadEntries(); await render(); scheduleReminderCheck(); })();
+</script>
+</body>
+</html>
