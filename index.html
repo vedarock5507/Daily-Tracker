@@ -593,32 +593,39 @@ function attachHandlers(){
   document.getElementById('minus10').onclick = ()=>adjustTimer(-10);
   document.getElementById('plus10').onclick = ()=>adjustTimer(10);
 
-  /* real swipe gesture via Pointer Events \u2014 one unified stream, no touch+mouse double-firing */
+  /* real swipe gesture via touch events only \u2014 avoids ghost mouse-event duplication,
+     and preventDefault on horizontal drags stops Android's edge-swipe-back gesture from hijacking it */
   const viewport = document.getElementById('swipeViewport');
   if(viewport){
-    let startX = 0, startY = 0, dragging = false, activePointerId = null;
+    let startX = 0, startY = 0, dragging = false, horizontalLock = false;
     const track = document.getElementById('swipeTrack');
-    viewport.addEventListener('pointerdown', (e)=>{
-      startX = e.clientX; startY = e.clientY; dragging = true; activePointerId = e.pointerId;
+    viewport.addEventListener('touchstart', (e)=>{
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY; dragging = true; horizontalLock = false;
       track.style.transition = 'none';
-      try{ viewport.setPointerCapture(e.pointerId); }catch(err){}
-    });
-    viewport.addEventListener('pointermove', (e)=>{
-      if(!dragging || e.pointerId !== activePointerId) return;
-      const dx = e.clientX - startX; const dy = e.clientY - startY;
-      if(Math.abs(dx) > Math.abs(dy)) track.style.transform = `translateX(${dx}px)`;
-    });
+    }, {passive:true});
+    viewport.addEventListener('touchmove', (e)=>{
+      if(!dragging) return;
+      const t = e.touches[0];
+      const dx = t.clientX - startX; const dy = t.clientY - startY;
+      if(!horizontalLock && Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) horizontalLock = true;
+      if(horizontalLock){
+        e.preventDefault();
+        track.style.transform = `translateX(${dx}px)`;
+      }
+    }, {passive:false});
     const finishSwipe = (e)=>{
-      if(!dragging || e.pointerId !== activePointerId) return;
-      dragging = false; activePointerId = null;
-      const dx = e.clientX - startX;
+      if(!dragging) return;
+      dragging = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - startX;
       track.style.transition = 'transform 0.28s cubic-bezier(.2,.8,.2,1)';
       if(dx < -60){ track.style.transform='translateX(-100%)'; setTimeout(()=>goToDay(1), 160); }
       else if(dx > 60){ track.style.transform='translateX(100%)'; setTimeout(()=>goToDay(-1), 160); }
       else { track.style.transform='translateX(0)'; }
     };
-    viewport.addEventListener('pointerup', finishSwipe);
-    viewport.addEventListener('pointercancel', finishSwipe);
+    viewport.addEventListener('touchend', finishSwipe);
+    viewport.addEventListener('touchcancel', finishSwipe);
   }
 }
 
