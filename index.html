@@ -10,95 +10,106 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
 :root{
-  --bg:#15171b; --surface:#1c1f24; --surface-2:#22262c; --text:#ece8e1; --muted:#8b8780;
-  --strength:#b5562f; --cardio:#3f7d6c; --recovery:#6d7280; --gold:#d9a441; --line: rgba(236,232,225,0.08);
+  --bg:#121418; --surface:#1b1e24; --surface-2:#232730; --text:#f0ede6; --muted:#8b8780;
+  --strength:#c05e37; --cardio:#3f8a76; --recovery:#6d7280; --gold:#e0aa4a; --line: rgba(240,237,230,0.08);
 }
-*{box-sizing:border-box;}
-body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans', sans-serif;padding:24px 16px 60px;min-height:100vh;}
+*{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans', sans-serif;padding:22px 16px 60px;min-height:100vh;overscroll-behavior-y:contain;}
 .wrap{max-width:520px;margin:0 auto;}
 h1{font-family:'Space Grotesk', sans-serif;font-weight:700;font-size:1.4rem;letter-spacing:-0.01em;margin:0 0 2px;}
 .sub{color:var(--muted);font-size:0.85rem;margin:0 0 20px;}
 
-.tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--surface);border-radius:10px;padding:4px;}
-.tab-btn{flex:1;background:none;border:none;color:var(--muted);padding:9px 0;border-radius:7px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;}
+.tabs{display:flex;gap:6px;margin-bottom:20px;background:var(--surface);border-radius:12px;padding:4px;}
+.tab-btn{flex:1;background:none;border:none;color:var(--muted);padding:9px 0;border-radius:9px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:background 0.2s, color 0.2s;}
 .tab-btn.active{background:var(--surface-2);color:var(--gold);}
-.tabpane{display:none;} .tabpane.active{display:block;}
+.tabpane{display:none;} .tabpane.active{display:block;animation:fadein 0.25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
 
-.rhythm{display:flex;align-items:flex-end;gap:8px;height:90px;margin-bottom:8px;}
-.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;}
-.bar{width:100%;border-radius:5px 5px 3px 3px;transition:opacity 0.2s;}
+.rhythm{display:flex;align-items:flex-end;gap:8px;height:80px;margin-bottom:8px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;cursor:pointer;}
+.bar{width:100%;border-radius:5px 5px 3px 3px;transition:opacity 0.2s, transform 0.15s;}
+.bar-col:active .bar{transform:scaleY(0.94);}
 .bar.today{box-shadow:0 0 0 2px var(--gold);animation:pulse 2.2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.35);}}
-.daylabel{font-size:0.65rem;color:var(--muted);}
+.bar.selected{box-shadow:0 0 0 2px var(--text);}
+@keyframes pulse{0%,100%{filter:brightness(1);}50%{filter:brightness(1.4);}}
+.daylabel{font-size:0.64rem;color:var(--muted);}
 .daylabel.today{color:var(--gold);font-weight:600;}
-.legend{display:flex;gap:14px;margin:12px 0 24px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--muted);}
-.dot{width:8px;height:8px;border-radius:50%;}
 
-.streak-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.streak-card{background:linear-gradient(145deg, var(--surface), var(--surface-2));border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin:16px 0 18px;}
 .streak-num{font-family:'Space Grotesk';font-size:1.7rem;font-weight:700;color:var(--gold);line-height:1;}
 .streak-label{font-size:0.7rem;color:var(--muted);margin-top:2px;}
-.streak-note{font-size:0.74rem;color:var(--muted);max-width:180px;text-align:right;}
+.streak-note{font-size:0.74rem;color:var(--muted);max-width:170px;text-align:right;}
+
+/* swipe deck */
+.swipe-hint{text-align:center;font-size:0.68rem;color:var(--muted);margin-bottom:10px;}
+.swipe-viewport{overflow:hidden;position:relative;border-radius:16px;}
+.swipe-track{display:flex;transition:transform 0.28s cubic-bezier(.2,.8,.2,1);}
+.dots{display:flex;justify-content:center;gap:6px;margin-top:14px;}
+.dot-nav{width:6px;height:6px;border-radius:50%;background:var(--line);transition:all 0.2s;}
+.dot-nav.active{background:var(--gold);width:16px;border-radius:4px;}
 
 .section-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:0 0 10px;}
-.day-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+.day-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 17px;flex-shrink:0;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
 .day-card.today{border-color:var(--gold);}
-.day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.day-name{font-weight:600;font-size:0.9rem;}
-.type-tag{font-size:0.63rem;padding:2px 8px;border-radius:20px;font-weight:600;}
+.day-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.day-name{font-weight:700;font-size:1rem;font-family:'Space Grotesk';}
+.type-tag{font-size:0.63rem;padding:3px 9px;border-radius:20px;font-weight:600;}
 
-.task-row{display:flex;align-items:center;gap:8px;padding:8px 2px;border-bottom:1px solid var(--line);}
+.task-row{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);}
 .task-row:last-of-type{border-bottom:none;}
-.checkbox{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.checkbox{width:19px;height:19px;border-radius:6px;border:1.5px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.1s;}
+.checkbox:active{transform:scale(0.85);}
 .checkbox.checked{background:var(--gold);border-color:var(--gold);}
 .checkbox.checked::after{content:'\2713';font-size:11px;color:var(--bg);font-weight:700;}
 .task-label{font-size:0.8rem;flex:1;cursor:pointer;}
 .task-label .set-info{color:var(--muted);font-size:0.71rem;display:block;}
 .task-label.done{color:var(--muted);text-decoration:line-through;}
 .task-actions{display:flex;gap:4px;flex-shrink:0;}
-.icon-btn{background:var(--surface-2);border:none;color:var(--muted);width:28px;height:28px;border-radius:7px;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.icon-btn:active{background:var(--gold);color:var(--bg);}
+.icon-btn{background:var(--surface-2);border:none;color:var(--muted);width:28px;height:28px;border-radius:8px;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.1s;}
+.icon-btn:active{background:var(--gold);color:var(--bg);transform:scale(0.9);}
 
-.life-pillars{display:flex;gap:8px;margin-top:12px;}
-.pill{flex:1;background:var(--surface-2);border:1px solid transparent;border-radius:8px;padding:8px 6px;text-align:center;cursor:pointer;font-size:0.68rem;color:var(--muted);}
-.pill.done{background:rgba(217,164,65,0.12);border-color:var(--gold);color:var(--gold);font-weight:600;}
-.pill-icon{font-size:0.88rem;display:block;margin-bottom:3px;}
+.wellness{display:flex;gap:10px;margin-top:14px;}
+.wellness-field{flex:1;background:var(--surface-2);border-radius:10px;padding:10px 12px;}
+.wellness-field label{display:block;font-size:0.66rem;color:var(--muted);margin-bottom:4px;}
+.wellness-field .input-row{display:flex;align-items:baseline;gap:4px;}
+.wellness-field input{background:none;border:none;color:var(--text);font-family:'Space Grotesk';font-size:1.15rem;font-weight:700;width:100%;outline:none;}
+.wellness-field .unit{font-size:0.68rem;color:var(--muted);}
+.wellness-field.hit{outline:1px solid var(--gold);}
 
 /* calendar */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.cal-header button{background:var(--surface);border:1px solid var(--line);color:var(--text);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:0.9rem;}
+.cal-header button{background:var(--surface);border:1px solid var(--line);color:var(--text);width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:0.9rem;}
 .cal-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;}
 .cal-dow{text-align:center;font-size:0.62rem;color:var(--muted);padding-bottom:4px;}
-.cal-cell{aspect-ratio:1;border-radius:8px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:0.75rem;cursor:pointer;position:relative;border:1px solid transparent;color:var(--text);}
+.cal-cell{aspect-ratio:1;border-radius:9px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:0.75rem;cursor:pointer;border:1px solid transparent;color:var(--text);transition:transform 0.1s;}
+.cal-cell:active{transform:scale(0.92);}
 .cal-cell.empty{background:none;cursor:default;}
-.cal-cell.complete{background:rgba(217,164,65,0.18);border-color:var(--gold);color:var(--gold);font-weight:700;}
+.cal-cell.complete{background:rgba(224,170,74,0.18);border-color:var(--gold);color:var(--gold);font-weight:700;}
 .cal-cell.selected{border-color:var(--text);}
 .cal-cell.istoday{box-shadow:0 0 0 1px var(--gold) inset;}
 
-/* reminders */
-.reminder-card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;}
+.reminder-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px;}
 .reminder-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.reminder-row input[type=time]{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;font-family:inherit;}
+.reminder-row input[type=time], .reminder-row input[type=number]{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;font-family:inherit;width:90px;}
 .reminder-row label{font-size:0.8rem;flex:1;}
-.btn-primary{background:var(--gold);color:var(--bg);border:none;padding:9px 16px;border-radius:8px;font-weight:600;font-size:0.78rem;cursor:pointer;font-family:inherit;}
-.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);padding:9px 16px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:inherit;}
+.btn-primary{background:var(--gold);color:var(--bg);border:none;padding:9px 16px;border-radius:9px;font-weight:600;font-size:0.78rem;cursor:pointer;font-family:inherit;}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);padding:9px 16px;border-radius:9px;font-size:0.78rem;cursor:pointer;font-family:inherit;}
 .note{font-size:0.72rem;color:var(--muted);margin-top:8px;line-height:1.5;}
 .status-ok{color:var(--gold);}
 
-.reset{display:block;margin:24px auto 0;background:none;border:1px solid var(--line);color:var(--muted);font-size:0.7rem;padding:8px 14px;border-radius:8px;cursor:pointer;}
+.reset{display:block;margin:24px auto 0;background:none;border:1px solid var(--line);color:var(--muted);font-size:0.7rem;padding:8px 14px;border-radius:9px;cursor:pointer;}
 
-/* timer modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:50;padding:20px;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);align-items:center;justify-content:center;z-index:50;padding:20px;backdrop-filter:blur(3px);}
 .modal-overlay.open{display:flex;}
-.modal{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:26px;max-width:320px;width:100%;text-align:center;}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:320px;width:100%;text-align:center;}
 .modal h3{font-family:'Space Grotesk';margin:0 0 4px;font-size:1.05rem;}
 .modal .sets{color:var(--muted);font-size:0.78rem;margin-bottom:18px;}
 .timer-display{font-family:'Space Grotesk';font-size:2.6rem;font-weight:700;color:var(--gold);margin:10px 0 18px;}
 .timer-controls{display:flex;gap:8px;justify-content:center;margin-bottom:10px;}
 .modal-close{margin-top:14px;background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;}
 .adjust-row{display:flex;gap:8px;justify-content:center;margin-bottom:14px;}
-.adjust-row button{width:34px;height:34px;border-radius:8px;background:var(--surface-2);border:none;color:var(--text);font-size:1rem;cursor:pointer;}
+.adjust-row button{width:34px;height:34px;border-radius:9px;background:var(--surface-2);border:none;color:var(--text);font-size:1rem;cursor:pointer;}
 
 .loading{text-align:center;color:var(--muted);padding:40px 0;font-size:0.85rem;}
 </style>
@@ -186,18 +197,20 @@ const TASKS = [
 
 const COLORS = {strength:'var(--strength)', cardio:'var(--cardio)', recovery:'var(--recovery)'};
 const HEIGHTS = {strength:'100%', cardio:'62%', recovery:'34%'};
-const LIFE_PILLARS = [
-  {key:'sleep', icon:'\u25CF', label:'7-9h sleep'},
-  {key:'food',  icon:'\u25A0', label:'Protein meals'},
-];
+const SLEEP_TARGET = 7;
 
 let entries = {};
+let settings = { proteinTarget: 80 };
 let activeTab = 'today';
 let calMonth = new Date();
 let selectedCalDate = null;
+let currentSwipeDate = isoDate(new Date());
 let timerState = {seconds:0, remaining:0, running:false, interval:null, label:''};
 
 function isoDate(d){ return d.toISOString().slice(0,10); }
+function addDays(iso, n){
+  const d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoDate(d);
+}
 function getWeekDates(){
   const today = new Date();
   const dow = (today.getDay()+6)%7;
@@ -212,35 +225,48 @@ function weekdayIndex(iso){
   return (d.getDay()+6)%7;
 }
 
+/* storage: works both inside Claude artifact preview (window.storage)
+   and on a real hosted site like GitHub Pages (localStorage fallback) */
+async function storageGet(key){
+  try{
+    if(window.storage){ const r = await window.storage.get(key, false); return r ? r.value : null; }
+  }catch(e){}
+  try{ return localStorage.getItem(key); }catch(e){ return null; }
+}
+async function storageSet(key, value){
+  try{
+    if(window.storage){ await window.storage.set(key, value, false); return; }
+  }catch(e){}
+  try{ localStorage.setItem(key, value); }catch(e){}
+}
+
 async function loadEntries(){
-  try{ const res = await window.storage.get('tracker:entries', false); entries = res ? JSON.parse(res.value) : {}; }
-  catch(e){ entries = {}; }
+  const raw = await storageGet('tracker:entries');
+  entries = raw ? JSON.parse(raw) : {};
 }
-async function saveEntries(){
-  try{ await window.storage.set('tracker:entries', JSON.stringify(entries), false); }
-  catch(e){ console.error('save failed', e); }
+async function saveEntries(){ await storageSet('tracker:entries', JSON.stringify(entries)); }
+async function loadSettings(){
+  const raw = await storageGet('tracker:settings');
+  settings = raw ? JSON.parse(raw) : { proteinTarget: 80 };
 }
+async function saveSettings(){ await storageSet('tracker:settings', JSON.stringify(settings)); }
 async function loadReminder(){
-  try{ const res = await window.storage.get('tracker:reminder', false); return res ? JSON.parse(res.value) : null; }
-  catch(e){ return null; }
+  const raw = await storageGet('tracker:reminder');
+  return raw ? JSON.parse(raw) : null;
 }
-async function saveReminder(data){
-  try{ await window.storage.set('tracker:reminder', JSON.stringify(data), false); }
-  catch(e){ console.error(e); }
-}
+async function saveReminder(data){ await storageSet('tracker:reminder', JSON.stringify(data)); }
 
 function dayComplete(iso){
   const e = entries[iso]; if(!e) return false;
   const taskList = TASKS[weekdayIndex(iso)];
   const allTasksDone = taskList.every(t => e.tasks && e.tasks[t.id]);
-  return allTasksDone && e.sleep && e.food;
+  const sleepOk = (e.sleep || 0) >= SLEEP_TARGET;
+  const proteinOk = (e.protein || 0) >= settings.proteinTarget;
+  return allTasksDone && sleepOk && proteinOk;
 }
 function computeStreak(todayIso){
-  let streak=0; let cursor = new Date(todayIso+'T00:00:00');
-  while(true){
-    const iso = isoDate(cursor);
-    if(dayComplete(iso)){ streak++; cursor.setDate(cursor.getDate()-1); } else break;
-  }
+  let streak=0; let cursor = todayIso;
+  while(dayComplete(cursor)){ streak++; cursor = addDays(cursor, -1); }
   return streak;
 }
 
@@ -249,7 +275,6 @@ function fmtTime(sec){
   const s = Math.floor(sec%60).toString().padStart(2,'0');
   return m+':'+s;
 }
-
 function openTimer(label, seconds){
   clearInterval(timerState.interval);
   timerState = {seconds, remaining:seconds, running:false, interval:null, label};
@@ -259,10 +284,7 @@ function openTimer(label, seconds){
   document.getElementById('timerStart').textContent = 'Start';
   document.getElementById('timerModal').classList.add('open');
 }
-function closeTimer(){
-  clearInterval(timerState.interval);
-  document.getElementById('timerModal').classList.remove('open');
-}
+function closeTimer(){ clearInterval(timerState.interval); document.getElementById('timerModal').classList.remove('open'); }
 function beep(){
   try{
     const ctx = new (window.AudioContext||window.webkitAudioContext)();
@@ -275,8 +297,7 @@ function beep(){
 }
 function toggleTimerStart(){
   if(timerState.running){
-    clearInterval(timerState.interval);
-    timerState.running = false;
+    clearInterval(timerState.interval); timerState.running = false;
     document.getElementById('timerStart').textContent = 'Resume';
   } else {
     timerState.running = true;
@@ -285,8 +306,7 @@ function toggleTimerStart(){
       timerState.remaining--;
       document.getElementById('timerDisplay').textContent = fmtTime(Math.max(0,timerState.remaining));
       if(timerState.remaining<=0){
-        clearInterval(timerState.interval);
-        timerState.running = false;
+        clearInterval(timerState.interval); timerState.running = false;
         document.getElementById('timerStart').textContent = 'Start';
         document.getElementById('timerSets').textContent = 'Done \u2014 nice work';
         beep();
@@ -301,19 +321,17 @@ function adjustTimer(delta){
   document.getElementById('timerDisplay').textContent = fmtTime(timerState.remaining);
 }
 function resetTimer(){
-  clearInterval(timerState.interval);
-  timerState.running = false;
+  clearInterval(timerState.interval); timerState.running = false;
   timerState.remaining = timerState.seconds;
   document.getElementById('timerDisplay').textContent = fmtTime(timerState.remaining);
   document.getElementById('timerStart').textContent = 'Start';
 }
-
 function youtubeSearch(label){
   const q = encodeURIComponent(label.replace(/\(.*?\)/g,'') + ' proper form tutorial');
   window.open('https://www.youtube.com/results?search_query='+q, '_blank');
 }
 
-function renderDayCard(iso, isToday, showDateLabel){
+function renderDayCard(iso, isToday){
   const dow = weekdayIndex(iso);
   const meta = DAY_META[dow];
   const e = entries[iso] || {tasks:{}};
@@ -333,45 +351,75 @@ function renderDayCard(iso, isToday, showDateLabel){
         </div>
       </div>`;
   });
-  let lifeHtml = '<div class="life-pillars">';
-  LIFE_PILLARS.forEach(p=>{
-    const done = !!e[p.key];
-    lifeHtml += `<div class="pill ${done?'done':''}" data-action="pillar" data-date="${iso}" data-key="${p.key}"><span class="pill-icon">${p.icon}</span>${p.label}</div>`;
-  });
-  lifeHtml += '</div>';
-  const label = showDateLabel ? `${meta.name}, ${iso}` : `${meta.name}${isToday?' \u2014 today':''}`;
+  const sleepVal = e.sleep || '';
+  const proteinVal = e.protein || '';
+  const sleepHit = (e.sleep||0) >= SLEEP_TARGET;
+  const proteinHit = (e.protein||0) >= settings.proteinTarget;
+  const wellnessHtml = `
+    <div class="wellness">
+      <div class="wellness-field ${sleepHit?'hit':''}">
+        <label>Sleep</label>
+        <div class="input-row">
+          <input type="number" min="0" max="14" step="0.5" placeholder="0" value="${sleepVal}" data-action="sleep" data-date="${iso}">
+          <span class="unit">hrs</span>
+        </div>
+      </div>
+      <div class="wellness-field ${proteinHit?'hit':''}">
+        <label>Protein (target ${settings.proteinTarget}g)</label>
+        <div class="input-row">
+          <input type="number" min="0" max="300" step="5" placeholder="0" value="${proteinVal}" data-action="protein" data-date="${iso}">
+          <span class="unit">g</span>
+        </div>
+      </div>
+    </div>`;
   return `
     <div class="day-card ${isToday?'today':''}">
       <div class="day-head">
-        <span class="day-name">${label}</span>
+        <span class="day-name">${meta.name}${isToday?' \u2014 today':''}</span>
         <span class="type-tag" style="background:${COLORS[meta.tag]}22;color:${COLORS[meta.tag]};">${meta.type}</span>
       </div>
       ${tasksHtml}
-      ${lifeHtml}
+      ${wellnessHtml}
     </div>`;
 }
 
 function renderToday(){
   const {dates, todayIso} = getWeekDates();
   const streak = computeStreak(todayIso);
+
   let rhythmHtml = '<div class="rhythm">';
   dates.forEach((iso,i)=>{
-    const meta = DAY_META[i]; const isToday = iso===todayIso;
-    rhythmHtml += `<div class="bar-col"><div class="bar ${isToday?'today':''}" style="height:${HEIGHTS[meta.tag]};background:${COLORS[meta.tag]};"></div><div class="daylabel ${isToday?'today':''}">${meta.name.slice(0,3)}</div></div>`;
+    const meta = DAY_META[i]; const isToday = iso===todayIso; const isSel = iso===currentSwipeDate;
+    rhythmHtml += `<div class="bar-col" data-action="jumpday" data-date="${iso}">
+      <div class="bar ${isToday?'today':''} ${isSel && !isToday?'selected':''}" style="height:${HEIGHTS[meta.tag]};background:${COLORS[meta.tag]};"></div>
+      <div class="daylabel ${isToday?'today':''}">${meta.name.slice(0,3)}</div>
+    </div>`;
   });
   rhythmHtml += '</div>';
-  const legendHtml = `<div class="legend">
-    <div class="legend-item"><span class="dot" style="background:var(--strength);"></span>Strength</div>
-    <div class="legend-item"><span class="dot" style="background:var(--cardio);"></span>Cardio + core</div>
-    <div class="legend-item"><span class="dot" style="background:var(--recovery);"></span>Recovery / mobility</div>
-  </div>`;
+
   const streakHtml = `<div class="streak-card">
     <div><div class="streak-num">${streak}</div><div class="streak-label">day streak &middot; full day complete</div></div>
-    <div class="streak-note">${streak===0 ? "Tick off everything today to start one." : "Every task, sleep, and food \u2014 all landed."}</div>
+    <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
   </div>`;
-  let daysHtml = '<div class="section-label">This week</div>';
-  dates.forEach(iso => { daysHtml += renderDayCard(iso, iso===todayIso, false); });
-  return `${rhythmHtml}${legendHtml}${streakHtml}${daysHtml}<button class="reset" id="resetBtn">Reset this week</button>`;
+
+  const idx = dates.indexOf(currentSwipeDate);
+  const safeIdx = idx === -1 ? 0 : idx;
+
+  let dotsHtml = '<div class="dots">';
+  dates.forEach((iso)=>{ dotsHtml += `<div class="dot-nav ${iso===currentSwipeDate?'active':''}"></div>`; });
+  dotsHtml += '</div>';
+
+  const cardHtml = renderDayCard(currentSwipeDate, currentSwipeDate===todayIso);
+
+  return `
+    ${rhythmHtml}
+    ${streakHtml}
+    <p class="swipe-hint">\u2190 swipe for previous / next day \u2192</p>
+    <div class="swipe-viewport" id="swipeViewport">
+      <div class="swipe-track" id="swipeTrack">${cardHtml}</div>
+    </div>
+    ${dotsHtml}
+    <button class="reset" id="resetBtn">Reset this week</button>`;
 }
 
 function renderCalendar(){
@@ -400,20 +448,13 @@ function renderCalendar(){
     <button data-action="calnext">\u203A</button>
   </div>`;
 
-  let detail = '';
-  if(selectedCalDate){
-    detail = renderDayCard(selectedCalDate, selectedCalDate===todayIso, true);
-  } else {
-    detail = '<p class="note">Tap a date to view or log that day.</p>';
-  }
-
+  let detail = selectedCalDate ? renderDayCard(selectedCalDate, selectedCalDate===todayIso) : '<p class="note">Tap a date to view or log that day.</p>';
   return `${header}${grid}${detail}`;
 }
 
 async function renderReminders(){
   const r = await loadReminder();
   const time = r ? r.time : '18:00';
-  const enabled = r ? r.enabled : false;
   const permission = ('Notification' in window) ? Notification.permission : 'unsupported';
   let statusHtml = '';
   if(permission === 'granted') statusHtml = '<span class="status-ok">Notifications allowed on this device.</span>';
@@ -432,7 +473,16 @@ async function renderReminders(){
         <button class="btn-secondary" id="saveReminder">Save time</button>
       </div>
       <p class="note">${statusHtml}<br><br>
-      This fires while the app is open/installed on your phone \u2014 Android can still delay or drop it in the background, so this is a helper, not a guarantee. For a reminder you can't miss, also set 1-2 alarms on your phone for your actual training window.</p>
+      This fires while the app is open/installed \u2014 Android can still delay or drop it in the background, so pair it with 1-2 real alarms on your phone.</p>
+    </div>
+    <div class="reminder-card">
+      <div class="section-label" style="margin-bottom:14px;">Daily protein target</div>
+      <div class="reminder-row">
+        <label for="proteinTarget">Target grams/day</label>
+        <input type="number" id="proteinTarget" min="0" max="300" step="5" value="${settings.proteinTarget}">
+      </div>
+      <button class="btn-primary" id="saveProteinTarget">Save target</button>
+      <p class="note">A day only counts toward your streak if protein logged meets this number, and sleep is 7h or more.</p>
     </div>`;
 }
 
@@ -455,6 +505,11 @@ async function render(){
   attachHandlers();
 }
 
+function goToDay(delta){
+  currentSwipeDate = addDays(currentSwipeDate, delta);
+  render();
+}
+
 function attachHandlers(){
   document.querySelectorAll('.tab-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{ activeTab = btn.dataset.tab; render(); });
@@ -469,14 +524,24 @@ function attachHandlers(){
       await saveEntries(); render();
     });
   });
-  document.querySelectorAll('[data-action="pillar"]').forEach(el=>{
-    el.addEventListener('click', async ()=>{
-      const date = el.dataset.date, key = el.dataset.key;
+
+  document.querySelectorAll('[data-action="sleep"]').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      const date = el.dataset.date;
       if(!entries[date]) entries[date] = {tasks:{}};
-      entries[date][key] = !entries[date][key];
+      entries[date].sleep = parseFloat(el.value) || 0;
       await saveEntries(); render();
     });
   });
+  document.querySelectorAll('[data-action="protein"]').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      const date = el.dataset.date;
+      if(!entries[date]) entries[date] = {tasks:{}};
+      entries[date].protein = parseFloat(el.value) || 0;
+      await saveEntries(); render();
+    });
+  });
+
   document.querySelectorAll('[data-action="timer"]').forEach(el=>{
     el.addEventListener('click', (ev)=>{ ev.stopPropagation(); openTimer(el.dataset.label, parseInt(el.dataset.seconds)); });
   });
@@ -491,8 +556,12 @@ function attachHandlers(){
     await saveEntries(); render();
   });
 
+  document.querySelectorAll('[data-action="jumpday"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ currentSwipeDate = el.dataset.date; render(); });
+  });
+
   document.querySelectorAll('[data-action="calday"]').forEach(el=>{
-    el.addEventListener('click', ()=>{ selectedCalDate = el.dataset.date; render(); activeTab='calendar'; });
+    el.addEventListener('click', ()=>{ selectedCalDate = el.dataset.date; render(); });
   });
   const prevBtn = document.querySelector('[data-action="calprev"]');
   if(prevBtn) prevBtn.addEventListener('click', ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); render(); });
@@ -501,10 +570,7 @@ function attachHandlers(){
 
   const enableBtn = document.getElementById('enableNotif');
   if(enableBtn) enableBtn.addEventListener('click', async ()=>{
-    if('Notification' in window){
-      const perm = await Notification.requestPermission();
-      render();
-    }
+    if('Notification' in window){ await Notification.requestPermission(); render(); }
   });
   const saveBtn = document.getElementById('saveReminder');
   if(saveBtn) saveBtn.addEventListener('click', async ()=>{
@@ -513,12 +579,46 @@ function attachHandlers(){
     scheduleReminderCheck();
     alert('Reminder set for ' + time + ' \u2014 keep this tab/app open or installed for it to fire.');
   });
+  const saveProteinBtn = document.getElementById('saveProteinTarget');
+  if(saveProteinBtn) saveProteinBtn.addEventListener('click', async ()=>{
+    const val = parseFloat(document.getElementById('proteinTarget').value) || 80;
+    settings.proteinTarget = val;
+    await saveSettings();
+    render();
+  });
 
   document.getElementById('timerStart').onclick = toggleTimerStart;
   document.getElementById('timerReset').onclick = resetTimer;
   document.getElementById('timerClose').onclick = closeTimer;
   document.getElementById('minus10').onclick = ()=>adjustTimer(-10);
   document.getElementById('plus10').onclick = ()=>adjustTimer(10);
+
+  /* real swipe gesture, no buttons */
+  const viewport = document.getElementById('swipeViewport');
+  if(viewport){
+    let startX = 0, startY = 0, dragging = false, track = document.getElementById('swipeTrack');
+    const onStart = (x,y)=>{ startX=x; startY=y; dragging=true; track.style.transition='none'; };
+    const onMove = (x,y)=>{
+      if(!dragging) return;
+      const dx = x - startX; const dy = y - startY;
+      if(Math.abs(dx) > Math.abs(dy)) track.style.transform = `translateX(${dx}px)`;
+    };
+    const onEnd = (x)=>{
+      if(!dragging) return; dragging=false;
+      const dx = x - startX;
+      track.style.transition = 'transform 0.28s cubic-bezier(.2,.8,.2,1)';
+      if(dx < -60){ track.style.transform='translateX(-100%)'; setTimeout(()=>goToDay(1), 160); }
+      else if(dx > 60){ track.style.transform='translateX(100%)'; setTimeout(()=>goToDay(-1), 160); }
+      else { track.style.transform='translateX(0)'; }
+    };
+    viewport.addEventListener('touchstart', e=>onStart(e.touches[0].clientX, e.touches[0].clientY), {passive:true});
+    viewport.addEventListener('touchmove', e=>onMove(e.touches[0].clientX, e.touches[0].clientY), {passive:true});
+    viewport.addEventListener('touchend', e=>onEnd(e.changedTouches[0].clientX));
+    viewport.addEventListener('mousedown', e=>onStart(e.clientX, e.clientY));
+    viewport.addEventListener('mousemove', e=>{ if(dragging) onMove(e.clientX, e.clientY); });
+    viewport.addEventListener('mouseup', e=>onEnd(e.clientX));
+    viewport.addEventListener('mouseleave', e=>{ if(dragging) onEnd(e.clientX); });
+  }
 }
 
 let lastFiredDate = null;
@@ -544,7 +644,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
-(async ()=>{ await loadEntries(); await render(); scheduleReminderCheck(); })();
+(async ()=>{ await loadEntries(); await loadSettings(); await render(); scheduleReminderCheck(); })();
 </script>
 </body>
 </html>
