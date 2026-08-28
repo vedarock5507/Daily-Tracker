@@ -206,8 +206,14 @@ let calMonth = new Date();
 let selectedCalDate = null;
 let currentSwipeDate = isoDate(new Date());
 let timerState = {seconds:0, remaining:0, running:false, interval:null, label:''};
+let transitioning = false;
 
-function isoDate(d){ return d.toISOString().slice(0,10); }
+function isoDate(d){
+  const y = d.getFullYear();
+  const m = (d.getMonth()+1).toString().padStart(2,'0');
+  const day = d.getDate().toString().padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function addDays(iso, n){
   const d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return isoDate(d);
 }
@@ -508,6 +514,7 @@ async function render(){
 function goToDay(delta){
   currentSwipeDate = addDays(currentSwipeDate, delta);
   render();
+  transitioning = false;
 }
 
 function attachHandlers(){
@@ -600,6 +607,7 @@ function attachHandlers(){
     let startX = 0, startY = 0, dragging = false, horizontalLock = false;
     const track = document.getElementById('swipeTrack');
     viewport.addEventListener('touchstart', (e)=>{
+      if(transitioning) return;
       const t = e.touches[0];
       startX = t.clientX; startY = t.clientY; dragging = true; horizontalLock = false;
       track.style.transition = 'none';
@@ -620,9 +628,17 @@ function attachHandlers(){
       const t = e.changedTouches[0];
       const dx = t.clientX - startX;
       track.style.transition = 'transform 0.28s cubic-bezier(.2,.8,.2,1)';
-      if(dx < -60){ track.style.transform='translateX(-100%)'; setTimeout(()=>goToDay(1), 160); }
-      else if(dx > 60){ track.style.transform='translateX(100%)'; setTimeout(()=>goToDay(-1), 160); }
-      else { track.style.transform='translateX(0)'; }
+      if(dx < -60 && !transitioning){
+        transitioning = true;
+        track.style.transform='translateX(-100%)';
+        setTimeout(()=>goToDay(1), 160);
+      } else if(dx > 60 && !transitioning){
+        transitioning = true;
+        track.style.transform='translateX(100%)';
+        setTimeout(()=>goToDay(-1), 160);
+      } else {
+        track.style.transform='translateX(0)';
+      }
     };
     viewport.addEventListener('touchend', finishSwipe);
     viewport.addEventListener('touchcancel', finishSwipe);
