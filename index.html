@@ -48,6 +48,29 @@ h1{font-family:'Space Grotesk', sans-serif;font-weight:700;font-size:1.4rem;lett
 .dot-nav{width:6px;height:6px;border-radius:50%;background:var(--line);transition:all 0.2s;}
 .dot-nav.active{background:var(--gold);width:16px;border-radius:4px;}
 
+/* mascot */
+.mascot-row{display:flex;align-items:center;gap:12px;margin:2px 0 18px;}
+.mascot-face{width:52px;height:52px;flex-shrink:0;}
+.mascot-bubble{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:0.76rem;color:var(--text);flex:1;line-height:1.35;}
+.mascot-bubble b{color:var(--gold);}
+
+/* study tab: subject chips + progress */
+.chip-row{display:flex;gap:8px;margin-bottom:16px;}
+.chip{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:9px 0;border-radius:10px;font-size:0.78rem;font-weight:600;text-align:center;cursor:pointer;font-family:inherit;}
+.chip.active{background:var(--surface-2);color:var(--gold);border-color:var(--gold);}
+.progress-track{background:var(--surface-2);border-radius:20px;height:8px;overflow:hidden;margin:6px 0 4px;}
+.progress-fill{height:100%;background:var(--gold);border-radius:20px;transition:width 0.3s ease;}
+.progress-label{font-size:0.68rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:16px;}
+.study-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:17px;margin-bottom:14px;}
+.study-phase-tag{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--gold);font-weight:700;margin-bottom:6px;}
+.study-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;margin-bottom:14px;line-height:1.3;}
+.study-title.finished{color:var(--muted);font-family:inherit;font-weight:400;font-size:0.85rem;}
+.study-actions-row{display:flex;gap:8px;margin-bottom:14px;}
+.study-done-row{display:flex;align-items:center;gap:10px;}
+.study-done-row .task-label{font-size:0.82rem;}
+.upnext{font-size:0.72rem;color:var(--muted);margin-top:4px;}
+.upnext-item{padding:5px 0;border-top:1px solid var(--line);}
+
 .section-label{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin:0 0 10px;}
 .day-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px 17px;flex-shrink:0;width:100%;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
 .day-card.today{border-color:var(--gold);}
@@ -199,8 +222,93 @@ const COLORS = {strength:'var(--strength)', cardio:'var(--cardio)', recovery:'va
 const HEIGHTS = {strength:'100%', cardio:'62%', recovery:'34%'};
 const SLEEP_TARGET = 7;
 
+/* AI curriculum — sequential, not weekday-bound. One item = one sitting.
+   Advance a pointer (settings.aiIndex) one step each time a session is marked done. */
+const AI_CURRICULUM = [
+  {phase:'Math', label:'Vectors & vector operations'},
+  {phase:'Math', label:'Matrices & matrix multiplication'},
+  {phase:'Math', label:'Linear transformations (3Blue1Brown ep 3-4)'},
+  {phase:'Math', label:'Eigenvalues & eigenvectors — intuition'},
+  {phase:'Math', label:'Derivatives & the idea of a limit'},
+  {phase:'Math', label:'Chain rule + gradients'},
+  {phase:'Math', label:'Partial derivatives — why gradients point "uphill"'},
+  {phase:'Math', label:'Distributions, expectation & variance'},
+  {phase:'Math', label:"Bayes' theorem + conditional probability"},
+  {phase:'Python', label:'Python syntax refresh (functions, loops, comprehensions)'},
+  {phase:'Python', label:'NumPy: arrays & broadcasting'},
+  {phase:'Python', label:'NumPy: matrix ops (dot, transpose, reshape)'},
+  {phase:'Python', label:'Pandas basics: loading & filtering data'},
+  {phase:'Python', label:'Matplotlib: plotting your first chart'},
+  {phase:'Classical ML', label:'Linear regression, intuition to code'},
+  {phase:'Classical ML', label:'Logistic regression & decision boundaries'},
+  {phase:'Classical ML', label:'Train/test split, overfitting vs underfitting'},
+  {phase:'Classical ML', label:'Gradient descent, step by step'},
+  {phase:'Classical ML', label:'Decision trees & k-NN, quick tour'},
+  {phase:'Classical ML', label:'Mini project: fit a regression on a toy dataset'},
+  {phase:'Neural Nets', label:'Perceptron — the simplest possible "neuron"'},
+  {phase:'Neural Nets', label:'Multi-layer networks & why depth matters'},
+  {phase:'Neural Nets', label:'Activation functions — why nonlinearity matters'},
+  {phase:'Neural Nets', label:'Backprop part 1: the chain rule applied'},
+  {phase:'Neural Nets', label:"Backprop part 2: 3Blue1Brown's backprop episode"},
+  {phase:'Neural Nets', label:'Karpathy Zero-to-Hero: build micrograd (part 1)'},
+  {phase:'Neural Nets', label:'Karpathy Zero-to-Hero: build micrograd (part 2)'},
+  {phase:'Neural Nets', label:'Rebuild backprop from memory, no notes'},
+  {phase:'Transformers', label:'Attention mechanism — the core idea'},
+  {phase:'Transformers', label:'Self-attention worked by hand on a toy example'},
+  {phase:'Transformers', label:'Multi-head attention & why multiple heads help'},
+  {phase:'Transformers', label:'Skim "Attention Is All You Need" — don\u2019t get stuck'},
+  {phase:'Transformers', label:'Tokens & tokenization: how text becomes numbers'},
+  {phase:'Transformers', label:'Embeddings: how meaning becomes vectors'},
+  {phase:'Transformers', label:'Context windows: why they\u2019re limited, and what that costs'},
+  {phase:'Transformers', label:"Karpathy \u201cLet's Build GPT\u201d: part 1 (setup + data)"},
+  {phase:'Transformers', label:"Karpathy \u201cLet's Build GPT\u201d: part 2 (attention in code)"},
+  {phase:'Transformers', label:'Fine-tuning vs prompting vs RAG — when to use which'},
+  {phase:'Practical', label:'API keys, billing & rate limits, properly explained'},
+  {phase:'Practical', label:'Inference vs training — why inference is what you pay for'},
+  {phase:'Practical', label:'Agents & tool use: how Claude calls your Twilio functions'},
+  {phase:'Practical', label:'Tie it together: map every phase onto your own bot'},
+];
+
+/* Quantum/Math curriculum — physics-first, day-sized chunks.
+   Starts right after Class 11 Math Ch.1 (Sets), which is already done. */
+const QUANTUM_CURRICULUM = [
+  {phase:'Math', label:'Relations & functions — types, domain/range'},
+  {phase:'Math', label:'Trigonometric functions — the unit circle & identities'},
+  {phase:'Math', label:'Trig — graphs of sin/cos/tan (this matters again for waves)'},
+  {phase:'Physics', label:'Units & measurement — dimensional analysis'},
+  {phase:'Physics', label:'Motion in a straight line — position, velocity, acceleration'},
+  {phase:'Physics', label:'Motion in a straight line — v-t & x-t graphs + problems'},
+  {phase:'Physics', label:'Motion in a plane — vectors & projectile motion'},
+  {phase:'Math', label:'Straight lines — slope & equations (supports physics graphs)'},
+  {phase:'Math', label:'Khan Academy — limits, intuition'},
+  {phase:'Math', label:'Khan Academy — derivatives, rules & practice'},
+  {phase:'Math', label:'NCERT Limits and Derivatives — bridging to physics use'},
+  {phase:'Physics', label:"Laws of motion — Newton's three laws, free body diagrams"},
+  {phase:'Physics', label:'Laws of motion — friction & problems'},
+  {phase:'Physics', label:'Work, energy, power — the work-energy theorem'},
+  {phase:'Physics', label:'Work, energy, power — conservation of energy, problems'},
+  {phase:'Physics', label:'System of particles & rotational motion — center of mass'},
+  {phase:'Physics', label:'Rotational motion — torque, moment of inertia'},
+  {phase:'Physics', label:"Gravitation — Newton's law, orbital motion"},
+  {phase:'HC Verma', label:'Problem set 1 — kinematics + laws of motion'},
+  {phase:'HC Verma', label:'Problem set 2 — work-energy + rotation'},
+  {phase:'Math', label:'Complex numbers — why they exist, i, basic operations'},
+  {phase:'Math', label:'Complex numbers — polar form (comes back hard in QM wavefunctions)'},
+  {phase:'Physics', label:'Oscillations — simple harmonic motion'},
+  {phase:'Physics', label:'Oscillations — energy in SHM, damping (intuition first)'},
+  {phase:'Physics', label:'Waves — wave equation, superposition'},
+  {phase:'Physics', label:'Waves — standing waves, resonance (last stop before QM)'},
+  {phase:'Math', label:'Khan Academy — integrals, intuition'},
+  {phase:'Math', label:'Sequences & series basics'},
+  {phase:'Math', label:"NCERT probability & statistics — you'll need this again for QM"},
+  {phase:'HC Verma', label:'Problem set 3 — waves & oscillations'},
+  {phase:'Checkpoint', label:'Explain SHM, waves, and derivatives out loud, no notes'},
+  {phase:'Griffiths', label:'Read the preface + chapter 1 intro, just to see what\u2019s coming'},
+];
+
 let entries = {};
-let settings = { proteinTarget: 80 };
+let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0 };
+let studySubject = 'ai';
 let activeTab = 'today';
 let calMonth = new Date();
 let selectedCalDate = null;
@@ -253,7 +361,8 @@ async function loadEntries(){
 async function saveEntries(){ await storageSet('tracker:entries', JSON.stringify(entries)); }
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
-  settings = raw ? JSON.parse(raw) : { proteinTarget: 80 };
+  const defaults = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0 };
+  settings = raw ? Object.assign({}, defaults, JSON.parse(raw)) : defaults;
 }
 async function saveSettings(){ await storageSet('tracker:settings', JSON.stringify(settings)); }
 async function loadReminder(){
@@ -389,6 +498,133 @@ function renderDayCard(iso, isToday){
     </div>`;
 }
 
+function buildClaudeSummary(){
+  const todayIso = isoDate(new Date());
+  const e = entries[todayIso] || {};
+  const streak = computeStreak(todayIso);
+  const workoutOk = dayComplete(todayIso);
+  const dow = weekdayIndex(todayIso);
+  const taskList = TASKS[dow];
+  const tasksDone = taskList.filter(t => e.tasks && e.tasks[t.id]).length;
+
+  const ai = currentSubjectData('ai');
+  const aiIdx = settings.aiIndex || 0;
+  const aiDoneToday = !!(e.study && e.study.ai);
+  const aiCurrent = aiIdx < ai.curriculum.length ? ai.curriculum[aiIdx].label : 'curriculum complete';
+
+  const qm = currentSubjectData('quantum');
+  const qmIdx = settings.quantumIndex || 0;
+  const qmDoneToday = !!(e.study && e.study.quantum);
+  const qmCurrent = qmIdx < qm.curriculum.length ? qm.curriculum[qmIdx].label : 'curriculum complete';
+
+  return [
+    `Daily Rhythm check-in \u2014 ${todayIso}`,
+    ``,
+    `Workout streak: ${streak} day${streak===1?'':'s'}`,
+    `Today's workout: ${tasksDone}/${taskList.length} tasks done, sleep ${e.sleep||0}h, protein ${e.protein||0}g${workoutOk?' \u2014 day complete':''}`,
+    ``,
+    `AI: session ${aiIdx} of ${ai.curriculum.length} (${Math.round((aiIdx/ai.curriculum.length)*100)}%)`,
+    `  Current: ${aiCurrent}${aiDoneToday?' \u2014 marked done today':' \u2014 not done today'}`,
+    ``,
+    `Quantum: session ${qmIdx} of ${qm.curriculum.length} (${Math.round((qmIdx/qm.curriculum.length)*100)}%)`,
+    `  Current: ${qmCurrent}${qmDoneToday?' \u2014 marked done today':' \u2014 not done today'}`,
+  ].join('\n');
+}
+
+function studyWebSearch(label){
+  const q = encodeURIComponent(label.replace(/\(.*?\)/g,'') + ' explained');
+  window.open('https://www.google.com/search?q='+q, '_blank');
+}
+function studyVideoExplain(label){
+  const q = encodeURIComponent(label.replace(/\(.*?\)/g,'') + ' explained');
+  window.open('https://www.youtube.com/results?search_query='+q, '_blank');
+}
+
+function mascotSVG(state){
+  const faceColor = state==='complete' ? 'var(--gold)' : state==='progress' ? 'var(--cardio)' : 'var(--surface-2)';
+  let mouth;
+  if(state==='complete') mouth = '<path d="M16 32 Q26 40 36 32" stroke="var(--bg)" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  else if(state==='progress') mouth = '<line x1="17" y1="33" x2="35" y2="33" stroke="var(--bg)" stroke-width="3" stroke-linecap="round"/>';
+  else mouth = '<path d="M16 35 Q26 29 36 35" stroke="var(--bg)" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  return `<svg class="mascot-face" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="26" cy="26" r="24" fill="${faceColor}"/>
+    <circle cx="18" cy="22" r="3" fill="var(--bg)"/>
+    <circle cx="34" cy="22" r="3" fill="var(--bg)"/>
+    ${mouth}
+  </svg>`;
+}
+
+function renderMascot(todayIso){
+  const workoutOk = dayComplete(todayIso);
+  const e = entries[todayIso] || {};
+  const aiOk = !!(e.study && e.study.ai);
+  const quantumOk = !!(e.study && e.study.quantum);
+  const count = [workoutOk, aiOk, quantumOk].filter(Boolean).length;
+  const state = count===3 ? 'complete' : count>0 ? 'progress' : 'neutral';
+  let msg;
+  if(state==='complete') msg = '<b>All three landed today.</b> Workout, AI, Quantum \u2014 done.';
+  else if(count===2) msg = "<b>2 of 3 today.</b> One more and today's fully in.";
+  else if(count===1) msg = "<b>1 of 3 today.</b> Keep the other two moving.";
+  else msg = "<b>Nothing logged yet today.</b> Workout, AI, Quantum \u2014 pick one and start.";
+  return `<div class="mascot-row">${mascotSVG(state)}<div class="mascot-bubble">${msg}</div></div>`;
+}
+
+function currentSubjectData(subject){
+  return subject==='ai'
+    ? {curriculum:AI_CURRICULUM, indexKey:'aiIndex', name:'AI'}
+    : {curriculum:QUANTUM_CURRICULUM, indexKey:'quantumIndex', name:'Quantum'};
+}
+
+function renderStudy(){
+  const todayIso = isoDate(new Date());
+  const chipsHtml = `<div class="chip-row">
+    <div class="chip ${studySubject==='ai'?'active':''}" data-action="studytab" data-subject="ai">AI</div>
+    <div class="chip ${studySubject==='quantum'?'active':''}" data-action="studytab" data-subject="quantum">Quantum</div>
+  </div>`;
+
+  const {curriculum, indexKey, name} = currentSubjectData(studySubject);
+  const idx = settings[indexKey] || 0;
+  const total = curriculum.length;
+  const pct = total ? Math.min(100, Math.round((idx/total)*100)) : 0;
+  const e = entries[todayIso] || {};
+  const doneToday = !!(e.study && e.study[studySubject]);
+
+  const progressHtml = `
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+    <div class="progress-label"><span>${idx} of ${total} sessions</span><span>${pct}%</span></div>`;
+
+  let cardHtml;
+  if(idx >= total){
+    cardHtml = `<div class="study-card">
+      <div class="study-phase-tag">${name} \u2014 curriculum complete</div>
+      <div class="study-title finished">You've cleared everything queued up here. Tell me in chat and I'll extend the list.</div>
+    </div>`;
+  } else {
+    const item = curriculum[idx];
+    const safeLabel = item.label.replace(/"/g,'&quot;');
+    cardHtml = `<div class="study-card">
+      <div class="study-phase-tag">${item.phase}</div>
+      <div class="study-title">${item.label}</div>
+      <div class="study-actions-row">
+        <button class="icon-btn" data-action="studysearch" data-label="${safeLabel}" title="Web search">\u{1F50D}</button>
+        <button class="icon-btn" data-action="studyvideo" data-label="${safeLabel}" title="Video explainer">\u25B6</button>
+      </div>
+      <div class="study-done-row">
+        <div class="checkbox ${doneToday?'checked':''}" data-action="studydone" data-subject="${studySubject}"></div>
+        <div class="task-label ${doneToday?'done':''}" data-action="studydone" data-subject="${studySubject}">Mark today's session done</div>
+      </div>
+    </div>`;
+  }
+
+  let upcoming = '';
+  const upcomingItems = curriculum.slice(idx+1, idx+4);
+  if(upcomingItems.length){
+    upcoming = '<div class="upnext">Up next</div>' + upcomingItems.map(u=>`<div class="upnext-item">${u.label}</div>`).join('');
+  }
+
+  return `${chipsHtml}${progressHtml}${cardHtml}${upcoming}`;
+}
+
 function renderToday(){
   const {dates, todayIso} = getWeekDates();
   const streak = computeStreak(todayIso);
@@ -489,22 +725,42 @@ async function renderReminders(){
       </div>
       <button class="btn-primary" id="saveProteinTarget">Save target</button>
       <p class="note">A day only counts toward your streak if protein logged meets this number, and sleep is 7h or more.</p>
+    </div>
+    <div class="reminder-card">
+      <div class="section-label" style="margin-bottom:10px;">Sync with Claude</div>
+      <p class="note" style="margin-top:0;">This app can't talk to Claude live \u2014 it's a static site with no backend. Instead, this builds a clean summary of where things stand. Copy it and paste it into a Claude chat for a real check-in.</p>
+      <button class="btn-primary" id="copySummary" style="margin-top:6px;">Copy today's summary</button>
+      <p class="note" id="copyStatus"></p>
+    </div>
+    <div class="reminder-card">
+      <div class="section-label" style="margin-bottom:10px;">Reset study progress</div>
+      <p class="note" style="margin-top:0;">Only use this if the AI or Quantum pointer got out of sync \u2014 it doesn't touch your workout streak or history.</p>
+      <div class="reminder-row" style="margin-top:10px;">
+        <button class="btn-secondary" id="resetAiProgress">Reset AI progress</button>
+        <button class="btn-secondary" id="resetQuantumProgress">Reset Quantum progress</button>
+      </div>
     </div>`;
 }
 
 async function render(){
+  const todayIso = isoDate(new Date());
+  const mascotHtml = renderMascot(todayIso);
   const todayHtml = renderToday();
+  const studyHtml = renderStudy();
   const calHtml = renderCalendar();
   const remHtml = await renderReminders();
   document.getElementById('app').innerHTML = `
     <h1>Daily Rhythm</h1>
     <p class="sub">No skipped days \u2014 the effort just changes shape.</p>
+    ${mascotHtml}
     <div class="tabs">
       <button class="tab-btn ${activeTab==='today'?'active':''}" data-tab="today">Today</button>
+      <button class="tab-btn ${activeTab==='study'?'active':''}" data-tab="study">Study</button>
       <button class="tab-btn ${activeTab==='calendar'?'active':''}" data-tab="calendar">Calendar</button>
       <button class="tab-btn ${activeTab==='reminders'?'active':''}" data-tab="reminders">Reminders</button>
     </div>
     <div class="tabpane ${activeTab==='today'?'active':''}" id="pane-today">${todayHtml}</div>
+    <div class="tabpane ${activeTab==='study'?'active':''}" id="pane-study">${studyHtml}</div>
     <div class="tabpane ${activeTab==='calendar'?'active':''}" id="pane-calendar">${calHtml}</div>
     <div class="tabpane ${activeTab==='reminders'?'active':''}" id="pane-reminders">${remHtml}</div>
   `;
@@ -547,6 +803,37 @@ function attachHandlers(){
       entries[date].protein = parseFloat(el.value) || 0;
       await saveEntries(); render();
     });
+  });
+
+  document.querySelectorAll('[data-action="studytab"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studySubject = el.dataset.subject; render(); });
+  });
+
+  document.querySelectorAll('[data-action="studydone"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subject = el.dataset.subject;
+      const todayIso = isoDate(new Date());
+      if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
+      if(!entries[todayIso].study) entries[todayIso].study = {};
+      const indexKey = subject==='ai' ? 'aiIndex' : 'quantumIndex';
+      const wasDone = !!entries[todayIso].study[subject];
+      if(!wasDone){
+        entries[todayIso].study[subject] = true;
+        settings[indexKey] = (settings[indexKey] || 0) + 1;
+      } else {
+        // undo is only allowed same-day, since the pointer only just advanced
+        entries[todayIso].study[subject] = false;
+        settings[indexKey] = Math.max(0, (settings[indexKey] || 0) - 1);
+      }
+      await saveEntries(); await saveSettings(); render();
+    });
+  });
+
+  document.querySelectorAll('[data-action="studysearch"]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); studyWebSearch(el.dataset.label); });
+  });
+  document.querySelectorAll('[data-action="studyvideo"]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); studyVideoExplain(el.dataset.label); });
   });
 
   document.querySelectorAll('[data-action="timer"]').forEach(el=>{
@@ -592,6 +879,30 @@ function attachHandlers(){
     settings.proteinTarget = val;
     await saveSettings();
     render();
+  });
+
+  const copyBtn = document.getElementById('copySummary');
+  if(copyBtn) copyBtn.addEventListener('click', async ()=>{
+    const text = buildClaudeSummary();
+    const statusEl = document.getElementById('copyStatus');
+    try{
+      await navigator.clipboard.writeText(text);
+      if(statusEl) statusEl.textContent = 'Copied \u2014 paste it into a Claude chat.';
+    }catch(e){
+      if(statusEl) statusEl.textContent = 'Couldn\u2019t auto-copy \u2014 select and copy the text below.';
+      alert(text);
+    }
+  });
+
+  const resetAiBtn = document.getElementById('resetAiProgress');
+  if(resetAiBtn) resetAiBtn.addEventListener('click', async ()=>{
+    if(!confirm('Reset AI curriculum progress back to session 1?')) return;
+    settings.aiIndex = 0; await saveSettings(); render();
+  });
+  const resetQuantumBtn = document.getElementById('resetQuantumProgress');
+  if(resetQuantumBtn) resetQuantumBtn.addEventListener('click', async ()=>{
+    if(!confirm('Reset Quantum curriculum progress back to session 1?')) return;
+    settings.quantumIndex = 0; await saveSettings(); render();
   });
 
   document.getElementById('timerStart').onclick = toggleTimerStart;

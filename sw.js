@@ -1,4 +1,4 @@
-const CACHE = 'daily-rhythm-v4';
+const CACHE = 'daily-rhythm-v5';
 const CORE_ASSETS = ['./index.html','./manifest.json','./icon.svg'];
 
 self.addEventListener('install', e => {
