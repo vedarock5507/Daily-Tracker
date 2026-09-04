@@ -66,6 +66,10 @@ h1{font-family:'Space Grotesk', sans-serif;font-weight:700;font-size:1.4rem;lett
 .study-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;margin-bottom:14px;line-height:1.3;}
 .study-title.finished{color:var(--muted);font-family:inherit;font-weight:400;font-size:0.85rem;}
 .study-actions-row{display:flex;gap:8px;margin-bottom:14px;}
+.notes-wrap{margin-top:16px;padding-top:14px;border-top:1px solid var(--line);}
+.notes-label{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:8px;}
+.notes-textarea{width:100%;min-height:90px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--text);font-family:'IBM Plex Sans';font-size:0.82rem;line-height:1.5;resize:vertical;outline:none;}
+.notes-textarea:focus{border-color:var(--gold);}
 .study-done-row{display:flex;align-items:center;gap:10px;}
 .study-done-row .task-label{font-size:0.82rem;}
 .upnext{font-size:0.72rem;color:var(--muted);margin-top:4px;}
@@ -272,17 +276,16 @@ const AI_CURRICULUM = [
 /* Quantum/Math curriculum — physics-first, day-sized chunks.
    Starts right after Class 11 Math Ch.1 (Sets), which is already done. */
 const QUANTUM_CURRICULUM = [
-  {phase:'Math', label:'Relations & functions — types, domain/range'},
-  {phase:'Math', label:'Trigonometric functions — the unit circle & identities'},
-  {phase:'Math', label:'Trig — graphs of sin/cos/tan (this matters again for waves)'},
+  {phase:'Math', label:'Relations & functions — types, domain/range', source:'physicswallah class 11'},
+  {phase:'Math', label:'Trigonometric functions — the unit circle & identities', source:'physicswallah class 11'},
+  {phase:'Math', label:'Trig — graphs of sin/cos/tan (this matters again for waves)', source:'physicswallah class 11'},
   {phase:'Physics', label:'Units & measurement — dimensional analysis'},
   {phase:'Physics', label:'Motion in a straight line — position, velocity, acceleration'},
   {phase:'Physics', label:'Motion in a straight line — v-t & x-t graphs + problems'},
   {phase:'Physics', label:'Motion in a plane — vectors & projectile motion'},
-  {phase:'Math', label:'Straight lines — slope & equations (supports physics graphs)'},
-  {phase:'Math', label:'Khan Academy — limits, intuition'},
-  {phase:'Math', label:'Khan Academy — derivatives, rules & practice'},
-  {phase:'Math', label:'NCERT Limits and Derivatives — bridging to physics use'},
+  {phase:'Math', label:'Straight lines — slope & equations (supports physics graphs)', source:'physicswallah class 11'},
+  {phase:'Math', label:'Limits — intuition & NCERT problems', source:'physicswallah class 11'},
+  {phase:'Math', label:'Derivatives — rules & practice', source:'physicswallah class 11'},
   {phase:'Physics', label:"Laws of motion — Newton's three laws, free body diagrams"},
   {phase:'Physics', label:'Laws of motion — friction & problems'},
   {phase:'Physics', label:'Work, energy, power — the work-energy theorem'},
@@ -292,15 +295,15 @@ const QUANTUM_CURRICULUM = [
   {phase:'Physics', label:"Gravitation — Newton's law, orbital motion"},
   {phase:'HC Verma', label:'Problem set 1 — kinematics + laws of motion'},
   {phase:'HC Verma', label:'Problem set 2 — work-energy + rotation'},
-  {phase:'Math', label:'Complex numbers — why they exist, i, basic operations'},
-  {phase:'Math', label:'Complex numbers — polar form (comes back hard in QM wavefunctions)'},
+  {phase:'Math', label:'Complex numbers — why they exist, i, basic operations', source:'physicswallah class 11'},
+  {phase:'Math', label:'Complex numbers — polar form (comes back hard in QM wavefunctions)', source:'physicswallah class 11'},
   {phase:'Physics', label:'Oscillations — simple harmonic motion'},
   {phase:'Physics', label:'Oscillations — energy in SHM, damping (intuition first)'},
   {phase:'Physics', label:'Waves — wave equation, superposition'},
   {phase:'Physics', label:'Waves — standing waves, resonance (last stop before QM)'},
-  {phase:'Math', label:'Khan Academy — integrals, intuition'},
-  {phase:'Math', label:'Sequences & series basics'},
-  {phase:'Math', label:"NCERT probability & statistics — you'll need this again for QM"},
+  {phase:'Math', label:'Integrals — intuition', source:'physicswallah class 12'},
+  {phase:'Math', label:'Sequences & series basics', source:'physicswallah class 11'},
+  {phase:'Math', label:"Probability & statistics — you'll need this again for QM", source:'physicswallah class 11'},
   {phase:'HC Verma', label:'Problem set 3 — waves & oscillations'},
   {phase:'Checkpoint', label:'Explain SHM, waves, and derivatives out loud, no notes'},
   {phase:'Griffiths', label:'Read the preface + chapter 1 intro, just to see what\u2019s coming'},
@@ -308,6 +311,7 @@ const QUANTUM_CURRICULUM = [
 
 let entries = {};
 let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0 };
+let studyNotes = {};
 let studySubject = 'ai';
 let activeTab = 'today';
 let calMonth = new Date();
@@ -365,6 +369,15 @@ async function loadSettings(){
   settings = raw ? Object.assign({}, defaults, JSON.parse(raw)) : defaults;
 }
 async function saveSettings(){ await storageSet('tracker:settings', JSON.stringify(settings)); }
+async function loadStudyNotes(){
+  const raw = await storageGet('tracker:studynotes');
+  studyNotes = raw ? JSON.parse(raw) : {};
+}
+let notesSaveTimer = null;
+function saveStudyNotesDebounced(){
+  clearTimeout(notesSaveTimer);
+  notesSaveTimer = setTimeout(()=>{ storageSet('tracker:studynotes', JSON.stringify(studyNotes)); }, 700);
+}
 async function loadReminder(){
   const raw = await storageGet('tracker:reminder');
   return raw ? JSON.parse(raw) : null;
@@ -535,8 +548,8 @@ function studyWebSearch(label){
   const q = encodeURIComponent(label.replace(/\(.*?\)/g,'') + ' explained');
   window.open('https://www.google.com/search?q='+q, '_blank');
 }
-function studyVideoExplain(label){
-  const q = encodeURIComponent(label.replace(/\(.*?\)/g,'') + ' explained');
+function studyVideoExplain(label, source){
+  const q = encodeURIComponent(label.replace(/\(.*?\)/g,'') + ' ' + (source || 'explained'));
   window.open('https://www.youtube.com/results?search_query='+q, '_blank');
 }
 
@@ -602,16 +615,22 @@ function renderStudy(){
   } else {
     const item = curriculum[idx];
     const safeLabel = item.label.replace(/"/g,'&quot;');
+    const noteKey = `${studySubject}-${idx}`;
+    const noteVal = (studyNotes[noteKey] || '').replace(/</g,'&lt;');
     cardHtml = `<div class="study-card">
       <div class="study-phase-tag">${item.phase}</div>
       <div class="study-title">${item.label}</div>
       <div class="study-actions-row">
         <button class="icon-btn" data-action="studysearch" data-label="${safeLabel}" title="Web search">\u{1F50D}</button>
-        <button class="icon-btn" data-action="studyvideo" data-label="${safeLabel}" title="Video explainer">\u25B6</button>
+        <button class="icon-btn" data-action="studyvideo" data-label="${safeLabel}" data-source="${item.source||''}" title="Video explainer">\u25B6</button>
       </div>
       <div class="study-done-row">
         <div class="checkbox ${doneToday?'checked':''}" data-action="studydone" data-subject="${studySubject}"></div>
         <div class="task-label ${doneToday?'done':''}" data-action="studydone" data-subject="${studySubject}">Mark today's session done</div>
+      </div>
+      <div class="notes-wrap">
+        <div class="notes-label">Notes</div>
+        <textarea class="notes-textarea" data-action="studynote" data-key="${noteKey}" placeholder="Jot notes while you study...">${noteVal}</textarea>
       </div>
     </div>`;
   }
@@ -833,7 +852,15 @@ function attachHandlers(){
     el.addEventListener('click', (ev)=>{ ev.stopPropagation(); studyWebSearch(el.dataset.label); });
   });
   document.querySelectorAll('[data-action="studyvideo"]').forEach(el=>{
-    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); studyVideoExplain(el.dataset.label); });
+    el.addEventListener('click', (ev)=>{ ev.stopPropagation(); studyVideoExplain(el.dataset.label, el.dataset.source); });
+  });
+  document.querySelectorAll('[data-action="studynote"]').forEach(el=>{
+    // deliberately does NOT call render() on input — a full re-render would blow away
+    // cursor position / focus while typing. Just update memory + debounce-save.
+    el.addEventListener('input', ()=>{
+      studyNotes[el.dataset.key] = el.value;
+      saveStudyNotesDebounced();
+    });
   });
 
   document.querySelectorAll('[data-action="timer"]').forEach(el=>{
@@ -979,7 +1006,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
-(async ()=>{ await loadEntries(); await loadSettings(); await render(); scheduleReminderCheck(); })();
+(async ()=>{ await loadEntries(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
 </script>
 </body>
 </html>
