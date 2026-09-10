@@ -115,6 +115,14 @@ body{padding-bottom:78px;}
 .wellness-field input{background:none;border:none;color:var(--text);font-family:'Space Grotesk';font-size:1.15rem;font-weight:700;width:100%;outline:none;}
 .wellness-field .unit{font-size:0.68rem;color:var(--muted);}
 .wellness-field.hit{outline:1px solid var(--gold);}
+.water-controls{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.water-controls .icon-btn{width:26px;height:26px;font-size:0.95rem;flex-shrink:0;}
+.water-value{font-family:'Space Grotesk';font-size:1.05rem;font-weight:700;text-align:center;flex:1;}
+.water-sub{font-size:0.6rem;color:var(--muted);text-align:center;margin-top:2px;}
+
+.noworkout-row{display:flex;align-items:center;gap:9px;margin:2px 0 12px;cursor:pointer;}
+.noworkout-row .task-label{font-size:0.78rem;color:var(--muted);}
+.noworkout-note{font-size:0.78rem;color:var(--muted);padding:10px 2px;font-style:italic;}
 
 /* calendar */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
@@ -332,7 +340,7 @@ const QUANTUM_CURRICULUM = [
 ];
 
 let entries = {};
-let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0 };
+let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
 let studyNotes = {};
 let studySubject = 'ai';
 let activeTab = 'home';
@@ -388,7 +396,7 @@ async function loadEntries(){
 async function saveEntries(){ await storageSet('tracker:entries', JSON.stringify(entries)); }
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
-  const defaults = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0 };
+  const defaults = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
   settings = raw ? Object.assign({}, defaults, JSON.parse(raw)) : defaults;
 }
 async function saveSettings(){ await storageSet('tracker:settings', JSON.stringify(settings)); }
@@ -410,7 +418,7 @@ async function saveReminder(data){ await storageSet('tracker:reminder', JSON.str
 function dayComplete(iso){
   const e = entries[iso]; if(!e) return false;
   const taskList = TASKS[weekdayIndex(iso)];
-  const allTasksDone = taskList.every(t => e.tasks && e.tasks[t.id]);
+  const allTasksDone = e.noWorkout || taskList.every(t => e.tasks && e.tasks[t.id]);
   const sleepOk = (e.sleep || 0) >= SLEEP_TARGET;
   const proteinOk = (e.protein || 0) >= settings.proteinTarget;
   return allTasksDone && sleepOk && proteinOk;
@@ -487,25 +495,42 @@ function renderDayCard(iso, isToday){
   const meta = DAY_META[dow];
   const e = entries[iso] || {tasks:{}};
   const taskList = TASKS[dow];
+  const noWorkout = !!e.noWorkout;
+
   let tasksHtml = '';
-  taskList.forEach(t=>{
-    const done = !!(e.tasks && e.tasks[t.id]);
-    tasksHtml += `
-      <div class="task-row">
-        <div class="checkbox ${done?'checked':''}" data-action="task" data-date="${iso}" data-taskid="${t.id}"></div>
-        <div class="task-label ${done?'done':''}" data-action="task" data-date="${iso}" data-taskid="${t.id}">
-          ${t.label}<span class="set-info">${t.sets}</span>
-        </div>
-        <div class="task-actions">
-          <button class="icon-btn" data-action="timer" data-label="${t.label.replace(/"/g,'&quot;')}" data-seconds="${t.seconds}" title="Timer">\u23F1</button>
-          <button class="icon-btn" data-action="youtube" data-label="${t.label.replace(/"/g,'&quot;')}" title="YouTube">\u25B6</button>
-        </div>
-      </div>`;
-  });
+  if(noWorkout){
+    tasksHtml = `<div class="noworkout-note">Marked as no workout today \u2014 sleep, protein, and water below still count.</div>`;
+  } else {
+    taskList.forEach(t=>{
+      const done = !!(e.tasks && e.tasks[t.id]);
+      tasksHtml += `
+        <div class="task-row">
+          <div class="checkbox ${done?'checked':''}" data-action="task" data-date="${iso}" data-taskid="${t.id}"></div>
+          <div class="task-label ${done?'done':''}" data-action="task" data-date="${iso}" data-taskid="${t.id}">
+            ${t.label}<span class="set-info">${t.sets}</span>
+          </div>
+          <div class="task-actions">
+            <button class="icon-btn" data-action="timer" data-label="${t.label.replace(/"/g,'&quot;')}" data-seconds="${t.seconds}" title="Timer">\u23F1</button>
+            <button class="icon-btn" data-action="youtube" data-label="${t.label.replace(/"/g,'&quot;')}" title="YouTube">\u25B6</button>
+          </div>
+        </div>`;
+    });
+  }
+
+  const noWorkoutRow = `
+    <div class="noworkout-row" data-action="noworkout" data-date="${iso}">
+      <div class="checkbox ${noWorkout?'checked':''}"></div>
+      <div class="task-label">No workout today (just log food / sleep / water)</div>
+    </div>`;
+
   const sleepVal = e.sleep || '';
   const proteinVal = e.protein || '';
+  const waterVal = e.water || 0;
   const sleepHit = (e.sleep||0) >= SLEEP_TARGET;
   const proteinHit = (e.protein||0) >= settings.proteinTarget;
+  const waterHit = waterVal >= settings.waterTargetBottles;
+  const waterLiters = (waterVal * settings.waterBottleLiters).toFixed(1);
+
   const wellnessHtml = `
     <div class="wellness">
       <div class="wellness-field ${sleepHit?'hit':''}">
@@ -522,6 +547,15 @@ function renderDayCard(iso, isToday){
           <span class="unit">g</span>
         </div>
       </div>
+      <div class="wellness-field ${waterHit?'hit':''}">
+        <label>Water (target ${settings.waterTargetBottles})</label>
+        <div class="water-controls">
+          <button class="icon-btn" data-action="water-minus" data-date="${iso}">\u2212</button>
+          <span class="water-value">${waterVal}</span>
+          <button class="icon-btn" data-action="water-plus" data-date="${iso}">+</button>
+        </div>
+        <div class="water-sub">${waterLiters}L \u00b7 bottle = ${settings.waterBottleLiters}L</div>
+      </div>
     </div>`;
   return `
     <div class="day-card ${isToday?'today':''}">
@@ -529,6 +563,7 @@ function renderDayCard(iso, isToday){
         <span class="day-name">${meta.name}${isToday?' \u2014 today':''}</span>
         <span class="type-tag" style="background:${COLORS[meta.tag]}22;color:${COLORS[meta.tag]};">${meta.type}</span>
       </div>
+      ${noWorkoutRow}
       ${tasksHtml}
       ${wellnessHtml}
     </div>`;
@@ -557,7 +592,7 @@ function buildClaudeSummary(){
     `Daily Rhythm check-in \u2014 ${todayIso}`,
     ``,
     `Workout streak: ${streak} day${streak===1?'':'s'}`,
-    `Today's workout: ${tasksDone}/${taskList.length} tasks done, sleep ${e.sleep||0}h, protein ${e.protein||0}g${workoutOk?' \u2014 day complete':''}`,
+    `Today's workout: ${e.noWorkout ? 'marked as no-workout day' : tasksDone+'/'+taskList.length+' tasks done'}, sleep ${e.sleep||0}h, protein ${e.protein||0}g, water ${e.water||0}/${settings.waterTargetBottles} bottles${workoutOk?' \u2014 day complete':''}`,
     ``,
     `AI: session ${aiIdx} of ${ai.curriculum.length} (${Math.round((aiIdx/ai.curriculum.length)*100)}%)`,
     `  Current: ${aiCurrent}${aiDoneToday?' \u2014 marked done today':' \u2014 not done today'}`,
@@ -784,6 +819,19 @@ async function renderReminders(){
       <p class="note">A day only counts toward your streak if protein logged meets this number, and sleep is 7h or more.</p>
     </div>
     <div class="reminder-card">
+      <div class="section-label" style="margin-bottom:14px;">Water tracking</div>
+      <div class="reminder-row">
+        <label for="waterBottleLiters">Bottle size (litres)</label>
+        <input type="number" id="waterBottleLiters" min="0.1" max="5" step="0.1" value="${settings.waterBottleLiters}">
+      </div>
+      <div class="reminder-row">
+        <label for="waterTargetBottles">Daily target (bottles)</label>
+        <input type="number" id="waterTargetBottles" min="0.5" max="20" step="0.5" value="${settings.waterTargetBottles}">
+      </div>
+      <button class="btn-primary" id="saveWaterSettings">Save water settings</button>
+      <p class="note">Water isn't required for the streak right now \u2014 it's tracked separately. Say the word if you want it factored into the streak too.</p>
+    </div>
+    <div class="reminder-card">
       <div class="section-label" style="margin-bottom:10px;">Sync with Claude</div>
       <p class="note" style="margin-top:0;">This app can't talk to Claude live \u2014 it's a static site with no backend. Instead, this builds a clean summary of where things stand. Copy it and paste it into a Claude chat for a real check-in.</p>
       <button class="btn-primary" id="copySummary" style="margin-top:6px;">Copy today's summary</button>
@@ -987,6 +1035,44 @@ function attachHandlers(){
     settings.proteinTarget = val;
     await saveSettings();
     render();
+  });
+
+  const saveWaterBtn = document.getElementById('saveWaterSettings');
+  if(saveWaterBtn) saveWaterBtn.addEventListener('click', async ()=>{
+    const bottleLiters = parseFloat(document.getElementById('waterBottleLiters').value) || 2;
+    const targetBottles = parseFloat(document.getElementById('waterTargetBottles').value) || 2.5;
+    settings.waterBottleLiters = bottleLiters;
+    settings.waterTargetBottles = targetBottles;
+    await saveSettings();
+    render();
+  });
+
+  document.querySelectorAll('[data-action="water-plus"]').forEach(el=>{
+    el.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      const date = el.dataset.date;
+      if(!entries[date]) entries[date] = {tasks:{}};
+      entries[date].water = Math.round(((entries[date].water || 0) + 0.5) * 2) / 2;
+      await saveEntries(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="water-minus"]').forEach(el=>{
+    el.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
+      const date = el.dataset.date;
+      if(!entries[date]) entries[date] = {tasks:{}};
+      entries[date].water = Math.max(0, Math.round(((entries[date].water || 0) - 0.5) * 2) / 2);
+      await saveEntries(); render();
+    });
+  });
+
+  document.querySelectorAll('[data-action="noworkout"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const date = el.dataset.date;
+      if(!entries[date]) entries[date] = {tasks:{}};
+      entries[date].noWorkout = !entries[date].noWorkout;
+      await saveEntries(); render();
+    });
   });
 
   const copyBtn = document.getElementById('copySummary');
