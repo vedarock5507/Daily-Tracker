@@ -136,6 +136,8 @@ body{padding-bottom:78px;}
 
 /* calendar */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.cal-detail-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.cal-detail-date{font-family:'Space Grotesk';font-size:1.05rem;font-weight:700;}
 .cal-header button{background:var(--surface);border:1px solid var(--line);color:var(--text);width:32px;height:32px;border-radius:9px;cursor:pointer;font-size:0.9rem;}
 .cal-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;}
@@ -820,12 +822,50 @@ function renderToday(){
     <button class="reset" id="resetBtn">Reset this week</button>`;
 }
 
+function renderDayDetail(iso){
+  const todayIso = isoDate(new Date());
+  const e = entries[iso] || {};
+  const dateObj = new Date(iso+'T00:00:00');
+  const dateLabel = dateObj.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'});
+
+  const workoutCard = renderDayCard(iso, iso===todayIso); // reuses the same card, so past-day locking applies automatically
+
+  const aiDone = !!(e.study && e.study.ai);
+  const qmDone = !!(e.study && e.study.quantum);
+  const aiExtra = (e.studyExtra && e.studyExtra.ai) || 0;
+  const qmExtra = (e.studyExtra && e.studyExtra.quantum) || 0;
+  const extraStudy = e.extraStudy || [];
+
+  let extraStudyRows = extraStudy.length
+    ? extraStudy.map(x=>`<div class="task-row"><div class="checkbox ${x.done?'checked':''}"></div><div class="task-label ${x.done?'done':''}">${x.label}</div></div>`).join('')
+    : '<p class="note" style="margin:6px 0 0;">No extra items logged this day.</p>';
+
+  const studyCard = `
+    <div class="day-card">
+      <div class="day-head"><span class="day-name">Study</span></div>
+      <div class="task-row"><div class="checkbox ${aiDone?'checked':''}"></div><div class="task-label ${aiDone?'done':''}">AI session${aiExtra?` (+${aiExtra} extra)`:''}</div></div>
+      <div class="task-row" style="border-bottom:none;"><div class="checkbox ${qmDone?'checked':''}"></div><div class="task-label ${qmDone?'done':''}">Quantum session${qmExtra?` (+${qmExtra} extra)`:''}</div></div>
+      ${extraStudyRows}
+    </div>`;
+
+  return `
+    <div class="cal-detail-head">
+      <button class="icon-btn" data-action="calback" title="Back to calendar">\u2190</button>
+      <div class="cal-detail-date">${dateLabel}</div>
+    </div>
+    ${workoutCard}
+    ${studyCard}
+    <p class="note" style="text-align:center;">Custom trackers will show up here too, once that tab is built.</p>`;
+}
+
 function renderCalendar(){
+  const todayIso = isoDate(new Date());
+  if(selectedCalDate) return renderDayDetail(selectedCalDate);
+
   const year = calMonth.getFullYear(), month = calMonth.getMonth();
   const first = new Date(year, month, 1);
   const startOffset = (first.getDay()+6)%7;
   const daysInMonth = new Date(year, month+1, 0).getDate();
-  const todayIso = isoDate(new Date());
   const monthName = calMonth.toLocaleString('default',{month:'long', year:'numeric'});
 
   let grid = '<div class="cal-grid">';
@@ -835,8 +875,7 @@ function renderCalendar(){
     const iso = isoDate(new Date(year, month, day));
     const complete = dayComplete(iso);
     const isToday = iso===todayIso;
-    const isSelected = iso===selectedCalDate;
-    grid += `<div class="cal-cell ${complete?'complete':''} ${isToday?'istoday':''} ${isSelected?'selected':''}" data-action="calday" data-date="${iso}">${day}</div>`;
+    grid += `<div class="cal-cell ${complete?'complete':''} ${isToday?'istoday':''}" data-action="calday" data-date="${iso}">${day}</div>`;
   }
   grid += '</div>';
 
@@ -846,8 +885,7 @@ function renderCalendar(){
     <button data-action="calnext">\u203A</button>
   </div>`;
 
-  let detail = selectedCalDate ? renderDayCard(selectedCalDate, selectedCalDate===todayIso) : '<p class="note">Tap a date to view or log that day.</p>';
-  return `${header}${grid}${detail}`;
+  return `${header}${grid}<p class="note">Tap a date to view or log that day.</p>`;
 }
 
 async function renderReminders(){
@@ -1129,6 +1167,8 @@ function attachHandlers(){
   document.querySelectorAll('[data-action="calday"]').forEach(el=>{
     el.addEventListener('click', ()=>{ selectedCalDate = el.dataset.date; render(); });
   });
+  const calBackBtn = document.querySelector('[data-action="calback"]');
+  if(calBackBtn) calBackBtn.addEventListener('click', ()=>{ selectedCalDate = null; render(); });
   const prevBtn = document.querySelector('[data-action="calprev"]');
   if(prevBtn) prevBtn.addEventListener('click', ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); render(); });
   const nextBtn = document.querySelector('[data-action="calnext"]');
