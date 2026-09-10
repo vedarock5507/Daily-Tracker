@@ -358,6 +358,10 @@ let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLite
 let studyNotes = {};
 let studySubject = 'ai';
 let activeTab = 'home';
+let customTrackers = []; // [{id,name,type:'counter'|'checklist',reset:'daily'|'weekly'|'monthly'|'never',value,items,lastResetKey}]
+let addingTracker = false;
+let newTrackerType = 'counter';
+let newTrackerReset = 'daily';
 let settingsOpen = false;
 let calMonth = new Date();
 let selectedCalDate = null;
@@ -414,6 +418,35 @@ async function loadTaskOverrides(){
 }
 async function saveTaskOverrides(){ await storageSet('tracker:taskoverrides', JSON.stringify(taskOverrides)); }
 function getTasksForDow(dow){ return taskOverrides[dow] || TASKS[dow]; }
+
+async function loadCustomTrackers(){
+  const raw = await storageGet('tracker:customtrackers');
+  customTrackers = raw ? JSON.parse(raw) : [];
+}
+async function saveCustomTrackers(){ await storageSet('tracker:customtrackers', JSON.stringify(customTrackers)); }
+
+function periodKeyFor(reset, d){
+  const date = d || new Date();
+  if(reset === 'daily') return isoDate(date);
+  if(reset === 'weekly'){
+    const dow = (date.getDay()+6)%7; // Monday = 0
+    const monday = new Date(date); monday.setDate(date.getDate()-dow);
+    return isoDate(monday);
+  }
+  if(reset === 'monthly') return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0');
+  return 'never';
+}
+// auto-resets a tracker's progress when its reset period has rolled over since it was last touched
+function applyAutoReset(tracker){
+  if(tracker.reset === 'never') return tracker;
+  const currentKey = periodKeyFor(tracker.reset);
+  if(tracker.lastResetKey !== currentKey){
+    if(tracker.type === 'counter') tracker.value = 0;
+    if(tracker.type === 'checklist') (tracker.items||[]).forEach(i=>{ i.done = false; });
+    tracker.lastResetKey = currentKey;
+  }
+  return tracker;
+}
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
   const defaults = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
@@ -688,7 +721,76 @@ function renderHome(){
 }
 
 function renderCustomTrackers(){
-  return `<p class="note" style="text-align:center;padding:30px 10px;">Custom Trackers tab \u2014 coming soon. This is where you'll be able to build your own trackers from scratch.</p>`;
+  let anyReset = false;
+  customTrackers.forEach(t=>{
+    const before = t.lastResetKey;
+    applyAutoReset(t);
+    if(t.lastResetKey !== before) anyReset = true;
+  });
+  if(anyReset) saveCustomTrackers();
+
+  const addCard = addingTracker ? `
+    <div class="day-card">
+      <div class="day-head"><span class="day-name">New tracker</span></div>
+      <input class="edit-input" style="width:100%;margin-bottom:8px;" type="text" id="newTrackerName" placeholder="Tracker name, e.g. Cold outreaches">
+      <div class="water-row" style="margin-bottom:8px;">
+        <select class="edit-input" id="newTrackerType" style="flex:1;">
+          <option value="counter" ${newTrackerType==='counter'?'selected':''}>Counter (+/-)</option>
+          <option value="checklist" ${newTrackerType==='checklist'?'selected':''}>Checklist</option>
+        </select>
+        <select class="edit-input" id="newTrackerReset" style="flex:1;">
+          <option value="daily" ${newTrackerReset==='daily'?'selected':''}>Resets daily</option>
+          <option value="weekly" ${newTrackerReset==='weekly'?'selected':''}>Resets weekly</option>
+          <option value="monthly" ${newTrackerReset==='monthly'?'selected':''}>Resets monthly</option>
+          <option value="never" ${newTrackerReset==='never'?'selected':''}>Never resets</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary" style="flex:1;" data-action="tracker-create">Create tracker</button>
+        <button class="btn-secondary" style="flex:1;" data-action="tracker-cancel">Cancel</button>
+      </div>
+    </div>`
+    : `<button class="btn-secondary" style="width:100%;" data-action="tracker-start-add">+ Add custom tracker</button>`;
+
+  if(customTrackers.length === 0){
+    return `${addCard}<p class="note" style="text-align:center;margin-top:16px;">No custom trackers yet \u2014 build your first one above. Different people track different things, so this starts empty.</p>`;
+  }
+
+  const cards = customTrackers.map(t=>{
+    const resetLabel = {daily:'Resets daily', weekly:'Resets weekly', monthly:'Resets monthly', never:'No auto-reset'}[t.reset];
+    let body;
+    if(t.type === 'counter'){
+      body = `
+        <div class="water-controls" style="justify-content:center;gap:18px;margin:6px 0;">
+          <button class="icon-btn" data-action="tracker-counter-minus" data-id="${t.id}">\u2212</button>
+          <span class="water-value" style="font-size:1.4rem;">${t.value||0}</span>
+          <button class="icon-btn" data-action="tracker-counter-plus" data-id="${t.id}">+</button>
+        </div>`;
+    } else {
+      const items = t.items || [];
+      body = items.map(i=>`
+        <div class="task-row">
+          <div class="checkbox ${i.done?'checked':''}" data-action="tracker-item-toggle" data-id="${t.id}" data-itemid="${i.id}"></div>
+          <div class="task-label ${i.done?'done':''}" data-action="tracker-item-toggle" data-id="${t.id}" data-itemid="${i.id}">${i.label}</div>
+          <button class="icon-btn" data-action="tracker-item-remove" data-id="${t.id}" data-itemid="${i.id}" title="Remove">\u2715</button>
+        </div>`).join('') +
+        `<div class="task-row" style="border-bottom:none;">
+          <input class="edit-input" style="flex:1;" type="text" id="trackerItemInput-${t.id}" placeholder="Add item...">
+          <button class="icon-btn" data-action="tracker-item-add" data-id="${t.id}">+</button>
+        </div>`;
+    }
+    return `
+      <div class="day-card">
+        <div class="day-head">
+          <span class="day-name">${t.name}</span>
+          <button class="icon-btn" data-action="tracker-delete" data-id="${t.id}" title="Delete tracker">\u{1F5D1}</button>
+        </div>
+        ${body}
+        <div class="water-sub" style="text-align:left;margin-top:4px;">${resetLabel}</div>
+      </div>`;
+  }).join('');
+
+  return `${addCard}${cards}`;
 }
 
 function currentSubjectData(subject){
@@ -1169,6 +1271,74 @@ function attachHandlers(){
   });
   const calBackBtn = document.querySelector('[data-action="calback"]');
   if(calBackBtn) calBackBtn.addEventListener('click', ()=>{ selectedCalDate = null; render(); });
+
+  const trackerStartAddBtn = document.querySelector('[data-action="tracker-start-add"]');
+  if(trackerStartAddBtn) trackerStartAddBtn.addEventListener('click', ()=>{ addingTracker = true; render(); });
+  const trackerCancelBtn = document.querySelector('[data-action="tracker-cancel"]');
+  if(trackerCancelBtn) trackerCancelBtn.addEventListener('click', ()=>{ addingTracker = false; render(); });
+  const trackerTypeSel = document.getElementById('newTrackerType');
+  if(trackerTypeSel) trackerTypeSel.addEventListener('change', ()=>{ newTrackerType = trackerTypeSel.value; });
+  const trackerResetSel = document.getElementById('newTrackerReset');
+  if(trackerResetSel) trackerResetSel.addEventListener('change', ()=>{ newTrackerReset = trackerResetSel.value; });
+  const trackerCreateBtn = document.querySelector('[data-action="tracker-create"]');
+  if(trackerCreateBtn) trackerCreateBtn.addEventListener('click', async ()=>{
+    const nameInput = document.getElementById('newTrackerName');
+    const name = nameInput ? nameInput.value.trim() : '';
+    if(!name) return;
+    const type = document.getElementById('newTrackerType').value;
+    const reset = document.getElementById('newTrackerReset').value;
+    const tracker = {id:'tracker-'+Date.now(), name, type, reset, value:0, items:[], lastResetKey: periodKeyFor(reset)};
+    customTrackers.push(tracker);
+    addingTracker = false; newTrackerType = 'counter'; newTrackerReset = 'daily';
+    await saveCustomTrackers(); render();
+  });
+
+  document.querySelectorAll('[data-action="tracker-delete"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      customTrackers = customTrackers.filter(t=>t.id!==el.dataset.id);
+      await saveCustomTrackers(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="tracker-counter-plus"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const t = customTrackers.find(x=>x.id===el.dataset.id);
+      if(t){ t.value = (t.value||0) + 1; await saveCustomTrackers(); render(); }
+    });
+  });
+  document.querySelectorAll('[data-action="tracker-counter-minus"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const t = customTrackers.find(x=>x.id===el.dataset.id);
+      if(t){ t.value = Math.max(0, (t.value||0) - 1); await saveCustomTrackers(); render(); }
+    });
+  });
+  document.querySelectorAll('[data-action="tracker-item-toggle"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const t = customTrackers.find(x=>x.id===el.dataset.id);
+      if(!t) return;
+      const item = (t.items||[]).find(i=>i.id===el.dataset.itemid);
+      if(item){ item.done = !item.done; await saveCustomTrackers(); render(); }
+    });
+  });
+  document.querySelectorAll('[data-action="tracker-item-remove"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const t = customTrackers.find(x=>x.id===el.dataset.id);
+      if(!t) return;
+      t.items = (t.items||[]).filter(i=>i.id!==el.dataset.itemid);
+      await saveCustomTrackers(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="tracker-item-add"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const t = customTrackers.find(x=>x.id===el.dataset.id);
+      if(!t) return;
+      const input = document.getElementById('trackerItemInput-'+t.id);
+      const val = input ? input.value.trim() : '';
+      if(!val) return;
+      if(!t.items) t.items = [];
+      t.items.push({id:'item-'+Date.now(), label:val, done:false});
+      await saveCustomTrackers(); render();
+    });
+  });
   const prevBtn = document.querySelector('[data-action="calprev"]');
   if(prevBtn) prevBtn.addEventListener('click', ()=>{ calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); render(); });
   const nextBtn = document.querySelector('[data-action="calnext"]');
@@ -1368,7 +1538,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
-(async ()=>{ await loadEntries(); await loadTaskOverrides(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
+(async ()=>{ await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
 </script>
 </body>
 </html>
