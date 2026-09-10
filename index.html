@@ -71,6 +71,9 @@ body{padding-bottom:78px;}
 .chip-row{display:flex;gap:8px;margin-bottom:16px;}
 .chip{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:9px 0;border-radius:10px;font-size:0.78rem;font-weight:600;text-align:center;cursor:pointer;font-family:inherit;}
 .chip.active{background:var(--surface-2);color:var(--gold);border-color:var(--gold);}
+.chip.backlog{border-color:var(--strength);}
+.chip.backlog::after{content:'\25CF';color:var(--strength);font-size:0.55rem;margin-left:5px;vertical-align:middle;}
+.chip.clear::after{content:'\25CF';color:var(--cardio);font-size:0.55rem;margin-left:5px;vertical-align:middle;}
 .progress-track{background:var(--surface-2);border-radius:20px;height:8px;overflow:hidden;margin:6px 0 4px;}
 .progress-fill{height:100%;background:var(--gold);border-radius:20px;transition:width 0.3s ease;}
 .progress-label{font-size:0.68rem;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:16px;}
@@ -688,16 +691,26 @@ function currentSubjectData(subject){
 
 function renderStudy(){
   const todayIso = isoDate(new Date());
+  const e = entries[todayIso] || {};
+
+  // backlog coloring: red if today's session for that subject isn't done yet (and curriculum isn't finished), green if clear
+  function chipStatus(subject){
+    const data = currentSubjectData(subject);
+    const idx = settings[data.indexKey] || 0;
+    const finished = idx >= data.curriculum.length;
+    const doneToday = !!(e.study && e.study[subject]);
+    if(finished) return '';
+    return doneToday ? 'clear' : 'backlog';
+  }
   const chipsHtml = `<div class="chip-row">
-    <div class="chip ${studySubject==='ai'?'active':''}" data-action="studytab" data-subject="ai">AI</div>
-    <div class="chip ${studySubject==='quantum'?'active':''}" data-action="studytab" data-subject="quantum">Quantum</div>
+    <div class="chip ${studySubject==='ai'?'active':''} ${chipStatus('ai')}" data-action="studytab" data-subject="ai">AI</div>
+    <div class="chip ${studySubject==='quantum'?'active':''} ${chipStatus('quantum')}" data-action="studytab" data-subject="quantum">Quantum</div>
   </div>`;
 
   const {curriculum, indexKey, name} = currentSubjectData(studySubject);
   const idx = settings[indexKey] || 0;
   const total = curriculum.length;
   const pct = total ? Math.min(100, Math.round((idx/total)*100)) : 0;
-  const e = entries[todayIso] || {};
   const doneToday = !!(e.study && e.study[studySubject]);
 
   const progressHtml = `
@@ -739,7 +752,24 @@ function renderStudy(){
     upcoming = '<div class="upnext">Up next</div>' + upcomingItems.map(u=>`<div class="upnext-item">${u.label}</div>`).join('');
   }
 
-  return `${chipsHtml}${progressHtml}${cardHtml}${upcoming}`;
+  // one-off extras for today, separate from the fixed AI/Quantum curriculum
+  const extras = (e.extraStudy || []);
+  let extrasHtml = '<div class="section-label" style="margin-top:20px;">Today \u2014 extra</div>';
+  extras.forEach(x=>{
+    extrasHtml += `
+      <div class="task-row">
+        <div class="checkbox ${x.done?'checked':''}" data-action="extra-toggle" data-id="${x.id}"></div>
+        <div class="task-label ${x.done?'done':''}" data-action="extra-toggle" data-id="${x.id}">${x.label}</div>
+        <button class="icon-btn" data-action="extra-remove" data-id="${x.id}" title="Remove">\u2715</button>
+      </div>`;
+  });
+  extrasHtml += `
+    <div class="task-row" style="border-bottom:none;">
+      <input class="edit-input" style="flex:1;" type="text" id="extraStudyInput" placeholder="e.g. read a book for 5 min">
+      <button class="icon-btn" data-action="extra-add" title="Add">+</button>
+    </div>`;
+
+  return `${chipsHtml}${progressHtml}${cardHtml}${upcoming}${extrasHtml}`;
 }
 
 function renderToday(){
@@ -1019,6 +1049,38 @@ function attachHandlers(){
       saveStudyNotesDebounced();
     });
   });
+
+  document.querySelectorAll('[data-action="extra-toggle"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const todayIso = isoDate(new Date());
+      if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
+      if(!entries[todayIso].extraStudy) entries[todayIso].extraStudy = [];
+      const item = entries[todayIso].extraStudy.find(x=>x.id===el.dataset.id);
+      if(item) item.done = !item.done;
+      await saveEntries(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="extra-remove"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const todayIso = isoDate(new Date());
+      if(!entries[todayIso] || !entries[todayIso].extraStudy) return;
+      entries[todayIso].extraStudy = entries[todayIso].extraStudy.filter(x=>x.id!==el.dataset.id);
+      await saveEntries(); render();
+    });
+  });
+  const extraAddBtn = document.querySelector('[data-action="extra-add"]');
+  if(extraAddBtn) extraAddBtn.addEventListener('click', async ()=>{
+    const input = document.getElementById('extraStudyInput');
+    const val = input ? input.value.trim() : '';
+    if(!val) return;
+    const todayIso = isoDate(new Date());
+    if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
+    if(!entries[todayIso].extraStudy) entries[todayIso].extraStudy = [];
+    entries[todayIso].extraStudy.push({id:'extra-'+Date.now(), label:val, done:false});
+    await saveEntries(); render();
+  });
+  const extraInputEl = document.getElementById('extraStudyInput');
+  if(extraInputEl) extraInputEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter' && extraAddBtn) extraAddBtn.click(); });
 
   document.querySelectorAll('[data-action="timer"]').forEach(el=>{
     el.addEventListener('click', (ev)=>{ ev.stopPropagation(); openTimer(el.dataset.label, parseInt(el.dataset.seconds)); });
