@@ -126,6 +126,8 @@ body{padding-bottom:78px;}
 .noworkout-row{display:flex;align-items:center;gap:9px;margin:2px 0 12px;cursor:pointer;}
 .noworkout-row .task-label{font-size:0.78rem;color:var(--muted);}
 .noworkout-note{font-size:0.78rem;color:var(--muted);padding:10px 2px;font-style:italic;}
+.locked-content{opacity:0.5;pointer-events:none;user-select:none;}
+.locked-banner{font-size:0.7rem;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:7px 10px;margin-bottom:10px;text-align:center;}
 .edit-row{gap:6px;align-items:center;}
 .edit-input{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 9px;font-family:inherit;font-size:0.8rem;outline:none;}
 .edit-input:focus{border-color:var(--gold);}
@@ -512,7 +514,8 @@ function renderDayCard(iso, isToday){
   const e = entries[iso] || {tasks:{}};
   const taskList = getTasksForDow(dow);
   const noWorkout = !!e.noWorkout;
-  const isEditing = editingDow === dow;
+  const isPastDay = iso < isoDate(new Date());
+  const isEditing = !isPastDay && editingDow === dow;
 
   let tasksHtml = '';
   if(noWorkout){
@@ -589,11 +592,14 @@ function renderDayCard(iso, isToday){
       <div class="day-head">
         <span class="day-name">${meta.name}${isToday?' \u2014 today':''}</span>
         <span class="type-tag" style="background:${COLORS[meta.tag]}22;color:${COLORS[meta.tag]};">${meta.type}</span>
-        <button class="icon-btn" data-action="${isEditing?'done-editing':'edit-day'}" data-dow="${dow}" title="${isEditing?'Done editing':'Edit exercises'}">${isEditing?'\u2713':'\u270E'}</button>
+        ${isPastDay ? '' : `<button class="icon-btn" data-action="${isEditing?'done-editing':'edit-day'}" data-dow="${dow}" title="${isEditing?'Done editing':'Edit exercises'}">${isEditing?'\u2713':'\u270E'}</button>`}
       </div>
-      ${noWorkoutRow}
-      ${tasksHtml}
-      ${wellnessHtml}
+      ${isPastDay ? '<div class="locked-banner">\u{1F512} This day is in the past \u2014 locked.</div>' : ''}
+      <div class="${isPastDay?'locked-content':''}">
+        ${noWorkoutRow}
+        ${tasksHtml}
+        ${wellnessHtml}
+      </div>
     </div>`;
 }
 
@@ -712,6 +718,7 @@ function renderStudy(){
   const total = curriculum.length;
   const pct = total ? Math.min(100, Math.round((idx/total)*100)) : 0;
   const doneToday = !!(e.study && e.study[studySubject]);
+  const extraToday = (e.studyExtra && e.studyExtra[studySubject]) || 0;
 
   const progressHtml = `
     <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
@@ -739,6 +746,8 @@ function renderStudy(){
         <div class="checkbox ${doneToday?'checked':''}" data-action="studydone" data-subject="${studySubject}"></div>
         <div class="task-label ${doneToday?'done':''}" data-action="studydone" data-subject="${studySubject}">Mark today's session done</div>
       </div>
+      ${doneToday ? `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="studyextra" data-subject="${studySubject}">+ Have time \u2014 do this next one too</button>` : ''}
+      ${extraToday ? `<div class="water-sub" style="margin-top:6px;">${1+extraToday} sessions done today</div>` : ''}
       <div class="notes-wrap">
         <div class="notes-label">Notes</div>
         <textarea class="notes-textarea" data-action="studynote" data-key="${noteKey}" placeholder="Jot notes while you study...">${noteVal}</textarea>
@@ -1021,16 +1030,33 @@ function attachHandlers(){
       const todayIso = isoDate(new Date());
       if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
       if(!entries[todayIso].study) entries[todayIso].study = {};
+      if(!entries[todayIso].studyExtra) entries[todayIso].studyExtra = {};
       const indexKey = subject==='ai' ? 'aiIndex' : 'quantumIndex';
       const wasDone = !!entries[todayIso].study[subject];
+      const extra = entries[todayIso].studyExtra[subject] || 0;
       if(!wasDone){
         entries[todayIso].study[subject] = true;
         settings[indexKey] = (settings[indexKey] || 0) + 1;
       } else {
-        // undo is only allowed same-day, since the pointer only just advanced
+        // undo reverts everything done today for this subject, including any extra sessions
         entries[todayIso].study[subject] = false;
-        settings[indexKey] = Math.max(0, (settings[indexKey] || 0) - 1);
+        settings[indexKey] = Math.max(0, (settings[indexKey] || 0) - 1 - extra);
+        entries[todayIso].studyExtra[subject] = 0;
       }
+      await saveEntries(); await saveSettings(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="studyextra"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subject = el.dataset.subject;
+      const todayIso = isoDate(new Date());
+      if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
+      if(!entries[todayIso].studyExtra) entries[todayIso].studyExtra = {};
+      const indexKey = subject==='ai' ? 'aiIndex' : 'quantumIndex';
+      const total = currentSubjectData(subject).curriculum.length;
+      if((settings[indexKey]||0) >= total) return; // curriculum already finished
+      entries[todayIso].studyExtra[subject] = (entries[todayIso].studyExtra[subject] || 0) + 1;
+      settings[indexKey] = (settings[indexKey] || 0) + 1;
       await saveEntries(); await saveSettings(); render();
     });
   });
