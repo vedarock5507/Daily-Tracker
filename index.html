@@ -123,6 +123,11 @@ body{padding-bottom:78px;}
 .noworkout-row{display:flex;align-items:center;gap:9px;margin:2px 0 12px;cursor:pointer;}
 .noworkout-row .task-label{font-size:0.78rem;color:var(--muted);}
 .noworkout-note{font-size:0.78rem;color:var(--muted);padding:10px 2px;font-style:italic;}
+.edit-row{gap:6px;align-items:center;}
+.edit-input{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 9px;font-family:inherit;font-size:0.8rem;outline:none;}
+.edit-input:focus{border-color:var(--gold);}
+.edit-label{flex:2;min-width:0;}
+.edit-sets{flex:1.2;min-width:0;}
 
 /* calendar */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
@@ -340,6 +345,8 @@ const QUANTUM_CURRICULUM = [
 ];
 
 let entries = {};
+let taskOverrides = {}; // { [weekdayIndex]: [{id,label,sets,seconds}, ...] } — user-edited exercise lists, replaces TASKS[dow] when present
+let editingDow = null;  // which weekday's exercise list is currently in edit mode (null = none)
 let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
 let studyNotes = {};
 let studySubject = 'ai';
@@ -394,6 +401,12 @@ async function loadEntries(){
   entries = raw ? JSON.parse(raw) : {};
 }
 async function saveEntries(){ await storageSet('tracker:entries', JSON.stringify(entries)); }
+async function loadTaskOverrides(){
+  const raw = await storageGet('tracker:taskoverrides');
+  taskOverrides = raw ? JSON.parse(raw) : {};
+}
+async function saveTaskOverrides(){ await storageSet('tracker:taskoverrides', JSON.stringify(taskOverrides)); }
+function getTasksForDow(dow){ return taskOverrides[dow] || TASKS[dow]; }
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
   const defaults = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
@@ -417,7 +430,7 @@ async function saveReminder(data){ await storageSet('tracker:reminder', JSON.str
 
 function dayComplete(iso){
   const e = entries[iso]; if(!e) return false;
-  const taskList = TASKS[weekdayIndex(iso)];
+  const taskList = getTasksForDow(weekdayIndex(iso));
   const allTasksDone = e.noWorkout || taskList.every(t => e.tasks && e.tasks[t.id]);
   const sleepOk = (e.sleep || 0) >= SLEEP_TARGET;
   const proteinOk = (e.protein || 0) >= settings.proteinTarget;
@@ -494,12 +507,23 @@ function renderDayCard(iso, isToday){
   const dow = weekdayIndex(iso);
   const meta = DAY_META[dow];
   const e = entries[iso] || {tasks:{}};
-  const taskList = TASKS[dow];
+  const taskList = getTasksForDow(dow);
   const noWorkout = !!e.noWorkout;
+  const isEditing = editingDow === dow;
 
   let tasksHtml = '';
   if(noWorkout){
     tasksHtml = `<div class="noworkout-note">Marked as no workout today \u2014 sleep, protein, and water below still count.</div>`;
+  } else if(isEditing){
+    taskList.forEach(t=>{
+      tasksHtml += `
+        <div class="task-row edit-row">
+          <input class="edit-input edit-label" type="text" value="${t.label.replace(/"/g,'&quot;')}" data-action="edit-tasklabel" data-dow="${dow}" data-taskid="${t.id}">
+          <input class="edit-input edit-sets" type="text" value="${(t.sets||'').replace(/"/g,'&quot;')}" data-action="edit-tasksets" data-dow="${dow}" data-taskid="${t.id}" placeholder="sets/reps">
+          <button class="icon-btn" data-action="remove-task" data-dow="${dow}" data-taskid="${t.id}" title="Remove">\u2715</button>
+        </div>`;
+    });
+    tasksHtml += `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="add-task" data-dow="${dow}">+ Add exercise</button>`;
   } else {
     taskList.forEach(t=>{
       const done = !!(e.tasks && e.tasks[t.id]);
@@ -562,6 +586,7 @@ function renderDayCard(iso, isToday){
       <div class="day-head">
         <span class="day-name">${meta.name}${isToday?' \u2014 today':''}</span>
         <span class="type-tag" style="background:${COLORS[meta.tag]}22;color:${COLORS[meta.tag]};">${meta.type}</span>
+        <button class="icon-btn" data-action="${isEditing?'done-editing':'edit-day'}" data-dow="${dow}" title="${isEditing?'Done editing':'Edit exercises'}">${isEditing?'\u2713':'\u270E'}</button>
       </div>
       ${noWorkoutRow}
       ${tasksHtml}
@@ -575,7 +600,7 @@ function buildClaudeSummary(){
   const streak = computeStreak(todayIso);
   const workoutOk = dayComplete(todayIso);
   const dow = weekdayIndex(todayIso);
-  const taskList = TASKS[dow];
+  const taskList = getTasksForDow(dow);
   const tasksDone = taskList.filter(t => e.tasks && e.tasks[t.id]).length;
 
   const ai = currentSubjectData('ai');
@@ -857,6 +882,9 @@ async function render(){
   const plusHtml = renderCustomTrackers();
   const remHtml = await renderReminders();
 
+  // workout nav icon kept static as a plain dumbbell for now, per request
+  const workoutIconSvg = `<svg viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3 10v4M21 10v4M6.5 12h11"/></svg>`;
+
   document.getElementById('app').innerHTML = `
     <div class="top-bar">
       <div>
@@ -882,7 +910,7 @@ async function render(){
         <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
       </button>
       <button class="nav-btn ${activeTab==='workout'?'active':''}" data-tab="workout" title="Workout">
-        <svg viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3 10v4M21 10v4M6.5 12h11"/></svg>
+        ${workoutIconSvg}
       </button>
       <button class="nav-btn ${activeTab==='study'?'active':''}" data-tab="study" title="Study">
         <svg viewBox="0 0 24 24"><path d="M4 5.5C6 4.5 9 4.5 12 6c3-1.5 6-1.5 8-.5v13c-2-1-5-1-8 .5-3-1.5-6-1.5-8-.5Z"/><path d="M12 6v13"/></svg>
@@ -1075,6 +1103,45 @@ function attachHandlers(){
     });
   });
 
+  document.querySelectorAll('[data-action="edit-day"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingDow = parseInt(el.dataset.dow); render(); });
+  });
+  document.querySelectorAll('[data-action="done-editing"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ editingDow = null; render(); });
+  });
+
+  document.querySelectorAll('[data-action="edit-tasklabel"]').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      const dow = parseInt(el.dataset.dow), taskid = el.dataset.taskid;
+      const list = getTasksForDow(dow).map(t => t.id===taskid ? {...t, label: el.value} : t);
+      taskOverrides[dow] = list;
+      await saveTaskOverrides(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="edit-tasksets"]').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      const dow = parseInt(el.dataset.dow), taskid = el.dataset.taskid;
+      const list = getTasksForDow(dow).map(t => t.id===taskid ? {...t, sets: el.value} : t);
+      taskOverrides[dow] = list;
+      await saveTaskOverrides(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="remove-task"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const dow = parseInt(el.dataset.dow), taskid = el.dataset.taskid;
+      taskOverrides[dow] = getTasksForDow(dow).filter(t => t.id !== taskid);
+      await saveTaskOverrides(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="add-task"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const dow = parseInt(el.dataset.dow);
+      const newTask = {id:'custom-'+Date.now(), label:'New exercise', sets:'', seconds:45};
+      taskOverrides[dow] = [...getTasksForDow(dow), newTask];
+      await saveTaskOverrides(); render();
+    });
+  });
+
   const copyBtn = document.getElementById('copySummary');
   if(copyBtn) copyBtn.addEventListener('click', async ()=>{
     const text = buildClaudeSummary();
@@ -1173,7 +1240,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
-(async ()=>{ await loadEntries(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
+(async ()=>{ await loadEntries(); await loadTaskOverrides(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
 </script>
 </body>
 </html>
