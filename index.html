@@ -447,6 +447,15 @@ function applyAutoReset(tracker){
   }
   return tracker;
 }
+function applyAllAutoResets(){
+  let anyReset = false;
+  customTrackers.forEach(t=>{
+    const before = t.lastResetKey;
+    applyAutoReset(t);
+    if(t.lastResetKey !== before) anyReset = true;
+  });
+  if(anyReset) saveCustomTrackers();
+}
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
   const defaults = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
@@ -712,22 +721,109 @@ function renderMascot(todayIso){
 function renderHome(){
   const todayIso = isoDate(new Date());
   const streak = computeStreak(todayIso);
+  const e = entries[todayIso] || {tasks:{}};
+  const dow = weekdayIndex(todayIso);
+  const taskList = getTasksForDow(dow);
+  const noWorkout = !!e.noWorkout;
+
+  // red MAX-style banner: anything still outstanding today, pulled from every tracker
+  let missed = [];
+  ['ai','quantum'].forEach(subj=>{
+    const data = currentSubjectData(subj);
+    const idx = settings[subj==='ai'?'aiIndex':'quantumIndex'] || 0;
+    const finished = idx >= data.curriculum.length;
+    const doneToday = !!(e.study && e.study[subj]);
+    if(!finished && !doneToday) missed.push(`${data.name} session`);
+  });
+  if(!noWorkout){
+    const left = taskList.filter(t=>!(e.tasks && e.tasks[t.id])).length;
+    if(left>0) missed.push(`${left} workout exercise${left>1?'s':''}`);
+  }
+  const redBanner = missed.length
+    ? `<div class="locked-banner" style="background:${COLORS.strength}22;color:var(--strength);border:1px solid ${COLORS.strength}55;">Still open today: ${missed.join(' \u00b7 ')}</div>`
+    : `<div class="locked-banner" style="background:${COLORS.cardio}22;color:var(--cardio);border:1px solid ${COLORS.cardio}55;">Everything's checked off for today.</div>`;
+
+  // Workout rows (reuses the same task-toggle action as the Workout tab)
+  let workoutRows;
+  if(noWorkout){
+    workoutRows = `<div class="noworkout-note">Marked as no workout today.</div>`;
+  } else {
+    workoutRows = taskList.map(t=>{
+      const done = !!(e.tasks && e.tasks[t.id]);
+      return `<div class="task-row">
+        <div class="checkbox ${done?'checked':''}" data-action="task" data-date="${todayIso}" data-taskid="${t.id}"></div>
+        <div class="task-label ${done?'done':''}" data-action="task" data-date="${todayIso}" data-taskid="${t.id}">${t.label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Study rows (reuses studydone action from the Study tab)
+  const aiDone = !!(e.study && e.study.ai);
+  const qmDone = !!(e.study && e.study.quantum);
+  const studyRows = `
+    <div class="task-row">
+      <div class="checkbox ${aiDone?'checked':''}" data-action="studydone" data-subject="ai"></div>
+      <div class="task-label ${aiDone?'done':''}" data-action="studydone" data-subject="ai">AI session</div>
+    </div>
+    <div class="task-row" style="border-bottom:none;">
+      <div class="checkbox ${qmDone?'checked':''}" data-action="studydone" data-subject="quantum"></div>
+      <div class="task-label ${qmDone?'done':''}" data-action="studydone" data-subject="quantum">Quantum session</div>
+    </div>`;
+
+  // Water row (reuses water-plus/minus actions from the Workout tab)
+  const waterVal = e.water || 0;
+  const waterHit = waterVal >= settings.waterTargetBottles;
+  const waterRow = `
+    <div class="water-controls" style="justify-content:flex-start;gap:14px;">
+      <button class="icon-btn" data-action="water-minus" data-date="${todayIso}">\u2212</button>
+      <span class="water-value">${waterVal} / ${settings.waterTargetBottles}</span>
+      <button class="icon-btn" data-action="water-plus" data-date="${todayIso}">+</button>
+      ${waterHit ? `<span style="color:var(--cardio);font-size:0.75rem;">target hit</span>` : ''}
+    </div>`;
+
+  // Custom trackers summary (reuses tracker-counter/tracker-item actions from the + tab)
+  let trackerRows;
+  if(customTrackers.length === 0){
+    trackerRows = `<p class="note" style="margin:4px 0 0;">No custom trackers yet \u2014 build one on the + tab.</p>`;
+  } else {
+    trackerRows = customTrackers.map(t=>{
+      if(t.type === 'counter'){
+        return `<div class="task-row" style="border-bottom:none;">
+          <div class="task-label" style="flex:1;">${t.name}</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <button class="icon-btn" data-action="tracker-counter-minus" data-id="${t.id}">\u2212</button>
+            <span class="water-value">${t.value||0}</span>
+            <button class="icon-btn" data-action="tracker-counter-plus" data-id="${t.id}">+</button>
+          </div>
+        </div>`;
+      }
+      const items = t.items || [];
+      const openCount = items.filter(i=>!i.done).length;
+      return `<div class="task-row" style="border-bottom:none;">
+        <div class="task-label" style="flex:1;">${t.name}</div>
+        <span class="water-sub" style="margin:0;">${openCount} open</span>
+      </div>`;
+    }).join('');
+  }
+
   return `
     <div class="streak-card">
       <div><div class="streak-num">${streak}</div><div class="streak-label">day streak &middot; full day complete</div></div>
       <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
     </div>
-    <p class="note">This is the new Home tab. The full auto-built daily checklist (pulling in Workout, Study, Water and Custom trackers) is coming in a later update \u2014 for now, use the tabs below to get to each section.</p>`;
+    ${redBanner}
+    <div class="section-label" style="margin-top:18px;">Workout</div>
+    ${workoutRows}
+    <div class="section-label" style="margin-top:18px;">Study</div>
+    ${studyRows}
+    <div class="section-label" style="margin-top:18px;">Water</div>
+    ${waterRow}
+    <div class="section-label" style="margin-top:18px;">Custom trackers</div>
+    ${trackerRows}
+  `;
 }
 
 function renderCustomTrackers(){
-  let anyReset = false;
-  customTrackers.forEach(t=>{
-    const before = t.lastResetKey;
-    applyAutoReset(t);
-    if(t.lastResetKey !== before) anyReset = true;
-  });
-  if(anyReset) saveCustomTrackers();
 
   const addCard = addingTracker ? `
     <div class="day-card">
@@ -1053,6 +1149,7 @@ async function renderReminders(){
 
 async function render(){
   const todayIso = isoDate(new Date());
+  applyAllAutoResets();
   const mascotHtml = renderMascot(todayIso);
   const homeHtml = renderHome();
   const workoutHtml = renderToday();
