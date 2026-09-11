@@ -942,7 +942,7 @@ function scanPhoto(mode, onSuccess){
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
-  input.capture = 'environment';
+  // no `capture` attribute on purpose — lets the picker offer Camera, Gallery, and Files, not just a forced live camera
   input.addEventListener('change', async ()=>{
     const file = input.files[0];
     if(!file) return;
