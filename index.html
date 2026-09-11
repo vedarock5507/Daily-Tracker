@@ -938,32 +938,46 @@ async function loadAiSummaryCache(){
 async function saveAiSummaryCache(){ await storageSet('tracker:aisummary', JSON.stringify(aiSummaryCache)); }
 
 // Shared photo-scan flow: opens the camera/file picker, sends the image to the Worker, returns parsed items.
+function fileToBase64(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Sends one or more photos to the Worker and merges the returned items into one list.
+// Each item may carry a `day` field (from a multi-day photo like "[FRIDAY]...") for the caller to route.
 function scanPhoto(mode, onSuccess){
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
+  input.multiple = true; // lets a multi-day plan be scanned as several photos in one go
   // no `capture` attribute on purpose — lets the picker offer Camera, Gallery, and Files, not just a forced live camera
   input.addEventListener('change', async ()=>{
-    const file = input.files[0];
-    if(!file) return;
+    const files = Array.from(input.files || []);
+    if(!files.length) return;
     scanBusy = true; render();
     try{
-      const base64 = await new Promise((resolve, reject)=>{
-        const reader = new FileReader();
-        reader.onload = ()=> resolve(reader.result.split(',')[1]);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-      const res = await fetch(WORKER_URL + '/analyze', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({mode, image: base64, mimeType: file.type}),
-      });
-      const data = await res.json();
-      if(!res.ok || data.error) throw new Error(data.error || 'Scan failed');
-      onSuccess(data.items || []);
+      let allItems = [];
+      for(const file of files){
+        const base64 = await fileToBase64(file);
+        const res = await fetch(WORKER_URL + '/analyze', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({mode, image: base64, mimeType: file.type}),
+        });
+        const data = await res.json();
+        if(!res.ok || data.error){
+          console.warn('Scan failed for', file.name, data.raw || data.error);
+          throw new Error((data.error || 'Scan failed') + (files.length>1 ? ` (on photo: ${file.name})` : ''));
+        }
+        allItems = allItems.concat(data.items || []);
+      }
+      onSuccess(allItems);
     } catch(e){
-      alert('Could not read that photo: ' + e.message + '\n\nTry a clearer, well-lit, flat-on shot.');
+      alert('Could not read that photo: ' + e.message + '\n\nTry a clearer, well-lit, flat-on shot. Check the browser console for the raw model output if this keeps happening.');
     } finally {
       scanBusy = false; render();
     }
@@ -1617,11 +1631,30 @@ function attachHandlers(){
 
   document.querySelectorAll('[data-action="scan-workout"]').forEach(el=>{
     el.addEventListener('click', ()=>{
-      const dow = parseInt(el.dataset.dow);
+      const currentDow = parseInt(el.dataset.dow);
       scanPhoto('workout', async (items)=>{
         if(!items.length){ alert('No exercises found in that photo.'); return; }
-        taskOverrides[dow] = items.map((it,i)=>({id:'scan-'+Date.now()+'-'+i, label: it.label || 'Untitled', sets: it.sets || '', seconds: 45}));
-        await saveTaskOverrides(); render();
+
+        // group items by weekday name if the model found one (e.g. "[FRIDAY]" headers);
+        // anything with no day found falls back onto whichever day you were editing
+        const byDow = {};
+        items.forEach(it=>{
+          const dayName = (it.day || '').trim().toLowerCase();
+          const matchIdx = DAY_META.findIndex(d => d.name.toLowerCase() === dayName);
+          const targetDow = matchIdx !== -1 ? matchIdx : currentDow;
+          if(!byDow[targetDow]) byDow[targetDow] = [];
+          byDow[targetDow].push(it);
+        });
+
+        Object.keys(byDow).forEach(dowKey=>{
+          const dow = parseInt(dowKey);
+          taskOverrides[dow] = byDow[dowKey].map((it,i)=>({id:'scan-'+Date.now()+'-'+dow+'-'+i, label: it.label || 'Untitled', sets: it.sets || '', seconds: 45}));
+        });
+        await saveTaskOverrides();
+
+        const updatedDays = Object.keys(byDow).map(k=>DAY_META[parseInt(k)].name).join(', ');
+        alert(`Updated: ${updatedDays}`);
+        render();
       });
     });
   });
