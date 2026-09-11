@@ -354,6 +354,11 @@ const QUANTUM_CURRICULUM = [
 let entries = {};
 let taskOverrides = {}; // { [weekdayIndex]: [{id,label,sets,seconds}, ...] } — user-edited exercise lists, replaces TASKS[dow] when present
 let editingDow = null;  // which weekday's exercise list is currently in edit mode (null = none)
+const WORKER_URL = 'https://daily-rhythm-ai.vedasai-ekansh.workers.dev';
+let curriculumExtras = {}; // {ai:[{phase,label}], quantum:[...]} — topics added via photo scan, appended after the built-in curriculum
+let scanBusy = false; // true while a photo scan request is in flight (shows a loading state, blocks double-taps)
+let aiSummaryCache = { date: null, text: '' };
+let summaryBusy = false;
 let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
 let studyNotes = {};
 let studySubject = 'ai';
@@ -574,6 +579,7 @@ function renderDayCard(iso, isToday){
         </div>`;
     });
     tasksHtml += `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="add-task" data-dow="${dow}">+ Add exercise</button>`;
+    tasksHtml += `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-workout" data-dow="${dow}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Scan a workout plan'}</button>`;
   } else {
     taskList.forEach(t=>{
       const done = !!(e.tasks && e.tasks[t.id]);
@@ -645,6 +651,23 @@ function renderDayCard(iso, isToday){
         ${wellnessHtml}
       </div>
     </div>`;
+}
+
+function buildTodaySnapshot(){
+  const todayIso = isoDate(new Date());
+  const e = entries[todayIso] || {tasks:{}};
+  const dow = weekdayIndex(todayIso);
+  const taskList = getTasksForDow(dow);
+  const tasksDone = e.noWorkout ? 'n/a (no workout day)' : taskList.filter(t=>e.tasks && e.tasks[t.id]).length + '/' + taskList.length;
+  return {
+    streak: computeStreak(todayIso),
+    workout: tasksDone,
+    sleep: (e.sleep||0) + 'h',
+    protein: (e.protein||0) + 'g (target ' + settings.proteinTarget + 'g)',
+    water: (e.water||0) + '/' + settings.waterTargetBottles + ' bottles',
+    aiStudyDone: !!(e.study && e.study.ai),
+    quantumStudyDone: !!(e.study && e.study.quantum),
+  };
 }
 
 function buildClaudeSummary(){
@@ -806,11 +829,18 @@ function renderHome(){
     }).join('');
   }
 
+  // AI-generated summary (explicit action, cached per day — never calls the Worker silently)
+  const summaryIsToday = aiSummaryCache.date === todayIso;
+  const summaryHtml = summaryIsToday
+    ? `<div class="day-card" style="padding:14px 16px;"><div class="water-sub" style="margin-bottom:4px;">Today, in a sentence</div>${aiSummaryCache.text}</div>`
+    : `<button class="btn-secondary" style="width:100%;" data-action="gen-summary" ${summaryBusy?'disabled':''}>${summaryBusy?'Writing summary\u2026':'\u{1F916} Generate today\'s summary'}</button>`;
+
   return `
     <div class="streak-card">
       <div><div class="streak-num">${streak}</div><div class="streak-label">day streak &middot; full day complete</div></div>
       <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
     </div>
+    ${summaryHtml}
     ${redBanner}
     <div class="section-label" style="margin-top:18px;">Workout</div>
     ${workoutRows}
@@ -890,9 +920,55 @@ function renderCustomTrackers(){
 }
 
 function currentSubjectData(subject){
-  return subject==='ai'
+  const base = subject==='ai'
     ? {curriculum:AI_CURRICULUM, indexKey:'aiIndex', name:'AI'}
     : {curriculum:QUANTUM_CURRICULUM, indexKey:'quantumIndex', name:'Quantum'};
+  const extras = curriculumExtras[subject] || [];
+  return extras.length ? {...base, curriculum: [...base.curriculum, ...extras]} : base;
+}
+async function loadCurriculumExtras(){
+  const raw = await storageGet('tracker:curriculumextras');
+  curriculumExtras = raw ? JSON.parse(raw) : {};
+}
+async function saveCurriculumExtras(){ await storageSet('tracker:curriculumextras', JSON.stringify(curriculumExtras)); }
+async function loadAiSummaryCache(){
+  const raw = await storageGet('tracker:aisummary');
+  aiSummaryCache = raw ? JSON.parse(raw) : { date: null, text: '' };
+}
+async function saveAiSummaryCache(){ await storageSet('tracker:aisummary', JSON.stringify(aiSummaryCache)); }
+
+// Shared photo-scan flow: opens the camera/file picker, sends the image to the Worker, returns parsed items.
+function scanPhoto(mode, onSuccess){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment';
+  input.addEventListener('change', async ()=>{
+    const file = input.files[0];
+    if(!file) return;
+    scanBusy = true; render();
+    try{
+      const base64 = await new Promise((resolve, reject)=>{
+        const reader = new FileReader();
+        reader.onload = ()=> resolve(reader.result.split(',')[1]);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const res = await fetch(WORKER_URL + '/analyze', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({mode, image: base64, mimeType: file.type}),
+      });
+      const data = await res.json();
+      if(!res.ok || data.error) throw new Error(data.error || 'Scan failed');
+      onSuccess(data.items || []);
+    } catch(e){
+      alert('Could not read that photo: ' + e.message + '\n\nTry a clearer, well-lit, flat-on shot.');
+    } finally {
+      scanBusy = false; render();
+    }
+  });
+  input.click();
 }
 
 function renderStudy(){
@@ -928,7 +1004,8 @@ function renderStudy(){
   if(idx >= total){
     cardHtml = `<div class="study-card">
       <div class="study-phase-tag">${name} \u2014 curriculum complete</div>
-      <div class="study-title finished">You've cleared everything queued up here. Tell me in chat and I'll extend the list.</div>
+      <div class="study-title finished">You've cleared everything queued up here.</div>
+      <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add more topics from a photo'}</button>
     </div>`;
   } else {
     const item = curriculum[idx];
@@ -948,6 +1025,7 @@ function renderStudy(){
       </div>
       ${doneToday ? `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="studyextra" data-subject="${studySubject}">+ Have time \u2014 do this next one too</button>` : ''}
       ${extraToday ? `<div class="water-sub" style="margin-top:6px;">${1+extraToday} sessions done today</div>` : ''}
+      <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add topics from a photo'}</button>
       <div class="notes-wrap">
         <div class="notes-label">Notes</div>
         <textarea class="notes-textarea" data-action="studynote" data-key="${noteKey}" placeholder="Jot notes while you study...">${noteVal}</textarea>
@@ -1537,6 +1615,48 @@ function attachHandlers(){
     });
   });
 
+  document.querySelectorAll('[data-action="scan-workout"]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const dow = parseInt(el.dataset.dow);
+      scanPhoto('workout', async (items)=>{
+        if(!items.length){ alert('No exercises found in that photo.'); return; }
+        taskOverrides[dow] = items.map((it,i)=>({id:'scan-'+Date.now()+'-'+i, label: it.label || 'Untitled', sets: it.sets || '', seconds: 45}));
+        await saveTaskOverrides(); render();
+      });
+    });
+  });
+  document.querySelectorAll('[data-action="scan-study"]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const subject = el.dataset.subject;
+      scanPhoto('study', async (items)=>{
+        if(!items.length){ alert('No topics found in that photo.'); return; }
+        const newItems = items.map(it=>({phase: it.phase || '', label: it.label || 'Untitled topic'}));
+        curriculumExtras[subject] = [...(curriculumExtras[subject]||[]), ...newItems];
+        await saveCurriculumExtras(); render();
+      });
+    });
+  });
+
+  const genSummaryBtn = document.querySelector('[data-action="gen-summary"]');
+  if(genSummaryBtn) genSummaryBtn.addEventListener('click', async ()=>{
+    summaryBusy = true; render();
+    try{
+      const res = await fetch(WORKER_URL + '/summary', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({data: buildTodaySnapshot()}),
+      });
+      const data = await res.json();
+      if(!res.ok || data.error) throw new Error(data.error || 'Summary failed');
+      aiSummaryCache = { date: isoDate(new Date()), text: data.summary || '' };
+      await saveAiSummaryCache();
+    } catch(e){
+      alert('Could not generate a summary: ' + e.message);
+    } finally {
+      summaryBusy = false; render();
+    }
+  });
+
   const copyBtn = document.getElementById('copySummary');
   if(copyBtn) copyBtn.addEventListener('click', async ()=>{
     const text = buildClaudeSummary();
@@ -1635,7 +1755,7 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
-(async ()=>{ await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
+(async ()=>{ await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers(); await loadCurriculumExtras(); await loadAiSummaryCache(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
 </script>
 </body>
 </html>
