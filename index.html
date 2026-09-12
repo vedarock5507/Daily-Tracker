@@ -370,6 +370,7 @@ const WORKOUT_TEMPLATE_EXTREME = [[{"label":"Barbell Bench Press","sets":"5 sets
 let entries = {};
 let taskOverrides = {}; // { [weekdayIndex]: [{id,label,sets,seconds}, ...] } — user-edited exercise lists, replaces TASKS[dow] when present
 let editingDow = null;  // which weekday's exercise list is currently in edit mode (null = none)
+let editingSubjectId = null; // which subject's curriculum is currently in manual-edit mode (null = none)
 const WORKER_URL = 'https://daily-rhythm-ai.vedasai-ekansh.workers.dev';
 let scanBusy = false; // true while a photo scan request is in flight (shows a loading state, blocks double-taps)
 let aiSummaryCache = { date: null, text: '', lastRefreshAt: 0 };
@@ -1158,6 +1159,27 @@ function renderStudy(){
     </div>`;
 
   const subject = getSubject(studySubject);
+  const isEditingSubject = editingSubjectId === studySubject;
+
+  const editToggleRow = `
+    <div class="water-row" style="justify-content:flex-end;margin-bottom:10px;">
+      <button class="icon-btn" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}" title="${isEditingSubject?'Done editing':'Edit curriculum manually'}">${isEditingSubject?'\u2713 Done':'\u270E Edit topics'}</button>
+    </div>`;
+
+  if(isEditingSubject){
+    const rows = subject.curriculum.map((t,i)=>`
+      <div class="task-row edit-row">
+        <input class="edit-input" style="flex:1.2;" type="text" value="${(t.phase||'').replace(/"/g,'&quot;')}" placeholder="Phase/chapter" data-action="edit-topic-phase" data-subject="${studySubject}" data-idx="${i}">
+        <input class="edit-input" style="flex:2;" type="text" value="${t.label.replace(/"/g,'&quot;')}" placeholder="Topic name" data-action="edit-topic-label" data-subject="${studySubject}" data-idx="${i}">
+        <button class="icon-btn" data-action="remove-topic" data-subject="${studySubject}" data-idx="${i}" title="Remove">\u2715</button>
+      </div>`).join('');
+    const editorHtml = `<div class="study-card">
+      ${rows || '<p class="note" style="margin:0 0 8px;">No topics yet \u2014 add one below.</p>'}
+      <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="add-topic" data-subject="${studySubject}">+ Add topic</button>
+    </div>`;
+    return `${chipsHtml}${addSubjectRow}${editToggleRow}${editorHtml}<button class="reset" style="margin-top:20px;" data-action="subject-delete" data-id="${studySubject}">Delete "${subject.name}"</button>`;
+  }
+
   const curriculum = subject.curriculum;
   const idx = subject.index || 0;
   const total = curriculum.length;
@@ -1237,7 +1259,7 @@ function renderStudy(){
       <button class="icon-btn" data-action="extra-add" title="Add">+</button>
     </div>`;
 
-  return `${chipsHtml}${addSubjectRow}${progressHtml}${cardHtml}${upcoming}${extrasHtml}${deleteSubjectRow}`;
+  return `${chipsHtml}${addSubjectRow}${editToggleRow}${progressHtml}${cardHtml}${upcoming}${extrasHtml}${deleteSubjectRow}`;
 }
 
 function renderToday(){
@@ -1604,6 +1626,50 @@ function attachHandlers(){
       if(!confirm(`Delete this subject and its curriculum progress? This can't be undone.`)) return;
       subjects = subjects.filter(s=>s.id!==el.dataset.id);
       studySubject = subjects[0]?.id || null;
+      await saveSubjects(); render();
+    });
+  });
+
+  const editSubjectBtn = document.querySelector('[data-action="edit-subject"]');
+  if(editSubjectBtn) editSubjectBtn.addEventListener('click', ()=>{ editingSubjectId = studySubject; render(); });
+  const doneEditingSubjectBtn = document.querySelector('[data-action="done-editing-subject"]');
+  if(doneEditingSubjectBtn) doneEditingSubjectBtn.addEventListener('click', ()=>{ editingSubjectId = null; render(); });
+
+  document.querySelectorAll('[data-action="edit-topic-phase"]').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      const subj = getSubject(el.dataset.subject);
+      const idx = parseInt(el.dataset.idx);
+      if(!subj || !subj.curriculum[idx]) return;
+      subj.curriculum[idx].phase = el.value;
+      await saveSubjects();
+    });
+  });
+  document.querySelectorAll('[data-action="edit-topic-label"]').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      const subj = getSubject(el.dataset.subject);
+      const idx = parseInt(el.dataset.idx);
+      if(!subj || !subj.curriculum[idx]) return;
+      subj.curriculum[idx].label = el.value || 'Untitled topic';
+      await saveSubjects();
+    });
+  });
+  document.querySelectorAll('[data-action="remove-topic"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subj = getSubject(el.dataset.subject);
+      const idx = parseInt(el.dataset.idx);
+      if(!subj || !subj.curriculum[idx]) return;
+      subj.curriculum.splice(idx, 1);
+      // keep the progress pointer meaningful: if we removed something before or at the
+      // current position, shift the pointer back so it doesn't skip or overshoot
+      if(idx < (subj.index||0)) subj.index = Math.max(0, subj.index - 1);
+      await saveSubjects(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="add-topic"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subj = getSubject(el.dataset.subject);
+      if(!subj) return;
+      subj.curriculum.push({phase:'', label:'New topic'});
       await saveSubjects(); render();
     });
   });
