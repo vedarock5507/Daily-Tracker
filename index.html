@@ -355,19 +355,22 @@ let entries = {};
 let taskOverrides = {}; // { [weekdayIndex]: [{id,label,sets,seconds}, ...] } — user-edited exercise lists, replaces TASKS[dow] when present
 let editingDow = null;  // which weekday's exercise list is currently in edit mode (null = none)
 const WORKER_URL = 'https://daily-rhythm-ai.vedasai-ekansh.workers.dev';
-let curriculumExtras = {}; // {ai:[{phase,label}], quantum:[...]} — topics added via photo scan, appended after the built-in curriculum
 let scanBusy = false; // true while a photo scan request is in flight (shows a loading state, blocks double-taps)
 let aiSummaryCache = { date: null, text: '', lastRefreshAt: 0 };
 let aiMascotBusy = false;
-const AI_REFRESH_MIN_GAP_MS = 3 * 60 * 60 * 1000; // 3 hours \u2014 a hard floor between AI calls, not a timer, not a poll
-let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
+const AI_REFRESH_MIN_GAP_MS = 3 * 60 * 60 * 1000; // 3 hours -- a hard floor between AI calls, not a timer, not a poll
+let subjects = []; // [{id, name, curriculum:[{phase,label}], index}] -- replaces the old hardcoded AI/Quantum pair
+let settings = { proteinTarget: 80, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false };
 let studyNotes = {};
-let studySubject = 'ai';
+let studySubject = null;
 let activeTab = 'home';
 let customTrackers = []; // [{id,name,type:'counter'|'checklist',reset:'daily'|'weekly'|'monthly'|'never',value,items,lastResetKey}]
 let addingTracker = false;
 let newTrackerType = 'counter';
 let newTrackerReset = 'daily';
+let wizardStep = null; // null = not showing. 'intro' | 'workout' | 'subjects' | 'done' while active
+let wizardNewSubjectName = '';
+let wizardWorkoutChoice = null; // null | 'yes' | 'no' — tracked only within the workout step
 let settingsOpen = false;
 let calMonth = new Date();
 let selectedCalDate = null;
@@ -464,7 +467,7 @@ function applyAllAutoResets(){
 }
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
-  const defaults = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
+  const defaults = { proteinTarget: 80, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false };
   settings = raw ? Object.assign({}, defaults, JSON.parse(raw)) : defaults;
 }
 async function saveSettings(){ await storageSet('tracker:settings', JSON.stringify(settings)); }
@@ -660,14 +663,15 @@ function buildTodaySnapshot(){
   const dow = weekdayIndex(todayIso);
   const taskList = getTasksForDow(dow);
   const tasksDone = e.noWorkout ? 'n/a (no workout day)' : taskList.filter(t=>e.tasks && e.tasks[t.id]).length + '/' + taskList.length;
+  const studyStatus = {};
+  subjects.forEach(s => { studyStatus[s.name] = !!(e.study && e.study[s.id]); });
   return {
     streak: computeStreak(todayIso),
     workout: tasksDone,
     sleep: (e.sleep||0) + 'h',
     protein: (e.protein||0) + 'g (target ' + settings.proteinTarget + 'g)',
     water: (e.water||0) + '/' + settings.waterTargetBottles + ' bottles',
-    aiStudyDone: !!(e.study && e.study.ai),
-    quantumStudyDone: !!(e.study && e.study.quantum),
+    study: studyStatus,
   };
 }
 
@@ -680,27 +684,24 @@ function buildClaudeSummary(){
   const taskList = getTasksForDow(dow);
   const tasksDone = taskList.filter(t => e.tasks && e.tasks[t.id]).length;
 
-  const ai = currentSubjectData('ai');
-  const aiIdx = settings.aiIndex || 0;
-  const aiDoneToday = !!(e.study && e.study.ai);
-  const aiCurrent = aiIdx < ai.curriculum.length ? ai.curriculum[aiIdx].label : 'curriculum complete';
-
-  const qm = currentSubjectData('quantum');
-  const qmIdx = settings.quantumIndex || 0;
-  const qmDoneToday = !!(e.study && e.study.quantum);
-  const qmCurrent = qmIdx < qm.curriculum.length ? qm.curriculum[qmIdx].label : 'curriculum complete';
+  const subjectLines = subjects.flatMap(s=>{
+    const idx = s.index || 0;
+    const doneToday = !!(e.study && e.study[s.id]);
+    const current = idx < s.curriculum.length ? s.curriculum[idx].label : 'curriculum complete';
+    const pct = s.curriculum.length ? Math.round((idx/s.curriculum.length)*100) : 0;
+    return [
+      ``,
+      `${s.name}: session ${idx} of ${s.curriculum.length} (${pct}%)`,
+      `  Current: ${current}${doneToday?' \u2014 marked done today':' \u2014 not done today'}`,
+    ];
+  });
 
   return [
     `Daily Rhythm check-in \u2014 ${todayIso}`,
     ``,
     `Workout streak: ${streak} day${streak===1?'':'s'}`,
     `Today's workout: ${e.noWorkout ? 'marked as no-workout day' : tasksDone+'/'+taskList.length+' tasks done'}, sleep ${e.sleep||0}h, protein ${e.protein||0}g, water ${e.water||0}/${settings.waterTargetBottles} bottles${workoutOk?' \u2014 day complete':''}`,
-    ``,
-    `AI: session ${aiIdx} of ${ai.curriculum.length} (${Math.round((aiIdx/ai.curriculum.length)*100)}%)`,
-    `  Current: ${aiCurrent}${aiDoneToday?' \u2014 marked done today':' \u2014 not done today'}`,
-    ``,
-    `Quantum: session ${qmIdx} of ${qm.curriculum.length} (${Math.round((qmIdx/qm.curriculum.length)*100)}%)`,
-    `  Current: ${qmCurrent}${qmDoneToday?' \u2014 marked done today':' \u2014 not done today'}`,
+    ...subjectLines,
   ].join('\n');
 }
 
@@ -730,15 +731,16 @@ function mascotSVG(state){
 function renderMascot(todayIso){
   const workoutOk = dayComplete(todayIso);
   const e = entries[todayIso] || {};
-  const aiOk = !!(e.study && e.study.ai);
-  const quantumOk = !!(e.study && e.study.quantum);
-  const count = [workoutOk, aiOk, quantumOk].filter(Boolean).length;
-  const state = count===3 ? 'complete' : count>0 ? 'progress' : 'neutral';
+  const subjectsDoneCount = subjects.filter(s => !!(e.study && e.study[s.id])).length;
+  const total = 1 + subjects.length; // workout + each subject
+  const count = (workoutOk?1:0) + subjectsDoneCount;
+  const state = total>0 && count===total ? 'complete' : count>0 ? 'progress' : 'neutral';
+  const names = subjects.length ? subjects.map(s=>s.name).join(', ') : 'your subjects';
   let msg;
-  if(state==='complete') msg = '<b>All three landed today.</b> Workout, AI, Quantum \u2014 done.';
-  else if(count===2) msg = "<b>2 of 3 today.</b> One more and today's fully in.";
-  else if(count===1) msg = "<b>1 of 3 today.</b> Keep the other two moving.";
-  else msg = "<b>Nothing logged yet today.</b> Workout, AI, Quantum \u2014 pick one and start.";
+  if(total===1) msg = workoutOk ? '<b>Workout done today.</b>' : "<b>Nothing logged yet today.</b> Workout \u2014 pick it up when ready.";
+  else if(state==='complete') msg = `<b>Everything landed today.</b> Workout, ${names} \u2014 done.`;
+  else if(count>0) msg = `<b>${count} of ${total} today.</b> Keep the rest moving.`;
+  else msg = `<b>Nothing logged yet today.</b> Workout, ${names} \u2014 pick one and start.`;
 
   // once the buddy has an AI-written line for today, it takes over from the deterministic one
   if(aiSummaryCache.date === todayIso && aiSummaryCache.text) msg = aiSummaryCache.text;
@@ -757,14 +759,12 @@ function renderHome(){
 
   // red MAX-style banner: anything still outstanding today, pulled from every tracker
   let missed = [];
-  ['ai','quantum'].forEach(subj=>{
-    const data = currentSubjectData(subj);
-    const idx = settings[subj==='ai'?'aiIndex':'quantumIndex'] || 0;
-    const finished = idx >= data.curriculum.length;
-    const doneToday = !!(e.study && e.study[subj]);
-    if(!finished && !doneToday) missed.push(`${data.name} session`);
+  subjects.forEach(s=>{
+    const finished = (s.index||0) >= s.curriculum.length;
+    const doneToday = !!(e.study && e.study[s.id]);
+    if(!finished && !doneToday) missed.push(`${s.name} session`);
   });
-  if(!noWorkout){
+  if(settings.workoutEnabled!==false && !noWorkout){
     const left = taskList.filter(t=>!(e.tasks && e.tasks[t.id])).length;
     if(left>0) missed.push(`${left} workout exercise${left>1?'s':''}`);
   }
@@ -787,17 +787,15 @@ function renderHome(){
   }
 
   // Study rows (reuses studydone action from the Study tab)
-  const aiDone = !!(e.study && e.study.ai);
-  const qmDone = !!(e.study && e.study.quantum);
-  const studyRows = `
-    <div class="task-row">
-      <div class="checkbox ${aiDone?'checked':''}" data-action="studydone" data-subject="ai"></div>
-      <div class="task-label ${aiDone?'done':''}" data-action="studydone" data-subject="ai">AI session</div>
-    </div>
-    <div class="task-row" style="border-bottom:none;">
-      <div class="checkbox ${qmDone?'checked':''}" data-action="studydone" data-subject="quantum"></div>
-      <div class="task-label ${qmDone?'done':''}" data-action="studydone" data-subject="quantum">Quantum session</div>
-    </div>`;
+  const studyRows = subjects.length === 0
+    ? `<p class="note" style="margin:4px 0 0;">No subjects set up yet \u2014 add one on the Study tab.</p>`
+    : subjects.map((s,i)=>{
+        const done = !!(e.study && e.study[s.id]);
+        return `<div class="task-row" ${i===subjects.length-1?'style="border-bottom:none;"':''}>
+          <div class="checkbox ${done?'checked':''}" data-action="studydone" data-subject="${s.id}"></div>
+          <div class="task-label ${done?'done':''}" data-action="studydone" data-subject="${s.id}">${s.name} session</div>
+        </div>`;
+      }).join('');
 
   // Water row (reuses water-plus/minus actions from the Workout tab)
   const waterVal = e.water || 0;
@@ -841,8 +839,7 @@ function renderHome(){
       <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
     </div>
     ${redBanner}
-    <div class="section-label" style="margin-top:18px;">Workout</div>
-    ${workoutRows}
+    ${settings.workoutEnabled!==false ? `<div class="section-label" style="margin-top:18px;">Workout</div>${workoutRows}` : ''}
     <div class="section-label" style="margin-top:18px;">Study</div>
     ${studyRows}
     <div class="section-label" style="margin-top:18px;">Water</div>
@@ -850,6 +847,69 @@ function renderHome(){
     <div class="section-label" style="margin-top:18px;">Custom trackers</div>
     ${trackerRows}
   `;
+}
+
+function renderWizard(){
+  if(wizardStep === 'intro'){
+    return `
+      <div class="wrap" style="padding-top:60px;text-align:center;">
+        <h1>Welcome to Daily Rhythm</h1>
+        <p class="sub" style="margin-bottom:30px;">A couple of quick questions so this fits how you actually work \u2014 not a copy of someone else's setup.</p>
+        <button class="btn-primary" style="width:100%;" data-action="wizard-to-workout">Let's go</button>
+      </div>`;
+  }
+  if(wizardStep === 'workout'){
+    if(wizardWorkoutChoice === 'yes'){
+      return `
+        <div class="wrap" style="padding-top:40px;">
+          <h1 style="font-size:1.3rem;">Set up your workout plan</h1>
+          <p class="sub">Upload however many photos your plan already exists as \u2014 one page or several, we'll sort out the days.</p>
+          <button class="btn-primary" style="width:100%;margin-top:10px;" data-action="wizard-scan-workout" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Scan my workout plan'}</button>
+          <button class="btn-secondary" style="width:100%;margin-top:10px;" data-action="wizard-to-subjects">I'll build it manually later \u2192</button>
+        </div>`;
+    }
+    return `
+      <div class="wrap" style="padding-top:60px;text-align:center;">
+        <h1 style="font-size:1.3rem;">Do you want workout tracking?</h1>
+        <p class="sub" style="margin-bottom:24px;">If you don't lift/train, we'll skip that whole tab.</p>
+        <button class="btn-primary" style="width:100%;margin-bottom:10px;" data-action="wizard-workout-yes">Yes, I work out</button>
+        <button class="btn-secondary" style="width:100%;" data-action="wizard-workout-no">No, skip this</button>
+      </div>`;
+  }
+  if(wizardStep === 'subjects'){
+    const list = subjects.map(s=>`
+      <div class="day-card" style="padding:12px 14px;">
+        <div class="day-head" style="margin-bottom:6px;">
+          <span class="day-name" style="font-size:0.9rem;">${s.name}</span>
+          <button class="icon-btn" data-action="subject-delete" data-id="${s.id}" title="Remove">\u2715</button>
+        </div>
+        <div class="water-sub" style="margin:0 0 8px;">${s.curriculum.length} topic${s.curriculum.length===1?'':'s'} loaded</div>
+        <button class="btn-secondary" style="width:100%;" data-action="scan-study" data-subject="${s.id}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add topics from a photo'}</button>
+      </div>`).join('');
+    return `
+      <div class="wrap" style="padding-top:40px;">
+        <h1 style="font-size:1.3rem;">What do you study?</h1>
+        <p class="sub">Add each subject, then upload whatever planner/index you already have for it \u2014 photos, one or several.</p>
+        ${list}
+        <div class="water-row" style="margin:14px 0;">
+          <input class="edit-input" style="flex:1;" type="text" id="newSubjectName" placeholder="Subject name, e.g. Anatomy">
+          <button class="icon-btn" data-action="subject-create">+</button>
+        </div>
+        <button class="btn-primary" style="width:100%;margin-top:10px;" data-action="wizard-to-done">Continue</button>
+      </div>`;
+  }
+  if(wizardStep === 'done'){
+    return `
+      <div class="wrap" style="padding-top:60px;text-align:center;">
+        <h1>You're set up.</h1>
+        <p class="sub" style="margin-bottom:30px;">
+          ${settings.workoutEnabled===false ? 'Workout tracking is off.' : 'Workout tab is ready.'}
+          ${subjects.length ? ` ${subjects.length} subject${subjects.length===1?'':'s'} added.` : ' No subjects added yet \u2014 you can add them anytime from the Study tab.'}
+        </p>
+        <button class="btn-primary" style="width:100%;" data-action="wizard-finish">Start using Daily Rhythm</button>
+      </div>`;
+  }
+  return '';
 }
 
 function renderCustomTrackers(){
@@ -918,18 +978,26 @@ function renderCustomTrackers(){
   return `${addCard}${cards}`;
 }
 
-function currentSubjectData(subject){
-  const base = subject==='ai'
-    ? {curriculum:AI_CURRICULUM, indexKey:'aiIndex', name:'AI'}
-    : {curriculum:QUANTUM_CURRICULUM, indexKey:'quantumIndex', name:'Quantum'};
-  const extras = curriculumExtras[subject] || [];
-  return extras.length ? {...base, curriculum: [...base.curriculum, ...extras]} : base;
+function getSubject(id){ return subjects.find(s => s.id === id); }
+
+async function loadSubjects(){
+  const raw = await storageGet('tracker:subjects');
+  if(raw){ subjects = JSON.parse(raw); return; }
+  // No subjects saved yet. If this looks like an existing v1 install (real prior AI/Quantum
+  // progress), migrate that progress in silently. Otherwise leave it empty — that's what
+  // triggers the setup wizard for a genuinely new user.
+  const hasPriorProgress = Object.values(entries).some(e => e.study && (e.study.ai || e.study.quantum));
+  if(hasPriorProgress){
+    subjects = [
+      {id:'ai', name:'AI', curriculum:[...AI_CURRICULUM], index: (settings.aiIndex || 0)},
+      {id:'quantum', name:'Quantum', curriculum:[...QUANTUM_CURRICULUM], index: (settings.quantumIndex || 0)},
+    ];
+  } else {
+    subjects = [];
+  }
+  await saveSubjects();
 }
-async function loadCurriculumExtras(){
-  const raw = await storageGet('tracker:curriculumextras');
-  curriculumExtras = raw ? JSON.parse(raw) : {};
-}
-async function saveCurriculumExtras(){ await storageSet('tracker:curriculumextras', JSON.stringify(curriculumExtras)); }
+async function saveSubjects(){ await storageSet('tracker:subjects', JSON.stringify(subjects)); }
 async function loadAiSummaryCache(){
   const raw = await storageGet('tracker:aisummary');
   aiSummaryCache = raw ? JSON.parse(raw) : { date: null, text: '', lastRefreshAt: 0 };
@@ -1017,22 +1085,33 @@ function renderStudy(){
   const todayIso = isoDate(new Date());
   const e = entries[todayIso] || {};
 
+  if(subjects.length === 0){
+    return `<p class="note" style="text-align:center;padding:20px 10px;">No subjects set up yet.</p>
+      <input class="edit-input" style="width:100%;margin-bottom:8px;" type="text" id="newSubjectName" placeholder="Subject name, e.g. Anatomy">
+      <button class="btn-primary" style="width:100%;" data-action="subject-create">+ Add subject</button>`;
+  }
+
+  if(!studySubject || !getSubject(studySubject)) studySubject = subjects[0].id;
+
   // backlog coloring: red if today's session for that subject isn't done yet (and curriculum isn't finished), green if clear
-  function chipStatus(subject){
-    const data = currentSubjectData(subject);
-    const idx = settings[data.indexKey] || 0;
-    const finished = idx >= data.curriculum.length;
-    const doneToday = !!(e.study && e.study[subject]);
+  function chipStatus(subj){
+    const finished = (subj.index||0) >= subj.curriculum.length;
+    const doneToday = !!(e.study && e.study[subj.id]);
     if(finished) return '';
     return doneToday ? 'clear' : 'backlog';
   }
   const chipsHtml = `<div class="chip-row">
-    <div class="chip ${studySubject==='ai'?'active':''} ${chipStatus('ai')}" data-action="studytab" data-subject="ai">AI</div>
-    <div class="chip ${studySubject==='quantum'?'active':''} ${chipStatus('quantum')}" data-action="studytab" data-subject="quantum">Quantum</div>
+    ${subjects.map(s=>`<div class="chip ${studySubject===s.id?'active':''} ${chipStatus(s)}" data-action="studytab" data-subject="${s.id}">${s.name}</div>`).join('')}
   </div>`;
+  const addSubjectRow = `
+    <div class="water-row" style="margin-bottom:14px;">
+      <input class="edit-input" style="flex:1;" type="text" id="newSubjectName" placeholder="New subject name...">
+      <button class="icon-btn" data-action="subject-create">+</button>
+    </div>`;
 
-  const {curriculum, indexKey, name} = currentSubjectData(studySubject);
-  const idx = settings[indexKey] || 0;
+  const subject = getSubject(studySubject);
+  const curriculum = subject.curriculum;
+  const idx = subject.index || 0;
   const total = curriculum.length;
   const pct = total ? Math.min(100, Math.round((idx/total)*100)) : 0;
   const doneToday = !!(e.study && e.study[studySubject]);
@@ -1043,9 +1122,14 @@ function renderStudy(){
     <div class="progress-label"><span>${idx} of ${total} sessions</span><span>${pct}%</span></div>`;
 
   let cardHtml;
-  if(idx >= total){
+  if(total === 0){
     cardHtml = `<div class="study-card">
-      <div class="study-phase-tag">${name} \u2014 curriculum complete</div>
+      <div class="study-title finished">No curriculum yet for ${subject.name}.</div>
+      <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add topics from a photo'}</button>
+    </div>`;
+  } else if(idx >= total){
+    cardHtml = `<div class="study-card">
+      <div class="study-phase-tag">${subject.name} \u2014 curriculum complete</div>
       <div class="study-title finished">You've cleared everything queued up here.</div>
       <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add more topics from a photo'}</button>
     </div>`;
@@ -1055,7 +1139,7 @@ function renderStudy(){
     const noteKey = `${studySubject}-${idx}`;
     const noteVal = (studyNotes[noteKey] || '').replace(/</g,'&lt;');
     cardHtml = `<div class="study-card">
-      <div class="study-phase-tag">${item.phase}</div>
+      <div class="study-phase-tag">${item.phase||''}</div>
       <div class="study-title">${item.label}</div>
       <div class="study-actions-row">
         <button class="icon-btn" data-action="studysearch" data-label="${safeLabel}" title="Web search">\u{1F50D}</button>
@@ -1081,7 +1165,9 @@ function renderStudy(){
     upcoming = '<div class="upnext">Up next</div>' + upcomingItems.map(u=>`<div class="upnext-item">${u.label}</div>`).join('');
   }
 
-  // one-off extras for today, separate from the fixed AI/Quantum curriculum
+  const deleteSubjectRow = `<button class="reset" style="margin-top:20px;" data-action="subject-delete" data-id="${studySubject}">Delete "${subject.name}"</button>`;
+
+  // one-off extras for today, separate from any subject's curriculum
   const extras = (e.extraStudy || []);
   let extrasHtml = '<div class="section-label" style="margin-top:20px;">Today \u2014 extra</div>';
   extras.forEach(x=>{
@@ -1098,7 +1184,7 @@ function renderStudy(){
       <button class="icon-btn" data-action="extra-add" title="Add">+</button>
     </div>`;
 
-  return `${chipsHtml}${progressHtml}${cardHtml}${upcoming}${extrasHtml}`;
+  return `${chipsHtml}${addSubjectRow}${progressHtml}${cardHtml}${upcoming}${extrasHtml}${deleteSubjectRow}`;
 }
 
 function renderToday(){
@@ -1148,10 +1234,14 @@ function renderDayDetail(iso){
 
   const workoutCard = renderDayCard(iso, iso===todayIso); // reuses the same card, so past-day locking applies automatically
 
-  const aiDone = !!(e.study && e.study.ai);
-  const qmDone = !!(e.study && e.study.quantum);
-  const aiExtra = (e.studyExtra && e.studyExtra.ai) || 0;
-  const qmExtra = (e.studyExtra && e.studyExtra.quantum) || 0;
+  const subjectRows = subjects.map((s,i)=>{
+    const done = !!(e.study && e.study[s.id]);
+    const extra = (e.studyExtra && e.studyExtra[s.id]) || 0;
+    return `<div class="task-row" ${i===subjects.length-1?'style="border-bottom:none;"':''}>
+      <div class="checkbox ${done?'checked':''}"></div>
+      <div class="task-label ${done?'done':''}">${s.name} session${extra?` (+${extra} extra)`:''}</div>
+    </div>`;
+  }).join('');
   const extraStudy = e.extraStudy || [];
 
   let extraStudyRows = extraStudy.length
@@ -1161,8 +1251,7 @@ function renderDayDetail(iso){
   const studyCard = `
     <div class="day-card">
       <div class="day-head"><span class="day-name">Study</span></div>
-      <div class="task-row"><div class="checkbox ${aiDone?'checked':''}"></div><div class="task-label ${aiDone?'done':''}">AI session${aiExtra?` (+${aiExtra} extra)`:''}</div></div>
-      <div class="task-row" style="border-bottom:none;"><div class="checkbox ${qmDone?'checked':''}"></div><div class="task-label ${qmDone?'done':''}">Quantum session${qmExtra?` (+${qmExtra} extra)`:''}</div></div>
+      ${subjectRows || '<p class="note">No subjects set up.</p>'}
       ${extraStudyRows}
     </div>`;
 
@@ -1259,15 +1348,25 @@ async function renderReminders(){
     </div>
     <div class="reminder-card">
       <div class="section-label" style="margin-bottom:10px;">Reset study progress</div>
-      <p class="note" style="margin-top:0;">Only use this if the AI or Quantum pointer got out of sync \u2014 it doesn't touch your workout streak or history.</p>
-      <div class="reminder-row" style="margin-top:10px;">
-        <button class="btn-secondary" id="resetAiProgress">Reset AI progress</button>
-        <button class="btn-secondary" id="resetQuantumProgress">Reset Quantum progress</button>
+      <p class="note" style="margin-top:0;">Only use this if a subject's pointer got out of sync \u2014 it doesn't touch your workout streak or history.</p>
+      <div class="reminder-row" style="margin-top:10px;flex-wrap:wrap;gap:8px;">
+        ${subjects.map(s=>`<button class="btn-secondary" data-action="reset-subject" data-id="${s.id}">Reset ${s.name}</button>`).join('') || '<span class="note" style="margin:0;">No subjects yet.</span>'}
       </div>
+    </div>
+    <div class="reminder-card">
+      <div class="section-label" style="margin-bottom:10px;">Setup wizard</div>
+      <p class="note" style="margin-top:0;">Re-run the setup flow \u2014 useful if you want to redo your workout plan or subjects from scratch.</p>
+      <button class="btn-secondary" id="rerunWizard">Run setup wizard</button>
     </div>`;
 }
 
 async function render(){
+  if(wizardStep){
+    document.getElementById('app').innerHTML = renderWizard();
+    attachHandlers();
+    return;
+  }
+
   const todayIso = isoDate(new Date());
   applyAllAutoResets();
   const mascotHtml = renderMascot(todayIso);
@@ -1305,7 +1404,7 @@ async function render(){
       <button class="nav-btn ${activeTab==='home'?'active':''}" data-tab="home" title="Home">
         <svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h4v-6h2v6h4a1 1 0 0 0 1-1v-9"/></svg>
       </button>
-      <button class="nav-btn ${activeTab==='workout'?'active':''}" data-tab="workout" title="Workout">
+      <button class="nav-btn ${activeTab==='workout'?'active':''}" data-tab="workout" title="Workout" ${settings.workoutEnabled===false?'style="display:none;"':''}>
         ${workoutIconSvg}
       </button>
       <button class="nav-btn ${activeTab==='study'?'active':''}" data-tab="study" title="Study">
@@ -1383,38 +1482,58 @@ function attachHandlers(){
 
   document.querySelectorAll('[data-action="studydone"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
-      const subject = el.dataset.subject;
+      const subjectId = el.dataset.subject;
+      const subj = getSubject(subjectId);
+      if(!subj) return;
       const todayIso = isoDate(new Date());
       if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
       if(!entries[todayIso].study) entries[todayIso].study = {};
       if(!entries[todayIso].studyExtra) entries[todayIso].studyExtra = {};
-      const indexKey = subject==='ai' ? 'aiIndex' : 'quantumIndex';
-      const wasDone = !!entries[todayIso].study[subject];
-      const extra = entries[todayIso].studyExtra[subject] || 0;
+      const wasDone = !!entries[todayIso].study[subjectId];
+      const extra = entries[todayIso].studyExtra[subjectId] || 0;
       if(!wasDone){
-        entries[todayIso].study[subject] = true;
-        settings[indexKey] = (settings[indexKey] || 0) + 1;
+        entries[todayIso].study[subjectId] = true;
+        subj.index = (subj.index || 0) + 1;
       } else {
         // undo reverts everything done today for this subject, including any extra sessions
-        entries[todayIso].study[subject] = false;
-        settings[indexKey] = Math.max(0, (settings[indexKey] || 0) - 1 - extra);
-        entries[todayIso].studyExtra[subject] = 0;
+        entries[todayIso].study[subjectId] = false;
+        subj.index = Math.max(0, (subj.index || 0) - 1 - extra);
+        entries[todayIso].studyExtra[subjectId] = 0;
       }
-      await saveEntries(); await saveSettings(); render();
+      await saveEntries(); await saveSubjects(); render();
     });
   });
   document.querySelectorAll('[data-action="studyextra"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
-      const subject = el.dataset.subject;
+      const subjectId = el.dataset.subject;
+      const subj = getSubject(subjectId);
+      if(!subj) return;
       const todayIso = isoDate(new Date());
       if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
       if(!entries[todayIso].studyExtra) entries[todayIso].studyExtra = {};
-      const indexKey = subject==='ai' ? 'aiIndex' : 'quantumIndex';
-      const total = currentSubjectData(subject).curriculum.length;
-      if((settings[indexKey]||0) >= total) return; // curriculum already finished
-      entries[todayIso].studyExtra[subject] = (entries[todayIso].studyExtra[subject] || 0) + 1;
-      settings[indexKey] = (settings[indexKey] || 0) + 1;
-      await saveEntries(); await saveSettings(); render();
+      if((subj.index||0) >= subj.curriculum.length) return; // curriculum already finished
+      entries[todayIso].studyExtra[subjectId] = (entries[todayIso].studyExtra[subjectId] || 0) + 1;
+      subj.index = (subj.index || 0) + 1;
+      await saveEntries(); await saveSubjects(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="subject-create"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const input = document.getElementById('newSubjectName');
+      const name = input ? input.value.trim() : '';
+      if(!name) return;
+      const newSubj = {id:'subj-'+Date.now(), name, curriculum:[], index:0};
+      subjects.push(newSubj);
+      studySubject = newSubj.id;
+      await saveSubjects(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="subject-delete"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      if(!confirm(`Delete this subject and its curriculum progress? This can't be undone.`)) return;
+      subjects = subjects.filter(s=>s.id!==el.dataset.id);
+      studySubject = subjects[0]?.id || null;
+      await saveSubjects(); render();
     });
   });
 
@@ -1663,6 +1782,13 @@ function attachHandlers(){
       scanPhoto('workout', async (items)=>{
         if(!items.length){ alert('No exercises found in that photo.'); return; }
 
+        // Diagnostic: show exactly what day the model detected per exercise, since this
+        // is the second time day-splitting hasn't worked and I can't run the model myself
+        // to see what it's actually returning. This makes the real cause visible on your end.
+        const debugLines = items.map(it => `${it.label || '?'} \u2192 day: "${it.day || '(empty)'}"`).join('\n');
+        console.log('Workout scan raw items:', items);
+        if(!confirm(`Detected days (tap OK to apply, Cancel to abort):\n\n${debugLines}`)) return;
+
         // group items by weekday name if the model found one (e.g. "[FRIDAY]" headers);
         // anything with no day found falls back onto whichever day you were editing
         const byDow = {};
@@ -1691,12 +1817,14 @@ function attachHandlers(){
   });
   document.querySelectorAll('[data-action="scan-study"]').forEach(el=>{
     el.addEventListener('click', ()=>{
-      const subject = el.dataset.subject;
+      const subjectId = el.dataset.subject;
       scanPhoto('study', async (items)=>{
         if(!items.length){ alert('No topics found in that photo.'); return; }
+        const subj = getSubject(subjectId);
+        if(!subj) return;
         const newItems = items.map(it=>({phase: it.phase || '', label: it.label || 'Untitled topic'}));
-        curriculumExtras[subject] = [...(curriculumExtras[subject]||[]), ...newItems];
-        await saveCurriculumExtras(); render();
+        subj.curriculum = [...subj.curriculum, ...newItems];
+        await saveSubjects(); render();
       });
     });
   });
@@ -1715,15 +1843,73 @@ function attachHandlers(){
     }
   });
 
-  const resetAiBtn = document.getElementById('resetAiProgress');
-  if(resetAiBtn) resetAiBtn.addEventListener('click', async ()=>{
-    if(!confirm('Reset AI curriculum progress back to session 1?')) return;
-    settings.aiIndex = 0; await saveSettings(); render();
+  document.querySelectorAll('[data-action="reset-subject"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subj = getSubject(el.dataset.id);
+      if(!subj) return;
+      if(!confirm(`Reset ${subj.name} progress back to session 1?`)) return;
+      subj.index = 0; await saveSubjects(); render();
+    });
   });
-  const resetQuantumBtn = document.getElementById('resetQuantumProgress');
-  if(resetQuantumBtn) resetQuantumBtn.addEventListener('click', async ()=>{
-    if(!confirm('Reset Quantum curriculum progress back to session 1?')) return;
-    settings.quantumIndex = 0; await saveSettings(); render();
+  const rerunWizardBtn = document.getElementById('rerunWizard');
+  if(rerunWizardBtn) rerunWizardBtn.addEventListener('click', ()=>{
+    settingsOpen = false;
+    wizardWorkoutChoice = null;
+    wizardStep = 'intro';
+    render();
+  });
+
+  const wizToWorkoutBtn = document.querySelector('[data-action="wizard-to-workout"]');
+  if(wizToWorkoutBtn) wizToWorkoutBtn.addEventListener('click', ()=>{ wizardStep = 'workout'; render(); });
+
+  const wizYesBtn = document.querySelector('[data-action="wizard-workout-yes"]');
+  if(wizYesBtn) wizYesBtn.addEventListener('click', async ()=>{
+    wizardWorkoutChoice = 'yes';
+    settings.workoutEnabled = true;
+    await saveSettings(); render();
+  });
+  const wizNoBtn = document.querySelector('[data-action="wizard-workout-no"]');
+  if(wizNoBtn) wizNoBtn.addEventListener('click', async ()=>{
+    settings.workoutEnabled = false;
+    await saveSettings();
+    wizardStep = 'subjects'; render();
+  });
+
+  const wizScanWorkoutBtn = document.querySelector('[data-action="wizard-scan-workout"]');
+  if(wizScanWorkoutBtn) wizScanWorkoutBtn.addEventListener('click', ()=>{
+    scanPhoto('workout', async (items)=>{
+      if(!items.length){ alert('No exercises found in that photo.'); return; }
+      const debugLines = items.map(it => `${it.label || '?'} \u2192 day: "${it.day || '(empty)'}"`).join('\n');
+      console.log('Wizard workout scan raw items:', items);
+      if(!confirm(`Detected days (tap OK to apply, Cancel to abort):\n\n${debugLines}`)) return;
+      const byDow = {};
+      items.forEach(it=>{
+        const dayName = (it.day || '').trim().toLowerCase();
+        const matchIdx = DAY_META.findIndex(d => dayName.includes(d.name.toLowerCase()));
+        const targetDow = matchIdx !== -1 ? matchIdx : 0; // no day being "currently edited" during the wizard — default Monday
+        if(!byDow[targetDow]) byDow[targetDow] = [];
+        byDow[targetDow].push(it);
+      });
+      Object.keys(byDow).forEach(dowKey=>{
+        const dow = parseInt(dowKey);
+        taskOverrides[dow] = byDow[dowKey].map((it,i)=>({id:'scan-'+Date.now()+'-'+dow+'-'+i, label: it.label || 'Untitled', sets: it.sets || '', seconds: 45}));
+      });
+      await saveTaskOverrides();
+      wizardStep = 'subjects'; render();
+    });
+  });
+  const wizToSubjectsBtn = document.querySelector('[data-action="wizard-to-subjects"]');
+  if(wizToSubjectsBtn) wizToSubjectsBtn.addEventListener('click', ()=>{ wizardStep = 'subjects'; render(); });
+
+  const wizToDoneBtn = document.querySelector('[data-action="wizard-to-done"]');
+  if(wizToDoneBtn) wizToDoneBtn.addEventListener('click', ()=>{ wizardStep = 'done'; render(); });
+
+  const wizFinishBtn = document.querySelector('[data-action="wizard-finish"]');
+  if(wizFinishBtn) wizFinishBtn.addEventListener('click', async ()=>{
+    settings.wizardDone = true;
+    await saveSettings();
+    wizardStep = null; wizardWorkoutChoice = null;
+    render();
   });
 
   document.getElementById('timerStart').onclick = toggleTimerStart;
@@ -1810,7 +1996,13 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
-(async ()=>{ await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers(); await loadCurriculumExtras(); await loadAiSummaryCache(); await loadSettings(); await loadStudyNotes(); await render(); scheduleReminderCheck(); })();
+(async ()=>{
+  await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers();
+  await loadSettings(); await loadSubjects(); await loadAiSummaryCache(); await loadStudyNotes();
+  if(!settings.wizardDone && subjects.length === 0) wizardStep = 'intro'; // truly new user — auto-show; otherwise it only opens via Settings
+  await render();
+  scheduleReminderCheck();
+})();
 </script>
 </body>
 </html>
