@@ -357,8 +357,9 @@ let editingDow = null;  // which weekday's exercise list is currently in edit mo
 const WORKER_URL = 'https://daily-rhythm-ai.vedasai-ekansh.workers.dev';
 let curriculumExtras = {}; // {ai:[{phase,label}], quantum:[...]} — topics added via photo scan, appended after the built-in curriculum
 let scanBusy = false; // true while a photo scan request is in flight (shows a loading state, blocks double-taps)
-let aiSummaryCache = { date: null, text: '' };
-let summaryBusy = false;
+let aiSummaryCache = { date: null, text: '', lastRefreshAt: 0 };
+let aiMascotBusy = false;
+const AI_REFRESH_MIN_GAP_MS = 3 * 60 * 60 * 1000; // 3 hours \u2014 a hard floor between AI calls, not a timer, not a poll
 let settings = { proteinTarget: 80, aiIndex: 0, quantumIndex: 0, waterBottleLiters: 2, waterTargetBottles: 2.5 };
 let studyNotes = {};
 let studySubject = 'ai';
@@ -738,6 +739,11 @@ function renderMascot(todayIso){
   else if(count===2) msg = "<b>2 of 3 today.</b> One more and today's fully in.";
   else if(count===1) msg = "<b>1 of 3 today.</b> Keep the other two moving.";
   else msg = "<b>Nothing logged yet today.</b> Workout, AI, Quantum \u2014 pick one and start.";
+
+  // once the buddy has an AI-written line for today, it takes over from the deterministic one
+  if(aiSummaryCache.date === todayIso && aiSummaryCache.text) msg = aiSummaryCache.text;
+  if(aiMascotBusy) msg += ' <span class="water-sub" style="margin:0;">(thinking\u2026)</span>';
+
   return `<div class="mascot-row">${mascotSVG(state)}<div class="mascot-bubble">${msg}</div></div>`;
 }
 
@@ -829,18 +835,11 @@ function renderHome(){
     }).join('');
   }
 
-  // AI-generated summary (explicit action, cached per day — never calls the Worker silently)
-  const summaryIsToday = aiSummaryCache.date === todayIso;
-  const summaryHtml = summaryIsToday
-    ? `<div class="day-card" style="padding:14px 16px;"><div class="water-sub" style="margin-bottom:4px;">Today, in a sentence</div>${aiSummaryCache.text}</div>`
-    : `<button class="btn-secondary" style="width:100%;" data-action="gen-summary" ${summaryBusy?'disabled':''}>${summaryBusy?'Writing summary\u2026':'\u{1F916} Generate today\'s summary'}</button>`;
-
   return `
     <div class="streak-card">
       <div><div class="streak-num">${streak}</div><div class="streak-label">day streak &middot; full day complete</div></div>
       <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
     </div>
-    ${summaryHtml}
     ${redBanner}
     <div class="section-label" style="margin-top:18px;">Workout</div>
     ${workoutRows}
@@ -933,9 +932,38 @@ async function loadCurriculumExtras(){
 async function saveCurriculumExtras(){ await storageSet('tracker:curriculumextras', JSON.stringify(curriculumExtras)); }
 async function loadAiSummaryCache(){
   const raw = await storageGet('tracker:aisummary');
-  aiSummaryCache = raw ? JSON.parse(raw) : { date: null, text: '' };
+  aiSummaryCache = raw ? JSON.parse(raw) : { date: null, text: '', lastRefreshAt: 0 };
 }
 async function saveAiSummaryCache(){ await storageSet('tracker:aisummary', JSON.stringify(aiSummaryCache)); }
+
+// Throttle, not a timer/poll: called after real user actions. Only actually fires a request
+// if at least AI_REFRESH_MIN_GAP_MS has passed since the last one \u2014 no background loop running.
+function maybeRefreshAi(){
+  const now = Date.now();
+  if(now - (aiSummaryCache.lastRefreshAt || 0) < AI_REFRESH_MIN_GAP_MS) return;
+  aiSummaryCache.lastRefreshAt = now; // set immediately so rapid-fire actions can't sneak past the gate before the fetch resolves
+  saveAiSummaryCache();
+  runAiRefresh();
+}
+async function runAiRefresh(){
+  aiMascotBusy = true; render();
+  try{
+    const res = await fetch(WORKER_URL + '/summary', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({data: buildTodaySnapshot()}),
+    });
+    const data = await res.json();
+    if(!res.ok || data.error) throw new Error(data.error || 'Summary failed');
+    aiSummaryCache.date = isoDate(new Date());
+    aiSummaryCache.text = data.summary || '';
+    await saveAiSummaryCache();
+  } catch(e){
+    console.warn('AI summary refresh failed (staying on the last known line):', e.message);
+  } finally {
+    aiMascotBusy = false; render();
+  }
+}
 
 // Shared photo-scan flow: opens the camera/file picker, sends the image to the Worker, returns parsed items.
 function fileToBase64(file){
@@ -1670,25 +1698,6 @@ function attachHandlers(){
     });
   });
 
-  const genSummaryBtn = document.querySelector('[data-action="gen-summary"]');
-  if(genSummaryBtn) genSummaryBtn.addEventListener('click', async ()=>{
-    summaryBusy = true; render();
-    try{
-      const res = await fetch(WORKER_URL + '/summary', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({data: buildTodaySnapshot()}),
-      });
-      const data = await res.json();
-      if(!res.ok || data.error) throw new Error(data.error || 'Summary failed');
-      aiSummaryCache = { date: isoDate(new Date()), text: data.summary || '' };
-      await saveAiSummaryCache();
-    } catch(e){
-      alert('Could not generate a summary: ' + e.message);
-    } finally {
-      summaryBusy = false; render();
-    }
-  });
 
   const copyBtn = document.getElementById('copySummary');
   if(copyBtn) copyBtn.addEventListener('click', async ()=>{
@@ -1763,6 +1772,16 @@ function attachHandlers(){
     viewport.addEventListener('touchend', finishSwipe);
     viewport.addEventListener('touchcancel', finishSwipe);
   }
+
+  // Buddy's AI line refreshes on real progress actions, throttled by maybeRefreshAi()
+  // (not on config/editing actions like adding exercises or scanning photos)
+  document.querySelectorAll(
+    '[data-action="task"],[data-action="noworkout"],[data-action="water-plus"],[data-action="water-minus"],' +
+    '[data-action="studydone"],[data-action="studyextra"],[data-action="extra-toggle"],' +
+    '[data-action="tracker-counter-plus"],[data-action="tracker-counter-minus"],[data-action="tracker-item-toggle"]'
+  ).forEach(el=>{
+    el.addEventListener('click', ()=> maybeRefreshAi());
+  });
 }
 
 let lastFiredDate = null;
