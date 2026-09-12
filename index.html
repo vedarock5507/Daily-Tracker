@@ -1987,24 +1987,29 @@ function attachHandlers(){
   });
   document.querySelectorAll('[data-action="subject-preset"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
-      const presets = {
-        jee: [
-          {id:'jee-physics', name:'Physics', curriculum: JEE_NEET_PHYSICS_CURRICULUM, index:0},
-          {id:'jee-chem', name:'Chemistry', curriculum: JEE_NEET_CHEMISTRY_CURRICULUM, index:0},
-          {id:'jee-maths', name:'Maths', curriculum: JEE_MATHS_CURRICULUM, index:0},
-        ],
-        neet: [
-          {id:'neet-physics', name:'Physics', curriculum: JEE_NEET_PHYSICS_CURRICULUM, index:0},
-          {id:'neet-chem', name:'Chemistry', curriculum: JEE_NEET_CHEMISTRY_CURRICULUM, index:0},
-          {id:'neet-bio', name:'Biology', curriculum: NEET_BIOLOGY_CURRICULUM, index:0},
-        ],
+      // Physics & Chemistry are shared between JEE and NEET, so they use fixed ids and are
+      // never duplicated. Maths (JEE-only) and Biology (NEET-only) are mutually exclusive \u2014
+      // picking one exam removes the other's exam-specific subject, since you can't be tracking
+      // both Maths and Biology as "the same JEE/NEET setup" at once.
+      const preset = el.dataset.preset;
+      const ensure = (id, name, curriculum) => {
+        if(!subjects.find(s=>s.id===id)) subjects.push({id, name, curriculum:[...curriculum], index:0});
       };
-      const toAdd = presets[el.dataset.preset];
-      if(!toAdd) return;
-      toAdd.forEach(subj=>{
-        if(!subjects.find(s=>s.id===subj.id)) subjects.push({...subj, curriculum:[...subj.curriculum]});
-      });
-      studySubject = toAdd[0].id;
+      if(preset === 'jee'){
+        ensure('physics', 'Physics', JEE_NEET_PHYSICS_CURRICULUM);
+        ensure('chem', 'Chemistry', JEE_NEET_CHEMISTRY_CURRICULUM);
+        ensure('jee-maths', 'Maths', JEE_MATHS_CURRICULUM);
+        subjects = subjects.filter(s => s.id !== 'neet-bio');
+        studySubject = 'physics';
+      } else if(preset === 'neet'){
+        ensure('physics', 'Physics', JEE_NEET_PHYSICS_CURRICULUM);
+        ensure('chem', 'Chemistry', JEE_NEET_CHEMISTRY_CURRICULUM);
+        ensure('neet-bio', 'Biology', NEET_BIOLOGY_CURRICULUM);
+        subjects = subjects.filter(s => s.id !== 'jee-maths');
+        studySubject = 'physics';
+      } else {
+        return;
+      }
       await saveSubjects(); render();
     });
   });
