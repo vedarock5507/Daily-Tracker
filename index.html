@@ -1066,14 +1066,15 @@ function scanPhoto(mode, onSuccess){
         });
         const data = await res.json();
         if(!res.ok || data.error){
+          const rawSnippet = data.raw ? data.raw.slice(0, 500) : '(no raw output returned)';
           console.warn('Scan failed for', file.name, data.raw || data.error);
-          throw new Error((data.error || 'Scan failed') + (files.length>1 ? ` (on photo: ${file.name})` : ''));
+          throw new Error(`${data.error || 'Scan failed'}${files.length>1 ? ` (on photo: ${file.name})` : ''}\n\n--- What the model actually said ---\n${rawSnippet}`);
         }
         allItems = allItems.concat(data.items || []);
       }
       onSuccess(allItems);
     } catch(e){
-      alert('Could not read that photo: ' + e.message + '\n\nTry a clearer, well-lit, flat-on shot. Check the browser console for the raw model output if this keeps happening.');
+      alert('Could not read that photo:\n\n' + e.message);
     } finally {
       scanBusy = false; render();
     }
