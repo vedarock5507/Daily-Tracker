@@ -761,8 +761,14 @@ function renderHome(){
   let missed = [];
   subjects.forEach(s=>{
     const finished = (s.index||0) >= s.curriculum.length;
-    const doneToday = !!(e.study && e.study[s.id]);
-    if(!finished && !doneToday) missed.push(`${s.name} session`);
+    if(finished) return;
+    const backlogCount = subjectBacklogCount(s);
+    if(backlogCount !== null){
+      if(backlogCount > 0) missed.push(`${s.name}: ${backlogCount} overdue topic${backlogCount>1?'s':''}`);
+    } else {
+      const doneToday = !!(e.study && e.study[s.id]);
+      if(!doneToday) missed.push(`${s.name} session`);
+    }
   });
   if(settings.workoutEnabled!==false && !noWorkout){
     const left = taskList.filter(t=>!(e.tasks && e.tasks[t.id])).length;
@@ -980,6 +986,17 @@ function renderCustomTrackers(){
 
 function getSubject(id){ return subjects.find(s => s.id === id); }
 
+// Real backlog definition: an item only counts as backlog once its scheduled date has
+// actually passed while still unreached — never just "not done yet today". Subjects with
+// no dated items at all (like undated AI/Quantum) have no concept of backlog by date, so
+// callers should fall back to the old "done today" check when this returns null.
+function subjectBacklogCount(subj){
+  const hasDates = subj.curriculum.some(it => it.scheduledDate);
+  if(!hasDates) return null;
+  const todayIso = isoDate(new Date());
+  return subj.curriculum.filter((it, i) => it.scheduledDate && it.scheduledDate < todayIso && i >= (subj.index||0)).length;
+}
+
 async function loadSubjects(){
   const raw = await storageGet('tracker:subjects');
   if(raw){ subjects = JSON.parse(raw); return; }
@@ -1097,8 +1114,10 @@ function renderStudy(){
   // backlog coloring: red if today's session for that subject isn't done yet (and curriculum isn't finished), green if clear
   function chipStatus(subj){
     const finished = (subj.index||0) >= subj.curriculum.length;
-    const doneToday = !!(e.study && e.study[subj.id]);
     if(finished) return '';
+    const backlogCount = subjectBacklogCount(subj);
+    if(backlogCount !== null) return backlogCount > 0 ? 'backlog' : 'clear';
+    const doneToday = !!(e.study && e.study[subj.id]);
     return doneToday ? 'clear' : 'backlog';
   }
   const chipsHtml = `<div class="chip-row">
@@ -1142,6 +1161,11 @@ function renderStudy(){
     cardHtml = `<div class="study-card">
       <div class="study-phase-tag">${item.phase||''}</div>
       <div class="study-title">${item.label}</div>
+      <div class="water-row" style="margin:8px 0 0;align-items:center;">
+        <span class="water-sub" style="margin:0;">Due date (optional)</span>
+        <input class="edit-input" type="date" value="${item.scheduledDate||''}" data-action="set-item-date" data-subject="${studySubject}" data-idx="${idx}" style="flex:0 0 auto;width:150px;">
+        ${item.scheduledDate ? `<button class="icon-btn" data-action="clear-item-date" data-subject="${studySubject}" data-idx="${idx}" title="Clear date">\u2715</button>` : ''}
+      </div>
       <div class="study-actions-row">
         <button class="icon-btn" data-action="studysearch" data-label="${safeLabel}" title="Web search">\u{1F50D}</button>
         <button class="icon-btn" data-action="studyvideo" data-label="${safeLabel}" data-source="${item.source||''}" title="Video explainer">\u25B6</button>
@@ -1516,6 +1540,24 @@ function attachHandlers(){
       entries[todayIso].studyExtra[subjectId] = (entries[todayIso].studyExtra[subjectId] || 0) + 1;
       subj.index = (subj.index || 0) + 1;
       await saveEntries(); await saveSubjects(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="set-item-date"]').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      const subj = getSubject(el.dataset.subject);
+      const idx = parseInt(el.dataset.idx);
+      if(!subj || !subj.curriculum[idx]) return;
+      subj.curriculum[idx].scheduledDate = el.value || undefined;
+      await saveSubjects(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="clear-item-date"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subj = getSubject(el.dataset.subject);
+      const idx = parseInt(el.dataset.idx);
+      if(!subj || !subj.curriculum[idx]) return;
+      delete subj.curriculum[idx].scheduledDate;
+      await saveSubjects(); render();
     });
   });
   document.querySelectorAll('[data-action="subject-create"]').forEach(el=>{
