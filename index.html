@@ -1066,7 +1066,7 @@ function scanPhoto(mode, onSuccess){
         });
         const data = await res.json();
         if(!res.ok || data.error){
-          const rawSnippet = data.raw ? data.raw.slice(0, 500) : '(no raw output returned)';
+          const rawSnippet = data.raw ? data.raw.slice(0, 2000) : '(no raw output returned)';
           console.warn('Scan failed for', file.name, data.raw || data.error);
           throw new Error(`${data.error || 'Scan failed'}${files.length>1 ? ` (on photo: ${file.name})` : ''}\n\n--- What the model actually said ---\n${rawSnippet}`);
         }
