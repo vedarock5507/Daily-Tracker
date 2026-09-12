@@ -1668,7 +1668,10 @@ function attachHandlers(){
         const byDow = {};
         items.forEach(it=>{
           const dayName = (it.day || '').trim().toLowerCase();
-          const matchIdx = DAY_META.findIndex(d => d.name.toLowerCase() === dayName);
+          // "contains" match, not exact-equal — the model may return "Friday - Full-Body Strength"
+          // instead of a bare "friday", and exact match was silently failing on that, dumping
+          // everything onto the currently-edited day instead of actually splitting by day.
+          const matchIdx = DAY_META.findIndex(d => dayName.includes(d.name.toLowerCase()));
           const targetDow = matchIdx !== -1 ? matchIdx : currentDow;
           if(!byDow[targetDow]) byDow[targetDow] = [];
           byDow[targetDow].push(it);
