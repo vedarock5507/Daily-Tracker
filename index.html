@@ -35,7 +35,7 @@ body{padding-bottom:78px;}
   border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;cursor:pointer;flex-shrink:0;}
 .settings-btn:active{transform:scale(0.92);}
 
-.tabpane{display:none;} .tabpane.active{display:block;animation:fadein 0.25s ease;}
+.tabpane{display:none;} .tabpane.active{display:block;animation:fadein 0.3s cubic-bezier(0.22,1,0.36,1);}
 @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
 
 .rhythm{display:flex;align-items:flex-end;gap:8px;height:80px;margin-bottom:8px;}
@@ -48,7 +48,7 @@ body{padding-bottom:78px;}
 .daylabel{font-size:0.64rem;color:var(--muted);}
 .daylabel.today{color:var(--gold);font-weight:600;}
 
-.streak-card{background:linear-gradient(145deg, var(--surface), var(--surface-2));border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin:16px 0 18px;}
+.streak-card{background:linear-gradient(145deg, var(--surface), var(--surface-2));border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin:16px 0 18px;animation:fadein 0.4s cubic-bezier(0.22,1,0.36,1);}
 .streak-num{font-family:'Space Grotesk';font-size:1.7rem;font-weight:700;color:var(--gold);line-height:1;}
 .streak-label{font-size:0.7rem;color:var(--muted);margin-top:2px;}
 .streak-note{font-size:0.74rem;color:var(--muted);max-width:170px;text-align:right;}
@@ -64,12 +64,13 @@ body{padding-bottom:78px;}
 /* mascot */
 .mascot-row{display:flex;align-items:center;gap:12px;margin:2px 0 18px;}
 .mascot-face{width:52px;height:52px;flex-shrink:0;}
-.mascot-bubble{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:0.76rem;color:var(--text);flex:1;line-height:1.35;}
+.mascot-bubble{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:0.76rem;color:var(--text);flex:1;line-height:1.35;animation:fadein 0.45s cubic-bezier(0.22,1,0.36,1);transition:background 0.2s ease;}
 .mascot-bubble b{color:var(--gold);}
 
 /* study tab: subject chips + progress */
 .chip-row{display:flex;gap:8px;margin-bottom:16px;}
-.chip{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:9px 0;border-radius:10px;font-size:0.78rem;font-weight:600;text-align:center;cursor:pointer;font-family:inherit;}
+.chip{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--muted);padding:9px 0;border-radius:10px;font-size:0.78rem;font-weight:600;text-align:center;cursor:pointer;font-family:inherit;transition:transform 0.1s, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;}
+.chip:active{transform:scale(0.95);}
 .chip.active{background:var(--surface-2);color:var(--gold);border-color:var(--gold);}
 .chip.backlog{border-color:var(--strength);}
 .chip.backlog::after{content:'\25CF';color:var(--strength);font-size:0.55rem;margin-left:5px;vertical-align:middle;}
@@ -100,7 +101,7 @@ body{padding-bottom:78px;}
 
 .task-row{display:flex;align-items:center;gap:8px;padding:9px 2px;border-bottom:1px solid var(--line);}
 .task-row:last-of-type{border-bottom:none;}
-.checkbox{width:19px;height:19px;border-radius:6px;border:1.5px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.1s;}
+.checkbox{width:19px;height:19px;border-radius:6px;border:1.5px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.1s, background 0.15s ease, border-color 0.15s ease;}
 .checkbox:active{transform:scale(0.85);}
 .checkbox.checked{background:var(--gold);border-color:var(--gold);}
 .checkbox.checked::after{content:'\2713';font-size:11px;color:var(--bg);font-weight:700;}
@@ -127,8 +128,13 @@ body{padding-bottom:78px;}
 .noworkout-row .task-label{font-size:0.78rem;color:var(--muted);}
 .noworkout-note{font-size:0.78rem;color:var(--muted);padding:10px 2px;font-style:italic;}
 .locked-content{opacity:0.5;pointer-events:none;user-select:none;}
-.locked-banner{font-size:0.7rem;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:7px 10px;margin-bottom:10px;text-align:center;}
+.locked-banner{font-size:0.7rem;color:var(--muted);background:var(--surface-2);border-radius:8px;padding:7px 10px;margin-bottom:10px;text-align:center;animation:fadein 0.35s cubic-bezier(0.22,1,0.36,1);}
 .edit-row{gap:6px;align-items:center;}
+.topic-edit-card{background:var(--surface-2);border-radius:12px;padding:10px 12px;margin-bottom:8px;}
+.topic-edit-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.topic-phase-input{flex:1;font-size:0.72rem;color:var(--muted);background:transparent;border:none;padding:4px 2px;}
+.topic-phase-input:focus{background:var(--surface);border-radius:6px;}
+.topic-label-input{width:100%;font-size:0.9rem;background:var(--surface);border:1px solid var(--line);}
 .edit-input{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 9px;font-family:inherit;font-size:0.8rem;outline:none;}
 .edit-input:focus{border-color:var(--gold);}
 .edit-label{flex:2;min-width:0;}
@@ -153,8 +159,10 @@ body{padding-bottom:78px;}
 .reminder-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
 .reminder-row input[type=time], .reminder-row input[type=number]{background:var(--surface-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 10px;font-family:inherit;width:90px;}
 .reminder-row label{font-size:0.8rem;flex:1;}
-.btn-primary{background:var(--gold);color:var(--bg);border:none;padding:9px 16px;border-radius:9px;font-weight:600;font-size:0.78rem;cursor:pointer;font-family:inherit;}
-.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);padding:9px 16px;border-radius:9px;font-size:0.78rem;cursor:pointer;font-family:inherit;}
+.btn-primary{background:var(--gold);color:var(--bg);border:none;padding:9px 16px;border-radius:9px;font-weight:600;font-size:0.78rem;cursor:pointer;font-family:inherit;transition:transform 0.1s ease;}
+.btn-primary:active{transform:scale(0.97);}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);padding:9px 16px;border-radius:9px;font-size:0.78rem;cursor:pointer;font-family:inherit;transition:transform 0.1s ease, background 0.15s ease;}
+.btn-secondary:active{transform:scale(0.97);background:var(--surface);}
 .note{font-size:0.72rem;color:var(--muted);margin-top:8px;line-height:1.5;}
 .status-ok{color:var(--gold);}
 
@@ -1163,15 +1171,17 @@ function renderStudy(){
 
   const editToggleRow = `
     <div class="water-row" style="justify-content:flex-end;margin-bottom:10px;">
-      <button class="icon-btn" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}" title="${isEditingSubject?'Done editing':'Edit curriculum manually'}">${isEditingSubject?'\u2713 Done':'\u270E Edit topics'}</button>
+      <button class="btn-secondary" style="width:auto;padding:8px 14px;" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}" title="${isEditingSubject?'Done editing':'Edit curriculum manually'}">${isEditingSubject?'\u2713 Done':'\u270E Edit topics'}</button>
     </div>`;
 
   if(isEditingSubject){
     const rows = subject.curriculum.map((t,i)=>`
-      <div class="task-row edit-row">
-        <input class="edit-input" style="flex:1.2;" type="text" value="${(t.phase||'').replace(/"/g,'&quot;')}" placeholder="Phase/chapter" data-action="edit-topic-phase" data-subject="${studySubject}" data-idx="${i}">
-        <input class="edit-input" style="flex:2;" type="text" value="${t.label.replace(/"/g,'&quot;')}" placeholder="Topic name" data-action="edit-topic-label" data-subject="${studySubject}" data-idx="${i}">
-        <button class="icon-btn" data-action="remove-topic" data-subject="${studySubject}" data-idx="${i}" title="Remove">\u2715</button>
+      <div class="topic-edit-card">
+        <div class="topic-edit-head">
+          <input class="edit-input topic-phase-input" type="text" value="${(t.phase||'').replace(/"/g,'&quot;')}" placeholder="Phase / chapter" data-action="edit-topic-phase" data-subject="${studySubject}" data-idx="${i}">
+          <button class="icon-btn" data-action="remove-topic" data-subject="${studySubject}" data-idx="${i}" title="Remove">\u2715</button>
+        </div>
+        <input class="edit-input topic-label-input" type="text" value="${t.label.replace(/"/g,'&quot;')}" placeholder="Topic name" data-action="edit-topic-label" data-subject="${studySubject}" data-idx="${i}">
       </div>`).join('');
     const editorHtml = `<div class="study-card">
       ${rows || '<p class="note" style="margin:0 0 8px;">No topics yet \u2014 add one below.</p>'}
