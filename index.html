@@ -1420,7 +1420,10 @@ function renderStudyOverlay(){
       <div class="study-overlay-panel">
         <div class="study-overlay-head">
           <h2>${subj.name} notebook</h2>
-          <button class="settings-close" data-action="close-study-overlay">×</button>
+          <div style="display:flex;gap:8px;">
+            <button class="settings-close" data-action="export-notes" data-subject="${subj.id}" title="Export/share notes">\u2b07</button>
+            <button class="settings-close" data-action="close-study-overlay">\u00d7</button>
+          </div>
         </div>
         <p class="note" style="margin-top:-4px;">Every note you wrote for this subject, in one place.</p>
         ${notes.length ? notes.map(x=>`<div class="notebook-card">
@@ -2211,6 +2214,37 @@ function attachHandlers(){
   document.querySelectorAll('[data-action="close-study-overlay"]').forEach(el=>{
     el.addEventListener('click', ()=>{ studyOverlay=null; studyPlanBusy=false; render(); });
   });
+  document.querySelectorAll('[data-action="export-notes"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subj = getSubject(el.dataset.subject);
+      if(!subj) return;
+      const lines = [`${subj.name} \u2014 Notes`, ''];
+      (subj.curriculum||[]).forEach((item,i)=>{
+        const key = noteKeyFor(subj.id, item, i);
+        const text = (studyNotes[key]||'').trim();
+        if(text){
+          lines.push(`## ${item.label}`);
+          lines.push(text);
+          lines.push('');
+        }
+      });
+      const content = lines.join('\n');
+      if(content.trim() === `${subj.name} \u2014 Notes`.trim()){
+        alert('No notes to export yet for this subject.');
+        return;
+      }
+      if(navigator.share){
+        try{ await navigator.share({ title: `${subj.name} notes`, text: content }); return; }
+        catch(e){ /* cancelled or unsupported \u2014 fall through to download */ }
+      }
+      const blob = new Blob([content], {type:'text/plain'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `${subj.name.replace(/[^a-z0-9]+/gi,'-')}-notes.txt`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+  });
   document.querySelectorAll('[data-action="topic-difficulty"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
       const subj=getSubject(el.dataset.subject); const idx=parseInt(el.dataset.idx);
@@ -2245,15 +2279,15 @@ function attachHandlers(){
     if(!subj || !raw.trim()) return;
     const lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
     let phase='';
-    const items=[];
+    const rawItems=[];
     lines.forEach(line=>{
       const m=line.match(/^(chapter|unit|module|phase|part|section)\s*[\dA-Za-z.\-]*\s*[:\-]\s*(.+)$/i);
       if(m){ phase=m[2].trim(); return; }
-      items.push({id:makeTopicId(),phase,label:line,difficulty:null,order:subj.curriculum.length+items.length});
+      rawItems.push({phase,label:line});
     });
-    subj.curriculum = subj.curriculum.concat(items);
+    const {added, skipped} = addTopicsToSubject(subj, rawItems);
     studyOverlay=null;
-    studyPlanStatus=`Added ${items.length} topics. Tap “Plan for me” to organize the sequence and dates.`;
+    studyPlanStatus=`Added ${added} topic${added===1?'':'s'}${skipped?`, skipped ${skipped} duplicate${skipped===1?'':'s'}`:''}, sorted by difficulty. Tap \u201cPlan for me\u201d to add dates.`;
     await saveSubjects(); render();
   });
   document.querySelectorAll('[data-action="daily-note"]').forEach(el=>{
