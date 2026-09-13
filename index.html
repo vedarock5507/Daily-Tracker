@@ -37,6 +37,18 @@ body{padding-bottom:78px;}
 
 .tabpane{display:none;} .tabpane.active{display:block;animation:fadein 0.3s cubic-bezier(0.22,1,0.36,1);}
 @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+::view-transition-old(root), ::view-transition-new(root){
+  animation-duration:0.32s;
+  animation-timing-function:cubic-bezier(0.22,1,0.36,1);
+}
+html[data-swipe-dir="left"]::view-transition-old(root){animation-name:pdSlideOutL;}
+html[data-swipe-dir="left"]::view-transition-new(root){animation-name:pdSlideInR;}
+html[data-swipe-dir="right"]::view-transition-old(root){animation-name:pdSlideOutR;}
+html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideInL;}
+@keyframes pdSlideOutL{to{transform:translateX(-22%);opacity:0;filter:blur(6px);}}
+@keyframes pdSlideInR{from{transform:translateX(22%);opacity:0;filter:blur(6px);}to{transform:none;opacity:1;filter:blur(0);}}
+@keyframes pdSlideOutR{to{transform:translateX(22%);opacity:0;filter:blur(6px);}}
+@keyframes pdSlideInL{from{transform:translateX(-22%);opacity:0;filter:blur(6px);}to{transform:none;opacity:1;filter:blur(0);}}
 
 .rhythm{display:flex;align-items:flex-end;gap:8px;height:80px;margin-bottom:8px;}
 .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;height:100%;justify-content:flex-end;cursor:pointer;}
@@ -64,6 +76,39 @@ body{padding-bottom:78px;}
 /* mascot */
 .mascot-row{display:flex;align-items:center;gap:12px;margin:2px 0 18px;}
 .mascot-face{width:52px;height:52px;flex-shrink:0;}
+.pixel-buddy{image-rendering:pixelated;}
+.pbuddy-eye{transform-origin:center;transform-box:fill-box;animation:pbuddyEyes 9s ease-in-out infinite;}
+.pbuddy-eye-r{animation-name:pbuddyEyesR;}
+.pbuddy-mouth{transform-origin:center;transform-box:fill-box;animation:pbuddySmirk 9s ease-in-out infinite;}
+.pixel-buddy-sleep .pbuddy-z{animation:pbuddyZ 2.2s ease-in-out infinite;}
+@keyframes pbuddyEyes{
+  0%,55%{transform:scaleY(1) translateX(0);}
+  57%{transform:scaleY(0.15) translateX(0);}   /* blink */
+  59%,74%{transform:scaleY(1) translateX(0);}
+  76%{transform:scaleY(1) translateX(-0.6px);} /* glance left */
+  80%{transform:scaleY(1) translateX(0.6px);}  /* glance right */
+  84%,100%{transform:scaleY(1) translateX(0);}
+}
+@keyframes pbuddyEyesR{
+  0%,29%{transform:scaleY(1) translateX(0);}
+  31%{transform:scaleY(0.15) translateX(0);}   /* blink, offset from left eye so it doesn't look synced */
+  33%,44%{transform:scaleY(1) translateX(0);}
+  46%{transform:scaleY(0.15) translateX(0);}   /* wink */
+  50%,74%{transform:scaleY(1) translateX(0);}
+  76%{transform:scaleY(1) translateX(-0.6px);}
+  80%{transform:scaleY(1) translateX(0.6px);}
+  84%,100%{transform:scaleY(1) translateX(0);}
+}
+@keyframes pbuddySmirk{
+  0%,88%{transform:none;}
+  91%{transform:translateX(0.8px) translateY(-0.4px) rotate(-4deg);} /* smirk */
+  95%,100%{transform:none;}
+}
+@keyframes pbuddyZ{
+  0%{opacity:0;transform:translateY(0);}
+  30%{opacity:1;}
+  100%{opacity:0;transform:translateY(-6px);}
+}
 .mascot-bubble{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 13px;font-size:0.76rem;color:var(--text);flex:1;line-height:1.35;animation:fadein 0.45s cubic-bezier(0.22,1,0.36,1);transition:background 0.2s ease;}
 .mascot-bubble b{color:var(--gold);}
 
@@ -140,6 +185,49 @@ body{padding-bottom:78px;}
 .edit-label{flex:2;min-width:0;}
 .edit-sets{flex:1.2;min-width:0;}
 
+
+/* v1.4 study command center */
+.study-command{background:linear-gradient(145deg,var(--surface),var(--surface-2));border:1px solid var(--line);border-radius:16px;padding:14px;margin:0 0 14px;}
+.study-command-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+.study-command-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;}
+.study-command-sub{font-size:.7rem;color:var(--muted);margin-top:3px;line-height:1.35;}
+.study-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:10px 0;}
+.study-kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 8px;text-align:center;}
+.study-kpi b{display:block;font-family:'Space Grotesk';font-size:1rem;}
+.study-kpi span{display:block;color:var(--muted);font-size:.6rem;margin-top:2px;}
+.study-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.study-action-grid .btn-primary,.study-action-grid .btn-secondary{width:100%;padding:9px 8px;}
+.plan-lane{margin-top:12px;padding-top:10px;border-top:1px solid var(--line);}
+.plan-lane-head{display:flex;justify-content:space-between;align-items:center;font-size:.7rem;color:var(--muted);margin-bottom:7px;}
+.plan-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line);}
+.plan-item:last-child{border-bottom:none;}
+.plan-num{width:22px;height:22px;border-radius:50%;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:var(--gold);font-weight:700;flex:0 0 22px;}
+.plan-copy{min-width:0;flex:1;}
+.plan-copy b{font-size:.78rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.plan-copy span{font-size:.63rem;color:var(--muted);}
+.plan-date{font-size:.62rem;color:var(--muted);white-space:nowrap;}
+.notebook-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;}
+.notebook-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;}
+.notebook-title{font-family:'Space Grotesk';font-weight:700;font-size:.86rem;}
+.notebook-meta{font-size:.63rem;color:var(--muted);}
+.notebook-note{font-size:.78rem;line-height:1.5;white-space:pre-wrap;color:var(--text);margin-top:7px;}
+.notebook-empty{font-size:.75rem;color:var(--muted);padding:14px 0;text-align:center;}
+.study-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:70;padding:18px;backdrop-filter:blur(3px);overflow:auto;}
+.study-overlay.open{display:block;}
+.study-overlay-panel{max-width:520px;margin:16px auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;}
+.study-overlay-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.study-overlay-head h2{font-family:'Space Grotesk';font-size:1.05rem;margin:0;}
+.quick-paste{width:100%;min-height:130px;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:11px;color:var(--text);font-family:inherit;font-size:.8rem;line-height:1.5;resize:vertical;outline:none;}
+.quick-paste:focus{border-color:var(--gold);}
+.smart-badge{display:inline-flex;align-items:center;gap:5px;background:var(--surface-2);color:var(--gold);border:1px solid var(--line);border-radius:20px;padding:4px 8px;font-size:.59rem;font-weight:700;}
+.difficulty-row{display:flex;gap:7px;margin-top:9px;}
+.difficulty-row button{flex:1;padding:8px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font-size:.68rem;cursor:pointer;}
+.difficulty-row button.active{border-color:var(--gold);color:var(--gold);}
+.cal-note{margin-top:12px;}
+.cal-note textarea{width:100%;min-height:100px;}
+.cal-cell.hasnote::after{content:'';position:absolute;width:4px;height:4px;border-radius:50%;background:var(--gold);bottom:5px;}
+.cal-cell{position:relative;}
+
 /* calendar */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .cal-detail-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
@@ -189,9 +277,17 @@ body{padding-bottom:78px;}
 .settings-head h2{font-family:'Space Grotesk';font-size:1.15rem;margin:0;}
 .settings-close{background:var(--surface-2);border:none;color:var(--text);width:30px;height:30px;border-radius:9px;
   font-size:1rem;cursor:pointer;}
+/* iPhone visual layer — keeps the functional DOM and event model intact */
+body{background:radial-gradient(ellipse 80% 42% at 50% -12%,#443021,transparent 65%),var(--bg);padding:calc(18px + env(safe-area-inset-top)) 16px calc(94px + env(safe-area-inset-bottom));}
+.wrap{max-width:540px}.top-bar{margin:5px 2px 22px}.top-bar h1,h1{font-family:'Space Grotesk',sans-serif;font-size:1.72rem;letter-spacing:-.045em}.settings-btn{width:43px;height:43px;border:0;background:radial-gradient(circle at 35% 30%,#fff0b0 0 4%,#e0aa4a 13%,#c05e37 55%,#693326 100%);box-shadow:0 5px 20px #e0aa4a55;color:var(--bg);border-radius:50%}.bottom-nav{left:50%;right:auto;bottom:calc(12px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(calc(100% - 28px),420px);border:1px solid rgba(240,237,230,.12);border-radius:22px;background:rgba(27,30,36,.88);box-shadow:0 15px 35px #0009;backdrop-filter:blur(20px);padding:7px}.nav-btn{width:62px;height:44px;border-radius:15px}.nav-btn.active{background:rgba(240,237,230,.1);color:var(--gold)}
+.streak-card,.day-card,.study-card,.tracker-card,.reminder-card,.settings-panel,.study-command{border-radius:24px!important;background:linear-gradient(145deg,rgba(42,43,43,.88),rgba(24,26,31,.9))!important;border-color:rgba(240,237,230,.1)!important;box-shadow:0 18px 42px #0005,inset 0 1px 0 #ffffff0d!important;backdrop-filter:blur(16px)}.streak-card{padding:20px}.streak-num{font-size:2rem}.btn-primary{border-radius:15px;padding:12px 16px;box-shadow:0 8px 18px #e0aa4a33}.btn-secondary{border-radius:15px;padding:11px 15px;background:rgba(240,237,230,.06)}.task-row{min-height:58px}.checkbox{width:23px;height:23px;border-radius:8px}.checkbox.checked{box-shadow:0 2px 12px #e0aa4a55}.wellness,.study-kpis{gap:9px}.wellness-field,.study-kpi{border-radius:18px;background:rgba(240,237,230,.05);border-color:rgba(240,237,230,.09)}.modal,.settings-panel,.study-overlay-panel{border-radius:29px;background:linear-gradient(160deg,#292720,#17191e);box-shadow:0 25px 55px #0009}.tabpane.active{animation:iosEnter .38s cubic-bezier(.16,1,.3,1)}@keyframes iosEnter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#launch{position:fixed;inset:0;z-index:999;background:radial-gradient(circle at center,#4d3322,#121418 52%);display:grid;place-items:center;transition:opacity .65s,visibility .65s}.launch-logo{width:116px;height:116px;position:relative}.launch-logo i{position:absolute;inset:0;border-radius:50%;border:2px solid #ffdc8e;box-shadow:0 0 27px #e0aa4a77,inset 0 0 21px #e0aa4a36;animation:orbit 2.5s ease-in-out infinite}.launch-logo i:nth-child(2){inset:19px;border-color:#c05e37;animation-delay:-.8s}.launch-logo i:nth-child(3){inset:40px;background:#e0aa4a;border:0;box-shadow:0 0 25px #e0aa4a}@keyframes orbit{50%{transform:scale(.84);opacity:.55}}#launch small{position:absolute;margin-top:174px;letter-spacing:.19em;text-transform:uppercase;color:#c5c0b5;font-size:10px}#launch.out{opacity:0;visibility:hidden}
+.rhythm{height:112px;padding:14px 10px 8px;border-radius:23px;background:linear-gradient(145deg,rgba(42,43,43,.82),rgba(24,26,31,.88));border:1px solid rgba(240,237,230,.08);gap:9px;box-shadow:inset 0 1px #ffffff0a}.bar-col{gap:9px;border-radius:13px;transition:transform .2s cubic-bezier(.16,1,.3,1)}.bar-col:active{transform:scale(.94)}.bar{border-radius:11px 11px 7px 7px;box-shadow:inset 0 1px #ffffff36,0 7px 14px #0004;transition:height .35s cubic-bezier(.16,1,.3,1),transform .2s}.bar.today{box-shadow:0 0 0 2px var(--gold),inset 0 1px #ffffff55,0 8px 18px #e0aa4a44}.bar.selected{box-shadow:0 0 0 2px var(--text),inset 0 1px #ffffff55,0 8px 18px #0005}.daylabel{font-size:.66rem;letter-spacing:.03em}.mascot-row{padding:6px 2px}.mascot-face{width:59px;height:59px;filter:drop-shadow(0 7px 12px rgba(224,170,74,.23));animation:buddyFloat 3.2s ease-in-out infinite}.mascot-bubble{border-radius:18px;background:linear-gradient(145deg,rgba(47,45,38,.9),rgba(27,29,34,.92));padding:12px 14px;box-shadow:inset 0 1px #ffffff12,0 8px 20px #0003;position:relative}.mascot-bubble:before{content:'';position:absolute;left:-6px;top:22px;width:12px;height:12px;background:#2b2c2f;transform:rotate(45deg);border-left:1px solid rgba(240,237,230,.08);border-bottom:1px solid rgba(240,237,230,.08)}@keyframes buddyFloat{50%{transform:translateY(-4px) rotate(2deg);filter:drop-shadow(0 11px 16px rgba(224,170,74,.34))}}
+.buddy-btn{padding:0;border:0;background:none;cursor:pointer;border-radius:50%}.buddy-btn:active{transform:scale(.9)}.buddy-btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
 </style>
 </head>
 <body>
+<div id="launch"><div class="launch-logo"><i></i><i></i><i></i></div><small>Daily rhythm</small></div>
 <div class="wrap" id="app"><div class="loading">Loading your week...</div></div>
 
 <div class="modal-overlay" id="timerModal">
@@ -401,6 +497,11 @@ let calMonth = new Date();
 let selectedCalDate = null;
 let currentSwipeDate = isoDate(new Date());
 let timerState = {seconds:0, remaining:0, running:false, interval:null, label:''};
+let studyOverlay = null; // null | 'planner' | 'paste' | 'notebook'
+let studyPlanBusy = false;
+let studyPlanStatus = '';
+let studyPlannerDraft = { goal:'', targetDate:'', minutes:60, level:'starting' };
+
 let transitioning = false;
 
 function isoDate(d){
@@ -740,16 +841,32 @@ function studyVideoExplain(label, source){
 }
 
 function mascotSVG(state){
+  const hour = new Date().getHours();
+  const sleepy = hour >= 23 || hour < 6;
+
   const faceColor = state==='complete' ? 'var(--gold)' : state==='progress' ? 'var(--cardio)' : 'var(--surface-2)';
-  let mouth;
-  if(state==='complete') mouth = '<path d="M16 32 Q26 40 36 32" stroke="var(--bg)" stroke-width="3" fill="none" stroke-linecap="round"/>';
-  else if(state==='progress') mouth = '<line x1="17" y1="33" x2="35" y2="33" stroke="var(--bg)" stroke-width="3" stroke-linecap="round"/>';
-  else mouth = '<path d="M16 35 Q26 29 36 35" stroke="var(--bg)" stroke-width="3" fill="none" stroke-linecap="round"/>';
-  return `<svg class="mascot-face" viewBox="0 0 52 52" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="26" cy="26" r="24" fill="${faceColor}"/>
-    <circle cx="18" cy="22" r="3" fill="var(--bg)"/>
-    <circle cx="34" cy="22" r="3" fill="var(--bg)"/>
-    ${mouth}
+
+  if(sleepy){
+    return `<svg class="mascot-face pixel-buddy pixel-buddy-sleep" viewBox="0 0 16 16" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+      <rect width="16" height="16" rx="3" fill="${faceColor}"/>
+      <rect x="3" y="7" width="4" height="1" fill="var(--bg)"/>
+      <rect x="9" y="7" width="4" height="1" fill="var(--bg)"/>
+      <rect x="6" y="10" width="4" height="1" fill="var(--bg)"/>
+      <text x="11" y="5" font-size="4" fill="var(--muted)" class="pbuddy-z">z</text>
+    </svg>`;
+  }
+
+  const mouthRects = state==='complete'
+    ? `<rect x="4" y="10" width="2" height="1" fill="var(--bg)"/><rect x="6" y="11" width="4" height="1" fill="var(--bg)"/><rect x="10" y="10" width="2" height="1" fill="var(--bg)"/>`
+    : state==='progress'
+    ? `<rect x="5" y="10" width="6" height="1" fill="var(--bg)"/>`
+    : `<rect x="4" y="11" width="2" height="1" fill="var(--bg)"/><rect x="6" y="10" width="4" height="1" fill="var(--bg)"/><rect x="10" y="11" width="2" height="1" fill="var(--bg)"/>`;
+
+  return `<svg class="mascot-face pixel-buddy" viewBox="0 0 16 16" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg">
+    <rect width="16" height="16" rx="3" fill="${faceColor}"/>
+    <g class="pbuddy-eye pbuddy-eye-l"><rect x="4" y="6" width="2" height="2" fill="var(--bg)"/></g>
+    <g class="pbuddy-eye pbuddy-eye-r"><rect x="10" y="6" width="2" height="2" fill="var(--bg)"/></g>
+    <g class="pbuddy-mouth">${mouthRects}</g>
   </svg>`;
 }
 
@@ -771,7 +888,7 @@ function renderMascot(todayIso){
   if(aiSummaryCache.date === todayIso && aiSummaryCache.text) msg = aiSummaryCache.text;
   if(aiMascotBusy) msg += ' <span class="water-sub" style="margin:0;">(thinking\u2026)</span>';
 
-  return `<div class="mascot-row">${mascotSVG(state)}<div class="mascot-bubble">${msg}</div></div>`;
+  return `<div class="mascot-row"><button class="buddy-btn" data-action="buddy" aria-label="Talk to your buddy">${mascotSVG(state)}</button><div class="mascot-bubble">${msg}</div></div>`;
 }
 
 function renderHome(){
@@ -1136,6 +1253,223 @@ function scanPhoto(mode, onSuccess){
   input.click();
 }
 
+
+function makeTopicId(){ return 'topic-'+Date.now()+'-'+Math.random().toString(36).slice(2,8); }
+
+function normalizeTopicLabel(s){
+  return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+}
+function isDuplicateTopicLabel(label, existingNormLabels){
+  const norm = normalizeTopicLabel(label);
+  if(!norm) return false;
+  return existingNormLabels.some(ex=>{
+    if(ex === norm) return true;
+    // catches near-duplicates too (e.g. "Superposition of waves" vs "Waves: superposition"),
+    // not just character-for-character matches \u2014 real photo scans rarely produce identical text twice
+    if(norm.length>=6 && ex.length>=6 && (ex.includes(norm) || norm.includes(ex))) return true;
+    return false;
+  });
+}
+// Shared entry point for adding new topics from ANY source (photo scan, pasted syllabus text,
+// scanning the same list twice by accident, two photos that each cover overlapping/partial
+// content of one real list). Dedupes against what's already there AND within the new batch
+// itself, then re-sorts only the still-pending portion by difficulty \u2014 completed topics
+// never get reshuffled.
+function addTopicsToSubject(subj, rawItems){
+  const existingNorm = subj.curriculum.map(t=>normalizeTopicLabel(t.label));
+  const newOnes = [];
+  let skipped = 0;
+  rawItems.forEach(it=>{
+    const label = (it.label || 'Untitled topic').trim();
+    const seenSoFar = existingNorm.concat(newOnes.map(n=>normalizeTopicLabel(n.label)));
+    if(isDuplicateTopicLabel(label, seenSoFar)){ skipped++; return; }
+    newOnes.push({ id: makeTopicId(), phase: it.phase || '', label, difficulty: it.difficulty || null, order: 0 });
+  });
+  subj.curriculum = subj.curriculum.concat(newOnes);
+  const doneCount = subj.index || 0;
+  const done = subj.curriculum.slice(0, doneCount);
+  const pending = smartOrderCurriculum(subj.curriculum.slice(doneCount));
+  pending.forEach((item,i)=>{ item.order = doneCount + i; });
+  subj.curriculum = done.concat(pending);
+  return { added: newOnes.length, skipped };
+}
+
+function normalizeCurriculumData(){
+  let changed = false;
+  subjects.forEach(subj=>{
+    (subj.curriculum||[]).forEach((item,i)=>{
+      if(!item.id){ item.id = makeTopicId(); changed = true; }
+      if(item.difficulty == null){ item.difficulty = null; changed = true; }
+      if(item.order == null){ item.order = i; changed = true; }
+    });
+  });
+  return changed;
+}
+
+function noteKeyFor(subjectId, item, idx){
+  const stable = item && item.id ? item.id : idx;
+  const legacy = `${subjectId}-${idx}`;
+  const next = `${subjectId}::${stable}`;
+  if(studyNotes[legacy] && studyNotes[next] == null){
+    studyNotes[next] = studyNotes[legacy];
+    delete studyNotes[legacy];
+    saveStudyNotesDebounced();
+  }
+  return next;
+}
+
+function topicNeedScore(item, idx){
+  const t = ((item.phase||'')+' '+(item.label||'')).toLowerCase();
+  let score = idx * 0.02;
+  const basics = ['basic','introduction','unit','measurement','sets','definition','notation','fundamental','mole concept','atomic models','cell theory','vectors','functions','algebra'];
+  const advanced = ['application','derivation','advanced','integration','differential','eigen','gradient','mechanism','equilibrium','reaction','organic','rotation','electromagnetic','quantum','transformer','transistor','neural','transformer'];
+  basics.forEach(k=>{ if(t.includes(k)) score -= 5; });
+  advanced.forEach(k=>{ if(t.includes(k)) score += 1.5; });
+  if(item.difficulty === 'hard') score -= 2.0; // harder topics move earlier so foundations can be reinforced sooner
+  if(item.difficulty === 'easy') score += 0.8;
+  return score;
+}
+
+function smartOrderCurriculum(curriculum){
+  return curriculum
+    .map((item,i)=>({item, i, score:topicNeedScore(item,i)}))
+    .sort((a,b)=>a.score-b.score)
+    .map(x=>x.item);
+}
+
+function distributePlan(items, startDate, dailyMinutes){
+  const result = [];
+  const mins = Math.max(15, Number(dailyMinutes)||60);
+  let day = startDate || isoDate(new Date());
+  let used = 0;
+  items.forEach((item, i)=>{
+    const est = Math.max(20, Number(item.learningMinutes)||30);
+    if(used + est > mins && used > 0){ day = addDays(day,1); used = 0; }
+    item.learningMinutes = est;
+    item.scheduledDate = day;
+    used += est;
+    result.push(item);
+  });
+  return result;
+}
+
+function localSmartPlan(subj, opts){
+  const completed = (subj.curriculum||[]).slice(0, subj.index||0);
+  const pending = (subj.curriculum||[]).slice(subj.index||0);
+  const ordered = smartOrderCurriculum(pending);
+  const planned = distributePlan(ordered, opts.targetDate < isoDate(new Date()) ? isoDate(new Date()) : (opts.startDate||isoDate(new Date())), opts.minutes);
+  // Keep completed items untouched; replace pending region with the computed order.
+  subj.curriculum = completed.concat(planned);
+  subj.index = Math.min(subj.index||0, subj.curriculum.length);
+  subj.planSource = 'smart-local';
+  subj.planUpdatedAt = new Date().toISOString();
+  return {count:planned.length, source:'smart-local'};
+}
+
+async function aiPlanSubject(subj, opts){
+  const payload = {
+    subject: subj.name,
+    goal: opts.goal || `Learn ${subj.name}`,
+    targetDate: opts.targetDate || '',
+    dailyMinutes: Number(opts.minutes)||60,
+    currentLevel: opts.level || 'starting',
+    completedCount: subj.index||0,
+    curriculum: (subj.curriculum||[]).slice(subj.index||0).map((x,i)=>({id:x.id||String(i),phase:x.phase||'',label:x.label||'',difficulty:x.difficulty||null}))
+  };
+  try{
+    const res = await fetch(WORKER_URL + '/plan', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(!res.ok || data.error || !Array.isArray(data.items)) throw new Error(data.error || 'AI planner unavailable');
+    const byId = new Map(subj.curriculum.map(x=>[x.id,x]));
+    const completed = subj.curriculum.slice(0, subj.index||0);
+    const ordered = [];
+    data.items.forEach((it, i)=>{
+      const original = byId.get(it.id);
+      if(!original) return;
+      original.learningMinutes = Number(it.learningMinutes)||original.learningMinutes||30;
+      original.practiceMinutes = Number(it.practiceMinutes)||original.practiceMinutes||0;
+      original.scheduledDate = it.scheduledDate || original.scheduledDate;
+      if(it.prerequisiteIds) original.prerequisiteIds = it.prerequisiteIds;
+      ordered.push(original);
+    });
+    const missing = subj.curriculum.slice(subj.index||0).filter(x=>!ordered.includes(x));
+    subj.curriculum = completed.concat(ordered.concat(missing));
+    subj.planSource = 'ai';
+    subj.planUpdatedAt = new Date().toISOString();
+    return {count:ordered.length || missing.length, source:'ai'};
+  }catch(err){
+    console.warn('AI planner failed; using local dependency planner:', err.message);
+    return localSmartPlan(subj, opts);
+  }
+}
+
+function renderStudyOverlay(){
+  if(!studyOverlay) return '';
+  if(studyOverlay === 'notebook'){
+    const subj = getSubject(studySubject);
+    if(!subj) return '';
+    const notes = (subj.curriculum||[]).map((item,i)=>{
+      const key = noteKeyFor(subj.id,item,i);
+      return {item,i,text:studyNotes[key]||''};
+    }).filter(x=>x.text.trim());
+    return `<div class="study-overlay open" id="studyOverlay">
+      <div class="study-overlay-panel">
+        <div class="study-overlay-head">
+          <h2>${subj.name} notebook</h2>
+          <button class="settings-close" data-action="close-study-overlay">×</button>
+        </div>
+        <p class="note" style="margin-top:-4px;">Every note you wrote for this subject, in one place.</p>
+        ${notes.length ? notes.map(x=>`<div class="notebook-card">
+          <div class="notebook-head"><div><div class="notebook-title">${x.item.label}</div><div class="notebook-meta">${x.item.phase||'Topic'}</div></div></div>
+          <div class="notebook-note">${x.text.replace(/</g,'&lt;')}</div>
+        </div>`).join('') : '<div class="notebook-empty">No notes yet. Write on any topic and they will collect here automatically.</div>'}
+        <div class="study-action-grid" style="margin-top:10px;"><button class="btn-secondary" data-action="close-study-overlay">Close</button></div>
+      </div>
+    </div>`;
+  }
+  if(studyOverlay === 'paste'){
+    return `<div class="study-overlay open" id="studyOverlay">
+      <div class="study-overlay-panel">
+        <div class="study-overlay-head">
+          <h2>Paste a syllabus</h2>
+          <button class="settings-close" data-action="close-study-overlay">×</button>
+        </div>
+        <p class="note">Paste chapters/topics exactly as you have them. One line per topic. The app will split phases from lines like "Chapter 3: Kinematics" and build the queue for you.</p>
+        <textarea id="bulkSyllabusInput" class="quick-paste" placeholder="Chapter 1: Units and measurements&#10;Dimensions and dimensional analysis&#10;Chapter 2: Kinematics&#10;Motion in a straight line&#10;Projectile motion"></textarea>
+        <div class="study-action-grid" style="margin-top:10px;">
+          <button class="btn-primary" data-action="bulk-parse">Build topics</button>
+          <button class="btn-secondary" data-action="close-study-overlay">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+  }
+  const subject = getSubject(studySubject);
+  return `<div class="study-overlay open" id="studyOverlay">
+    <div class="study-overlay-panel">
+      <div class="study-overlay-head">
+        <h2>Build my study plan</h2>
+        <button class="settings-close" data-action="close-study-overlay">×</button>
+      </div>
+      <p class="note">Tell the planner the destination and the time you actually have. It decides the sequence, dates and session size. It will try the AI planner first, then safely fall back to the local dependency planner.</p>
+      <div class="reminder-card">
+        <div class="reminder-row"><label>Goal</label><input class="edit-input" id="planGoal" type="text" value="${(studyPlannerDraft.goal||`Master ${subject?.name||'this subject'}`).replace(/"/g,'&quot;')}" style="width:65%;"></div>
+        <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="planDate" type="date" value="${studyPlannerDraft.targetDate||addDays(isoDate(new Date()),30)}"></div>
+        <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="planMinutes" type="number" min="15" max="600" step="15" value="${studyPlannerDraft.minutes||60}"></div>
+        <div class="reminder-row"><label>Starting level</label><select class="edit-input" id="planLevel" style="width:55%;"><option ${studyPlannerDraft.level==='starting'?'selected':''}>starting</option><option ${studyPlannerDraft.level==='familiar'?'selected':''}>familiar</option><option ${studyPlannerDraft.level==='strong'?'selected':''}>strong</option></select></div>
+      </div>
+      <div class="study-action-grid">
+        <button class="btn-primary" data-action="build-study-plan">${studyPlanBusy?'Planning…':'Build plan'}</button>
+        <button class="btn-secondary" data-action="close-study-overlay">Cancel</button>
+      </div>
+      ${studyPlanStatus ? `<p class="note" style="margin-top:10px;color:var(--gold);">${studyPlanStatus}</p>` : ''}
+    </div>
+  </div>`;
+}
+
 function renderStudy(){
   const todayIso = isoDate(new Date());
   const e = entries[todayIso] || {};
@@ -1167,12 +1501,40 @@ function renderStudy(){
     </div>`;
 
   const subject = getSubject(studySubject);
+  if(!subject) return '';
   const isEditingSubject = editingSubjectId === studySubject;
-
-  const editToggleRow = `
-    <div class="water-row" style="justify-content:flex-end;margin-bottom:10px;">
-      <button class="btn-secondary" style="width:auto;padding:8px 14px;" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}" title="${isEditingSubject?'Done editing':'Edit curriculum manually'}">${isEditingSubject?'\u2713 Done':'\u270E Edit topics'}</button>
+  const nextTopic = subject.curriculum?.[subject.index||0];
+  const pendingCount = Math.max(0, (subject.curriculum?.length||0) - (subject.index||0));
+  const plannedCount = (subject.curriculum||[]).filter(x => x.scheduledDate && !(subject.curriculum.indexOf(x) < (subject.index||0))).length;
+  const notesCount = (subject.curriculum||[]).filter((x,i)=>!!(studyNotes[noteKeyFor(subject.id,x,i)||'']?.trim())).length;
+  const planSource = subject.planSource === 'ai' ? 'AI-organized' : subject.planSource === 'smart-local' ? 'Smart-organized' : 'Not planned yet';
+  const commandHtml = `
+    <div class="study-command">
+      <div class="study-command-head">
+        <div>
+          <div class="study-command-title">Study engine</div>
+          <div class="study-command-sub">${nextTopic ? `Next: <b>${nextTopic.label}</b>` : 'This subject is complete.'}</div>
+        </div>
+        <span class="smart-badge">${planSource}</span>
+      </div>
+      <div class="study-kpis">
+        <div class="study-kpi"><b>${pendingCount}</b><span>topics left</span></div>
+        <div class="study-kpi"><b>${plannedCount}</b><span>planned</span></div>
+        <div class="study-kpi"><b>${notesCount}</b><span>note sets</span></div>
+      </div>
+      <div class="study-action-grid">
+        <button class="btn-primary" data-action="open-study-planner">✦ Plan for me</button>
+        <button class="btn-secondary" data-action="open-notebook">📓 Subject notes</button>
+        <button class="btn-secondary" data-action="open-bulk-paste">Paste syllabus</button>
+        <button class="btn-secondary" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}">${isEditingSubject?'✓ Done editing':'Quick edit'}</button>
+      </div>
+      ${planSource==='Not planned yet' && pendingCount ? `<p class="note" style="margin-bottom:0;">Stop entering dates one by one. Plan once, then the queue runs from here.</p>` : ''}
     </div>`;
+
+  const editToggleRow = isEditingSubject ? `
+    <div class="water-row" style="justify-content:flex-end;margin-bottom:10px;">
+      <button class="btn-secondary" style="width:auto;padding:8px 14px;" data-action="done-editing-subject">✓ Done editing</button>
+    </div>` : '';
 
   if(isEditingSubject){
     const rows = subject.curriculum.map((t,i)=>`
@@ -1187,7 +1549,7 @@ function renderStudy(){
       ${rows || '<p class="note" style="margin:0 0 8px;">No topics yet \u2014 add one below.</p>'}
       <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="add-topic" data-subject="${studySubject}">+ Add topic</button>
     </div>`;
-    return `${chipsHtml}${addSubjectRow}${editToggleRow}${editorHtml}<button class="reset" style="margin-top:20px;" data-action="subject-delete" data-id="${studySubject}">Delete "${subject.name}"</button>`;
+    return `${chipsHtml}${addSubjectRow}${commandHtml}${editToggleRow}${editorHtml}<button class="reset" style="margin-top:20px;" data-action="subject-delete" data-id="${studySubject}">Delete "${subject.name}"</button>${renderStudyOverlay()}`;
   }
 
   const curriculum = subject.curriculum;
@@ -1216,7 +1578,7 @@ function renderStudy(){
   } else {
     const item = curriculum[idx];
     const safeLabel = item.label.replace(/"/g,'&quot;');
-    const noteKey = `${studySubject}-${idx}`;
+    const noteKey = noteKeyFor(studySubject, item, idx);
     const noteVal = (studyNotes[noteKey] || '').replace(/</g,'&lt;');
     cardHtml = `<div class="study-card">
       <div class="study-phase-tag">${item.phase||''}</div>
@@ -1234,6 +1596,11 @@ function renderStudy(){
         <div class="checkbox ${doneToday?'checked':''}" data-action="studydone" data-subject="${studySubject}"></div>
         <div class="task-label ${doneToday?'done':''}" data-action="studydone" data-subject="${studySubject}">Mark today's session done</div>
       </div>
+      <div class="difficulty-row" title="This changes how the smart planner prioritizes the next topics.">
+        <button class="${item.difficulty==='hard'?'active':''}" data-action="topic-difficulty" data-subject="${studySubject}" data-idx="${idx}" data-value="hard">Too hard</button>
+        <button class="${item.difficulty==='okay'?'active':''}" data-action="topic-difficulty" data-subject="${studySubject}" data-idx="${idx}" data-value="okay">Good</button>
+        <button class="${item.difficulty==='easy'?'active':''}" data-action="topic-difficulty" data-subject="${studySubject}" data-idx="${idx}" data-value="easy">Too easy</button>
+      </div>
       ${doneToday ? `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="studyextra" data-subject="${studySubject}">+ Have time \u2014 do this next one too</button>` : ''}
       ${extraToday ? `<div class="water-sub" style="margin-top:6px;">${1+extraToday} sessions done today</div>` : ''}
       <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add topics from a photo'}</button>
@@ -1247,7 +1614,7 @@ function renderStudy(){
   let upcoming = '';
   const upcomingItems = curriculum.slice(idx+1, idx+4);
   if(upcomingItems.length){
-    upcoming = '<div class="upnext">Up next</div>' + upcomingItems.map(u=>`<div class="upnext-item">${u.label}</div>`).join('');
+    upcoming = '<div class="upnext">Up next</div>' + upcomingItems.map(u=>`<div class="upnext-item">${u.label}${u.scheduledDate?` <span class="notebook-meta">· ${u.scheduledDate}</span>`:''}</div>`).join('');
   }
 
   const deleteSubjectRow = `<button class="reset" style="margin-top:20px;" data-action="subject-delete" data-id="${studySubject}">Delete "${subject.name}"</button>`;
@@ -1269,7 +1636,7 @@ function renderStudy(){
       <button class="icon-btn" data-action="extra-add" title="Add">+</button>
     </div>`;
 
-  return `${chipsHtml}${addSubjectRow}${editToggleRow}${progressHtml}${cardHtml}${upcoming}${extrasHtml}${deleteSubjectRow}`;
+  return `${chipsHtml}${addSubjectRow}${commandHtml}${editToggleRow}${progressHtml}${cardHtml}${upcoming}${extrasHtml}${deleteSubjectRow}${renderStudyOverlay()}`;
 }
 
 function renderToday(){
@@ -1333,11 +1700,23 @@ function renderDayDetail(iso){
     ? extraStudy.map(x=>`<div class="task-row"><div class="checkbox ${x.done?'checked':''}"></div><div class="task-label ${x.done?'done':''}">${x.label}</div></div>`).join('')
     : '<p class="note" style="margin:6px 0 0;">No extra items logged this day.</p>';
 
+  const dailyNote = e.dailyNote || '';
+  const studyNotePreview = subjects.map((s)=>{
+    const noteCount = (s.curriculum||[]).reduce((n,it,i)=> n + ((studyNotes[noteKeyFor(s.id,it,i)]||'').trim()?1:0), 0);
+    return `<div class="task-row"><div class="task-label">${s.name}<span class="set-info">${noteCount} saved note set${noteCount===1?'':'s'}</span></div><button class="btn-secondary" style="padding:6px 9px;" data-action="calendar-open-notes" data-subject="${s.id}">Open</button></div>`;
+  }).join('');
   const studyCard = `
     <div class="day-card">
-      <div class="day-head"><span class="day-name">Study</span></div>
+      <div class="day-head"><span class="day-name">Study</span><span class="smart-badge">Notes</span></div>
       ${subjectRows || '<p class="note">No subjects set up.</p>'}
       ${extraStudyRows}
+    </div>`;
+  const notesCard = `
+    <div class="day-card cal-note">
+      <div class="day-head"><span class="day-name">Daily note</span><span class="notebook-meta">Saved to ${dateLabel}</span></div>
+      <textarea class="notes-textarea" data-action="daily-note" data-date="${iso}" placeholder="What did you learn, finish, miss, or want to remember?">${dailyNote.replace(/</g,'&lt;')}</textarea>
+      <div class="day-head" style="margin-top:14px;margin-bottom:6px;"><span class="day-name" style="font-size:.86rem;">Subject notebooks</span></div>
+      ${studyNotePreview || '<p class="note">No subjects yet.</p>'}
     </div>`;
 
   return `
@@ -1345,9 +1724,10 @@ function renderDayDetail(iso){
       <button class="icon-btn" data-action="calback" title="Back to calendar">\u2190</button>
       <div class="cal-detail-date">${dateLabel}</div>
     </div>
+    ${notesCard}
     ${workoutCard}
     ${studyCard}
-    <p class="note" style="text-align:center;">Custom trackers will show up here too, once that tab is built.</p>`;
+    <p class="note" style="text-align:center;">Calendar now holds the daily memory too — not just completion dots.</p>`;
 }
 
 function renderCalendar(){
@@ -1367,7 +1747,8 @@ function renderCalendar(){
     const iso = isoDate(new Date(year, month, day));
     const complete = dayComplete(iso);
     const isToday = iso===todayIso;
-    grid += `<div class="cal-cell ${complete?'complete':''} ${isToday?'istoday':''}" data-action="calday" data-date="${iso}">${day}</div>`;
+    const hasNote = !!(entries[iso] && entries[iso].dailyNote && entries[iso].dailyNote.trim());
+    grid += `<div class="cal-cell ${complete?'complete':''} ${isToday?'istoday':''} ${hasNote?'hasnote':''}" data-action="calday" data-date="${iso}">${day}</div>`;
   }
   grid += '</div>';
 
@@ -1446,6 +1827,18 @@ async function renderReminders(){
 }
 
 async function render(){
+  const direction = window.__tabSwipeDirection || null;
+  window.__tabSwipeDirection = null;
+  if(direction) document.documentElement.dataset.swipeDir = direction;
+  else delete document.documentElement.dataset.swipeDir; // don't let a stale direction leak into an unrelated render
+  if(document.startViewTransition){
+    const transition = document.startViewTransition(() => performRender());
+    try{ await transition.finished; }catch(e){}
+  } else {
+    await performRender();
+  }
+}
+async function performRender(){
   if(wizardStep){
     document.getElementById('app').innerHTML = renderWizard();
     attachHandlers();
@@ -1522,6 +1915,112 @@ function goToDay(delta){
   transitioning = false;
 }
 
+// Lightweight updates for frequent taps. These deliberately mutate only the
+// affected controls instead of rebuilding the active tab and losing its state.
+function patchEntryUI(date){
+  const entry=entries[date]||{tasks:{}};
+  document.querySelectorAll(`[data-action="task"][data-date="${date}"]`).forEach(el=>{
+    const done=!!(entry.tasks&&entry.tasks[el.dataset.taskid]);
+    const box=el.classList.contains('checkbox')?el:el.querySelector('.checkbox');
+    const label=el.classList.contains('task-label')?el:el.querySelector('.task-label');
+    if(box) box.classList.toggle('checked',done);
+    if(label) label.classList.toggle('done',done);
+  });
+  document.querySelectorAll(`[data-action="water-plus"][data-date="${date}"],[data-action="water-minus"][data-date="${date}"]`).forEach(el=>{
+    const root=el.closest('.wellness')||el.parentElement;
+    const value=root&&root.querySelector('.water-value');
+    if(value) value.textContent=entry.water||0;
+  });
+  refreshBuddy();
+}
+function patchStudyUI(subjectId){
+  const done=!!(entries[isoDate(new Date())]?.study?.[subjectId]);
+  document.querySelectorAll(`[data-action="studydone"][data-subject="${subjectId}"]`).forEach(el=>{
+    const box=el.classList.contains('checkbox')?el:el.querySelector('.checkbox');
+    const label=el.classList.contains('task-label')?el:el.querySelector('.task-label');
+    if(box) box.classList.toggle('checked',done);
+    if(label) label.classList.toggle('done',done);
+  });
+  refreshBuddy();
+}
+function buildBuddyStatusLine(){
+  const todayIso = isoDate(new Date());
+  const e = entries[todayIso] || {};
+  const dow = weekdayIndex(todayIso);
+  const taskList = getTasksForDow(dow);
+  const workoutLeft = (!e.noWorkout && settings.workoutEnabled!==false) ? taskList.filter(t=>!(e.tasks && e.tasks[t.id])).length : 0;
+  const subjectsLeft = subjects.filter(s=>{
+    const finished = (s.index||0) >= s.curriculum.length;
+    return !finished && !(e.study && e.study[s.id]);
+  }).map(s=>s.name);
+  const openItems = [];
+  if(workoutLeft>0) openItems.push(`${workoutLeft} workout exercise${workoutLeft>1?'s':''}`);
+  if(subjectsLeft.length) openItems.push(subjectsLeft.join(', '));
+  return openItems.length===0 ? 'Everything on your list is done for today. Nice.' : `Still open: ${openItems.join(' \u00b7 ')}.`;
+}
+function refreshBuddy(){
+  const todayIso=isoDate(new Date()), e=entries[todayIso]||{};
+  const tasksDone=Object.values(e.tasks||{}).filter(Boolean).length;
+  const studiesDone=Object.values(e.study||{}).filter(Boolean).length;
+  const actions=tasksDone+studiesDone+(e.water||0)+(e.sleep?1:0)+(e.protein?1:0);
+  const state=dayComplete(todayIso)?'complete':actions>0?'progress':'neutral';
+  const button=document.querySelector('.buddy-btn');
+  if(button) button.innerHTML=mascotSVG(state);
+  const bubble=document.querySelector('.mascot-bubble');
+  if(bubble && actions>0 && !bubble.dataset.nudged){
+    bubble.textContent = buildBuddyStatusLine(); // PA-style status, not generic praise
+    bubble.animate([{transform:'scale(.97)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
+  }
+}
+function patchWorkoutDay(date){
+  currentSwipeDate=date;
+  const track=document.getElementById('swipeTrack');
+  if(!track) return render();
+  track.innerHTML=renderDayCard(date,date===isoDate(new Date()));
+  document.querySelectorAll('[data-action="jumpday"]').forEach(el=>{
+    const selected=el.dataset.date===date;
+    el.querySelector('.bar')?.classList.toggle('selected',selected);
+  });
+  bindWorkoutCard(track);
+}
+function bindWorkoutCard(root){
+  root.querySelectorAll('[data-action="task"]').forEach(el=>el.addEventListener('click',async()=>{
+    const date=el.dataset.date,taskid=el.dataset.taskid;
+    if(!entries[date]) entries[date]={tasks:{}}; if(!entries[date].tasks) entries[date].tasks={};
+    entries[date].tasks[taskid]=!entries[date].tasks[taskid]; await saveEntries(); patchEntryUI(date); maybeRefreshAi();
+  }));
+  root.querySelectorAll('[data-action="water-plus"],[data-action="water-minus"]').forEach(el=>el.addEventListener('click',async ev=>{
+    ev.stopPropagation(); const date=el.dataset.date; if(!entries[date]) entries[date]={tasks:{}};
+    const step=el.dataset.action==='water-plus'?0.5:-0.5; entries[date].water=Math.max(0,Math.round(((entries[date].water||0)+step)*2)/2);
+    await saveEntries();patchEntryUI(date);maybeRefreshAi();
+  }));
+  root.querySelectorAll('[data-action="sleep"],[data-action="protein"]').forEach(el=>el.addEventListener('change',async()=>{
+    const date=el.dataset.date;if(!entries[date]) entries[date]={tasks:{}};entries[date][el.dataset.action]=parseFloat(el.value)||0;await saveEntries();patchEntryUI(date);
+  }));
+  root.querySelectorAll('[data-action="noworkout"]').forEach(el=>el.addEventListener('click',async()=>{
+    const date=el.dataset.date;if(!entries[date]) entries[date]={tasks:{}};entries[date].noWorkout=!entries[date].noWorkout;await saveEntries();patchWorkoutDay(date);
+  }));
+  root.querySelectorAll('[data-action="timer"]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();openTimer(el.dataset.label,parseInt(el.dataset.seconds));}));
+  root.querySelectorAll('[data-action="youtube"]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();youtubeSearch(el.dataset.label);}));
+}
+function buddyNudge(){
+  // PA role, not a pep-talk bot: tapping the buddy should tell you exactly what's done
+  // and what's still open today, like a status check-in \u2014 not a vague encouragement line.
+  const bubble=document.querySelector('.mascot-bubble');
+  if(bubble){
+    bubble.dataset.nudged='1';
+    bubble.textContent=buildBuddyStatusLine();
+    bubble.animate([{transform:'scale(.96)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:360,easing:'ease-out'});
+  }
+  // a little wink payoff for tapping him, visually separate from the ambient idle loop
+  const face=document.querySelector('.pixel-buddy .pbuddy-eye-r');
+  if(face){
+    face.style.animation='none';
+    face.style.transform='scaleY(0.15)';
+    setTimeout(()=>{ face.style.animation=''; face.style.transform=''; }, 260);
+  }
+}
+
 function attachHandlers(){
   document.querySelectorAll('.nav-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{ activeTab = btn.dataset.tab; render(); });
@@ -1540,7 +2039,7 @@ function attachHandlers(){
       if(!entries[date]) entries[date] = {tasks:{}};
       if(!entries[date].tasks) entries[date].tasks = {};
       entries[date].tasks[taskid] = !entries[date].tasks[taskid];
-      await saveEntries(); render();
+      await saveEntries(); patchEntryUI(date);
     });
   });
 
@@ -1549,7 +2048,7 @@ function attachHandlers(){
       const date = el.dataset.date;
       if(!entries[date]) entries[date] = {tasks:{}};
       entries[date].sleep = parseFloat(el.value) || 0;
-      await saveEntries(); render();
+      await saveEntries(); patchEntryUI(date);
     });
   });
   document.querySelectorAll('[data-action="protein"]').forEach(el=>{
@@ -1557,7 +2056,7 @@ function attachHandlers(){
       const date = el.dataset.date;
       if(!entries[date]) entries[date] = {tasks:{}};
       entries[date].protein = parseFloat(el.value) || 0;
-      await saveEntries(); render();
+      await saveEntries(); patchEntryUI(date);
     });
   });
 
@@ -1585,7 +2084,7 @@ function attachHandlers(){
         subj.index = Math.max(0, (subj.index || 0) - 1 - extra);
         entries[todayIso].studyExtra[subjectId] = 0;
       }
-      await saveEntries(); await saveSubjects(); render();
+      await saveEntries(); await saveSubjects(); patchStudyUI(subjectId);
     });
   });
   document.querySelectorAll('[data-action="studyextra"]').forEach(el=>{
@@ -1699,6 +2198,78 @@ function attachHandlers(){
     });
   });
 
+
+  document.querySelectorAll('[data-action="open-study-planner"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studyOverlay='planner'; studyPlanStatus=''; render(); });
+  });
+  document.querySelectorAll('[data-action="open-bulk-paste"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studyOverlay='paste'; render(); });
+  });
+  document.querySelectorAll('[data-action="open-notebook"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studyOverlay='notebook'; render(); });
+  });
+  document.querySelectorAll('[data-action="close-study-overlay"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studyOverlay=null; studyPlanBusy=false; render(); });
+  });
+  document.querySelectorAll('[data-action="topic-difficulty"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const subj=getSubject(el.dataset.subject); const idx=parseInt(el.dataset.idx);
+      if(!subj || !subj.curriculum[idx]) return;
+      subj.curriculum[idx].difficulty=el.dataset.value;
+      await saveSubjects(); render();
+    });
+  });
+  const buildPlanBtn = document.querySelector('[data-action="build-study-plan"]');
+  if(buildPlanBtn) buildPlanBtn.addEventListener('click', async ()=>{
+    const subj=getSubject(studySubject);
+    if(!subj) return;
+    studyPlannerDraft = {
+      goal:(document.getElementById('planGoal')?.value||'').trim(),
+      targetDate:document.getElementById('planDate')?.value||'',
+      minutes:parseInt(document.getElementById('planMinutes')?.value||'60',10),
+      level:document.getElementById('planLevel')?.value||'starting'
+    };
+    studyPlanBusy=true; studyPlanStatus='Reordering topics and placing sessions…'; render();
+    const result=await aiPlanSubject(subj,{...studyPlannerDraft,startDate:isoDate(new Date())});
+    await saveSubjects();
+    studyPlanBusy=false;
+    studyPlanStatus=result.source==='ai'
+      ? `AI organized ${result.count} remaining topics around prerequisites and your time.`
+      : `Smart planner organized ${result.count} remaining topics locally.`;
+    render();
+  });
+  const bulkParseBtn = document.querySelector('[data-action="bulk-parse"]');
+  if(bulkParseBtn) bulkParseBtn.addEventListener('click', async ()=>{
+    const subj=getSubject(studySubject);
+    const raw=document.getElementById('bulkSyllabusInput')?.value||'';
+    if(!subj || !raw.trim()) return;
+    const lines=raw.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    let phase='';
+    const items=[];
+    lines.forEach(line=>{
+      const m=line.match(/^(chapter|unit|module|phase|part|section)\s*[\dA-Za-z.\-]*\s*[:\-]\s*(.+)$/i);
+      if(m){ phase=m[2].trim(); return; }
+      items.push({id:makeTopicId(),phase,label:line,difficulty:null,order:subj.curriculum.length+items.length});
+    });
+    subj.curriculum = subj.curriculum.concat(items);
+    studyOverlay=null;
+    studyPlanStatus=`Added ${items.length} topics. Tap “Plan for me” to organize the sequence and dates.`;
+    await saveSubjects(); render();
+  });
+  document.querySelectorAll('[data-action="daily-note"]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const date=el.dataset.date;
+      if(!entries[date]) entries[date]={tasks:{}};
+      entries[date].dailyNote=el.value;
+      saveEntries();
+    });
+  });
+  document.querySelectorAll('[data-action="calendar-open-notes"]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      studySubject=el.dataset.subject; activeTab='study'; studyOverlay='notebook'; selectedCalDate=null; render();
+    });
+  });
+
   document.querySelectorAll('[data-action="extra-toggle"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
       const todayIso = isoDate(new Date());
@@ -1706,7 +2277,7 @@ function attachHandlers(){
       if(!entries[todayIso].extraStudy) entries[todayIso].extraStudy = [];
       const item = entries[todayIso].extraStudy.find(x=>x.id===el.dataset.id);
       if(item) item.done = !item.done;
-      await saveEntries(); render();
+      await saveEntries(); patchEntryUI(date);
     });
   });
   document.querySelectorAll('[data-action="extra-remove"]').forEach(el=>{
@@ -1714,7 +2285,7 @@ function attachHandlers(){
       const todayIso = isoDate(new Date());
       if(!entries[todayIso] || !entries[todayIso].extraStudy) return;
       entries[todayIso].extraStudy = entries[todayIso].extraStudy.filter(x=>x.id!==el.dataset.id);
-      await saveEntries(); render();
+      await saveEntries(); patchEntryUI(date);
     });
   });
   const extraAddBtn = document.querySelector('[data-action="extra-add"]');
@@ -1746,7 +2317,11 @@ function attachHandlers(){
   });
 
   document.querySelectorAll('[data-action="jumpday"]').forEach(el=>{
-    el.addEventListener('click', ()=>{ currentSwipeDate = el.dataset.date; render(); });
+    el.addEventListener('click', ()=>{ patchWorkoutDay(el.dataset.date); });
+  });
+
+  document.querySelectorAll('[data-action="buddy"]').forEach(el=>{
+    el.addEventListener('click', buddyNudge);
   });
 
   document.querySelectorAll('[data-action="calday"]').forEach(el=>{
@@ -1862,7 +2437,7 @@ function attachHandlers(){
       const date = el.dataset.date;
       if(!entries[date]) entries[date] = {tasks:{}};
       entries[date].water = Math.round(((entries[date].water || 0) + 0.5) * 2) / 2;
-      await saveEntries(); render();
+      await saveEntries(); patchEntryUI(date);
     });
   });
   document.querySelectorAll('[data-action="water-minus"]').forEach(el=>{
@@ -1871,7 +2446,7 @@ function attachHandlers(){
       const date = el.dataset.date;
       if(!entries[date]) entries[date] = {tasks:{}};
       entries[date].water = Math.max(0, Math.round(((entries[date].water || 0) - 0.5) * 2) / 2);
-      await saveEntries(); render();
+      await saveEntries(); patchEntryUI(date);
     });
   });
 
@@ -1969,9 +2544,10 @@ function attachHandlers(){
         if(!items.length){ alert('No topics found in that photo.'); return; }
         const subj = getSubject(subjectId);
         if(!subj) return;
-        const newItems = items.map(it=>({phase: it.phase || '', label: it.label || 'Untitled topic'}));
-        subj.curriculum = [...subj.curriculum, ...newItems];
-        await saveSubjects(); render();
+        const {added, skipped} = addTopicsToSubject(subj, items);
+        await saveSubjects();
+        alert(`Added ${added} new topic${added===1?'':'s'}${skipped?`, skipped ${skipped} duplicate${skipped===1?'':'s'} already in your list`:''}. Reordered by difficulty.`);
+        render();
       });
     });
   });
@@ -2188,11 +2764,47 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
+function initTabSwipe(){
+  const app = document.getElementById('app');
+  if(!app) return;
+  let startX=0, startY=0, startTarget=null;
+  app.addEventListener('touchstart', (e)=>{
+    if(e.touches.length!==1) return;
+    startX=e.touches[0].clientX; startY=e.touches[0].clientY; startTarget=e.target;
+  }, {passive:true});
+  app.addEventListener('touchend', (e)=>{
+    if(!startTarget) return;
+    const target = startTarget; startTarget=null;
+    // don't hijack the Workout day-swipe-deck's own gesture, and don't switch tabs while any overlay is open
+    if(target.closest && target.closest('.swipe-viewport')) return;
+    if(settingsOpen || wizardStep || studyOverlay) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)*1.5) return; // require a real horizontal swipe, not a vertical scroll
+    const order = ['home', settings.workoutEnabled!==false ? 'workout' : null, 'study', 'calendar', 'plus'].filter(Boolean);
+    const idx = order.indexOf(activeTab);
+    if(idx===-1) return;
+    if(dx < 0 && idx < order.length-1){
+      window.__tabSwipeDirection = 'left';
+      activeTab = order[idx+1];
+      render();
+    } else if(dx > 0 && idx > 0){
+      window.__tabSwipeDirection = 'right';
+      activeTab = order[idx-1];
+      render();
+    }
+  }, {passive:true});
+}
+
 (async ()=>{
   await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers();
   await loadSettings(); await loadSubjects(); await loadAiSummaryCache(); await loadStudyNotes();
+  const normalizedChanged = normalizeCurriculumData();
+  if(normalizedChanged) await saveSubjects();
   if(!settings.wizardDone && subjects.length === 0) wizardStep = 'intro'; // truly new user — auto-show; otherwise it only opens via Settings
   await render();
+  initTabSwipe();
+  setTimeout(()=>document.getElementById('launch')?.classList.add('out'), 900);
   scheduleReminderCheck();
 })();
 </script>
