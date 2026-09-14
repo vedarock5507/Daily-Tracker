@@ -269,6 +269,19 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 
 .loading{text-align:center;color:var(--muted);padding:40px 0;font-size:0.85rem;}
 
+.food-photo-wrap{position:relative;border-radius:14px;overflow:hidden;margin-bottom:14px;background:#000;}
+.food-photo-wrap img{width:100%;display:block;}
+.food-grid-overlay{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;
+  grid-template-areas:"tl tc tr" "ml c mr" "bl bc br";pointer-events:none;}
+.food-pos-top-left{grid-area:tl;} .food-pos-top-center{grid-area:tc;justify-self:center;}
+.food-pos-top-right{grid-area:tr;justify-self:end;} .food-pos-middle-left{grid-area:ml;}
+.food-pos-center{grid-area:c;justify-self:center;align-self:center;} .food-pos-middle-right{grid-area:mr;justify-self:end;}
+.food-pos-bottom-left{grid-area:bl;align-self:end;} .food-pos-bottom-center{grid-area:bc;justify-self:center;align-self:end;}
+.food-pos-bottom-right{grid-area:br;justify-self:end;align-self:end;}
+.food-chip{margin:5px;padding:4px 8px;border-radius:8px;font-size:0.65rem;font-weight:600;
+  background:rgba(0,0,0,0.65);color:#fff;border:1.5px solid var(--cardio);backdrop-filter:blur(4px);max-width:120px;}
+.food-chip.unsure{border-color:var(--strength);color:#ffe0d0;}
+.food-chip .fc-name{display:block;} .food-chip .fc-macro{display:block;font-weight:400;opacity:0.85;font-size:0.6rem;}
 .settings-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:60;padding:20px;
   backdrop-filter:blur(3px);overflow-y:auto;}
 .settings-overlay.open{display:block;}
@@ -484,6 +497,14 @@ let subjects = []; // [{id, name, curriculum:[{phase,label}], index}] -- replace
 let settings = { proteinTarget: 80, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false };
 let studyNotes = {};
 let studySubject = null;
+let buddyNudgedAt = 0; // real app state, not a DOM dataset flag \u2014 survives across the full re-renders that a dataset attribute doesn't
+let aiUsage = { date: null, count: 0 };
+let foodScanResult = null; // {imageDataUrl, items:[{name,position,calories,protein,confident,note}]} | null
+let foodScanBusy = false;
+const AI_DAILY_BUDGET_ESTIMATE = 10000; // rough proxy matching Cloudflare Workers AI's published free daily neuron allowance --
+                                          // NOT an exact "requests" count, since neuron cost varies per call/model. There's no
+                                          // API that tells the Worker its own real remaining quota, so this is a local estimate only.
+const AI_WARNING_REMAINING_THRESHOLD = 1000;
 let activeTab = 'home';
 let customTrackers = []; // [{id,name,type:'counter'|'checklist',reset:'daily'|'weekly'|'monthly'|'never',value,items,lastResetKey}]
 let addingTracker = false;
@@ -987,13 +1008,33 @@ function renderHome(){
       <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
     </div>
     ${redBanner}
-    ${settings.workoutEnabled!==false ? `<div class="section-label" style="margin-top:18px;">Workout</div>${workoutRows}` : ''}
+    ${aiUsageWarningBanner()}
+    ${settings.workoutEnabled!==false ? `<div class="section-label" style="margin-top:18px;">Workout</div>${workoutRows}` : `
+    <div class="section-label" style="margin-top:18px;">Sleep &amp; Protein</div>
+    <div class="wellness">
+      <div class="wellness-field ${(e.sleep||0) >= SLEEP_TARGET?'hit':''}">
+        <label>Sleep</label>
+        <div class="input-row">
+          <input type="number" min="0" max="14" step="0.5" placeholder="0" value="${e.sleep||''}" data-action="sleep" data-date="${todayIso}">
+          <span class="unit">hrs</span>
+        </div>
+      </div>
+      <div class="wellness-field ${(e.protein||0) >= settings.proteinTarget?'hit':''}">
+        <label>Protein (target ${settings.proteinTarget}g)</label>
+        <div class="input-row">
+          <input type="number" min="0" max="300" step="5" placeholder="0" value="${e.protein||''}" data-action="protein" data-date="${todayIso}">
+          <span class="unit">g</span>
+        </div>
+      </div>
+    </div>`}
     <div class="section-label" style="margin-top:18px;">Study</div>
     ${studyRows}
     <div class="section-label" style="margin-top:18px;">Water</div>
     ${waterRow}
     <div class="section-label" style="margin-top:18px;">Custom trackers</div>
     ${trackerRows}
+    <button class="btn-secondary" style="width:100%;margin-top:18px;" data-action="scan-food" ${foodScanBusy?'disabled':''}>${foodScanBusy?'Reading photo\u2026':'\u{1F4F7} Scan a meal (auto-log protein)'}</button>
+    ${renderFoodScanOverlay()}
   `;
 }
 
@@ -1187,6 +1228,7 @@ function maybeRefreshAi(){
 async function runAiRefresh(){
   aiMascotBusy = true; render();
   try{
+    await trackAiCall();
     const res = await fetch(WORKER_URL + '/summary', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -1213,6 +1255,90 @@ function fileToBase64(file){
     reader.readAsDataURL(file);
   });
 }
+function fileToDataUrl(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = ()=> resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+function triggerFoodScan(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.addEventListener('change', async ()=>{
+    const file = input.files[0];
+    if(!file) return;
+    foodScanBusy = true; render();
+    try{
+      const dataUrl = await fileToDataUrl(file);
+      const base64 = dataUrl.split(',')[1];
+      await trackAiCall();
+      const res = await fetch(WORKER_URL + '/food', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({image: base64, mimeType: file.type}),
+      });
+      const data = await res.json();
+      if(!res.ok || data.error) throw new Error(data.error || 'Scan failed');
+      foodScanResult = { imageDataUrl: dataUrl, items: data.items || [] };
+    } catch(e){
+      alert('Could not read that food photo: ' + e.message);
+    } finally {
+      foodScanBusy = false; render();
+    }
+  });
+  input.click();
+}
+function renderFoodScanOverlay(){
+  if(!foodScanResult) return '';
+  const { imageDataUrl, items } = foodScanResult;
+  const totalCalories = items.reduce((s,it)=> s + (Number(it.calories)||0), 0);
+  const totalProtein = items.reduce((s,it)=> s + (Number(it.protein)||0), 0);
+
+  const chips = items.map(it=>{
+    const posClass = 'food-pos-' + (it.position || 'center').toLowerCase().replace(/[^a-z-]/g,'');
+    const unsure = it.confident===false || /unidentified/i.test(it.name||'');
+    return `<div class="food-chip ${unsure?'unsure':''} ${posClass}">
+      <span class="fc-name">${unsure?'\u2753 ':''}${(it.name||'Unknown').replace(/</g,'&lt;')}</span>
+      <span class="fc-macro">${unsure ? (it.note||'not sure what this is').replace(/</g,'&lt;') : `~${Math.round(it.calories||0)}cal \u00b7 ${Math.round(it.protein||0)}g protein`}</span>
+    </div>`;
+  }).join('');
+
+  const listRows = items.map(it=>{
+    const unsure = it.confident===false || /unidentified/i.test(it.name||'');
+    return `<div class="task-row" style="border-bottom:1px solid var(--line);">
+      <div class="task-label" style="flex:1;">
+        ${unsure?'\u2753 ':''}${(it.name||'Unknown').replace(/</g,'&lt;')}
+        ${unsure ? `<span class="water-sub" style="display:block;margin:0;">${(it.note||'Not confidently identified').replace(/</g,'&lt;')}</span>` : ''}
+      </div>
+      <div class="water-sub" style="margin:0;text-align:right;">${Math.round(it.calories||0)}cal<br>${Math.round(it.protein||0)}g</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="settings-overlay open" id="foodScanOverlay">
+    <div class="settings-panel">
+      <div class="settings-head">
+        <h2>Meal scan</h2>
+        <button class="settings-close" data-action="close-food-scan">\u2715</button>
+      </div>
+      <div class="food-photo-wrap">
+        <img src="${imageDataUrl}" alt="Scanned meal">
+        <div class="food-grid-overlay">${chips}</div>
+      </div>
+      <div class="day-card">
+        ${listRows}
+        <div class="task-row" style="border-bottom:none;font-weight:700;">
+          <div class="task-label" style="flex:1;">Total</div>
+          <div>${Math.round(totalCalories)}cal \u00b7 ${Math.round(totalProtein)}g protein</div>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%;" data-action="apply-food-scan">Add ${Math.round(totalProtein)}g protein to today</button>
+      <p class="note">Estimates only, from a photo \u2014 not lab-accurate, and positions are approximate (general AI models can't precisely pinpoint pixels, so this is grid-based, not exact). Adjust manually if something looks off.</p>
+    </div>
+  </div>`;
+}
 
 // Sends one or more photos to the Worker and merges the returned items into one list.
 // Each item may carry a `day` field (from a multi-day photo like "[FRIDAY]...") for the caller to route.
@@ -1230,6 +1356,7 @@ function scanPhoto(mode, onSuccess){
       let allItems = [];
       for(const file of files){
         const base64 = await fileToBase64(file);
+        await trackAiCall();
         const res = await fetch(WORKER_URL + '/analyze', {
           method:'POST',
           headers:{'Content-Type':'application/json'},
@@ -1255,6 +1382,27 @@ function scanPhoto(mode, onSuccess){
 
 
 function makeTopicId(){ return 'topic-'+Date.now()+'-'+Math.random().toString(36).slice(2,8); }
+async function loadAiUsage(){
+  const raw = await storageGet('tracker:aiusage');
+  aiUsage = raw ? JSON.parse(raw) : { date: null, count: 0 };
+}
+async function saveAiUsage(){ await storageSet('tracker:aiusage', JSON.stringify(aiUsage)); }
+async function trackAiCall(){
+  const todayIso = isoDate(new Date());
+  if(aiUsage.date !== todayIso){ aiUsage.date = todayIso; aiUsage.count = 0; }
+  aiUsage.count += 1;
+  await saveAiUsage();
+}
+function aiUsageWarningBanner(){
+  const todayIso = isoDate(new Date());
+  const usedToday = aiUsage.date === todayIso ? aiUsage.count : 0;
+  const remaining = AI_DAILY_BUDGET_ESTIMATE - usedToday;
+  if(remaining > AI_WARNING_REMAINING_THRESHOLD) return '';
+  return `<div class="locked-banner" style="background:var(--strength)22;color:var(--strength);border:1px solid var(--strength)55;">
+    Heads up \u2014 roughly ${Math.max(0,remaining)} of an estimated ${AI_DAILY_BUDGET_ESTIMATE} free AI calls left today. Use photo scans and AI planning a bit cautiously for the rest of today.
+    This is this app's own estimate, not a number pulled from Cloudflare \u2014 there's no API that reports your real remaining quota. Resets at midnight, your device's local time.
+  </div>`;
+}
 
 function normalizeTopicLabel(s){
   return (s||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
@@ -1262,12 +1410,19 @@ function normalizeTopicLabel(s){
 function isDuplicateTopicLabel(label, existingNormLabels){
   const norm = normalizeTopicLabel(label);
   if(!norm) return false;
+  const words = new Set(norm.split(' ').filter(Boolean));
   return existingNormLabels.some(ex=>{
     if(ex === norm) return true;
-    // catches near-duplicates too (e.g. "Superposition of waves" vs "Waves: superposition"),
-    // not just character-for-character matches \u2014 real photo scans rarely produce identical text twice
-    if(norm.length>=6 && ex.length>=6 && (ex.includes(norm) || norm.includes(ex))) return true;
-    return false;
+    // word-overlap similarity, not substring containment \u2014 containment wrongly flagged
+    // "Waves" as a duplicate of "Standing waves" just because one contains the other.
+    // Requiring most of the WORDS to actually match avoids that false positive while still
+    // catching real near-duplicates like "Superposition of waves" vs "Waves: superposition".
+    const exWords = new Set(ex.split(' ').filter(Boolean));
+    if(words.size===0 || exWords.size===0) return false;
+    let shared = 0;
+    words.forEach(w=>{ if(exWords.has(w)) shared++; });
+    const union = new Set([...words, ...exWords]).size;
+    return (shared/union) >= 0.8;
   });
 }
 // Shared entry point for adding new topics from ANY source (photo scan, pasted syllabus text,
@@ -1377,6 +1532,7 @@ async function aiPlanSubject(subj, opts){
     curriculum: (subj.curriculum||[]).slice(subj.index||0).map((x,i)=>({id:x.id||String(i),phase:x.phase||'',label:x.label||'',difficulty:x.difficulty||null}))
   };
   try{
+    await trackAiCall();
     const res = await fetch(WORKER_URL + '/plan', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -1970,7 +2126,8 @@ function refreshBuddy(){
   const button=document.querySelector('.buddy-btn');
   if(button) button.innerHTML=mascotSVG(state);
   const bubble=document.querySelector('.mascot-bubble');
-  if(bubble && actions>0 && !bubble.dataset.nudged){
+  const recentlyNudged = (Date.now() - buddyNudgedAt) < 20000; // give a tapped message ~20s before auto-refresh can overwrite it
+  if(bubble && actions>0 && !recentlyNudged){
     bubble.textContent = buildBuddyStatusLine(); // PA-style status, not generic praise
     bubble.animate([{transform:'scale(.97)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
   }
@@ -2011,7 +2168,7 @@ function buddyNudge(){
   // and what's still open today, like a status check-in \u2014 not a vague encouragement line.
   const bubble=document.querySelector('.mascot-bubble');
   if(bubble){
-    bubble.dataset.nudged='1';
+    buddyNudgedAt = Date.now();
     bubble.textContent=buildBuddyStatusLine();
     bubble.animate([{transform:'scale(.96)'},{transform:'scale(1.03)'},{transform:'scale(1)'}],{duration:360,easing:'ease-out'});
   }
@@ -2161,8 +2318,23 @@ function attachHandlers(){
       const subj = getSubject(el.dataset.subject);
       const idx = parseInt(el.dataset.idx);
       if(!subj || !subj.curriculum[idx]) return;
-      subj.curriculum[idx].label = el.value || 'Untitled topic';
+      const newLabel = el.value || 'Untitled topic';
+      const othersNorm = subj.curriculum.filter((t,i)=>i!==idx).map(t=>normalizeTopicLabel(t.label));
+      if(isDuplicateTopicLabel(newLabel, othersNorm)){
+        alert(`"${newLabel}" looks like a duplicate of a topic you already have \u2014 rename it or check the existing one.`);
+        el.value = subj.curriculum[idx].label; // revert the input to what it was
+        return;
+      }
+      subj.curriculum[idx].label = newLabel;
+      // manual edits get the same smart-reorder treatment as photo scans and pasted syllabi,
+      // so "smart" isn't inconsistent depending on which entry method you happened to use
+      const doneCount = subj.index || 0;
+      const done = subj.curriculum.slice(0, doneCount);
+      const pending = smartOrderCurriculum(subj.curriculum.slice(doneCount));
+      pending.forEach((item,i)=>{ item.order = doneCount + i; });
+      subj.curriculum = done.concat(pending);
       await saveSubjects();
+      render();
     });
   });
   document.querySelectorAll('[data-action="remove-topic"]').forEach(el=>{
@@ -2244,6 +2416,21 @@ function attachHandlers(){
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     });
+  });
+  const scanFoodBtn = document.querySelector('[data-action="scan-food"]');
+  if(scanFoodBtn) scanFoodBtn.addEventListener('click', triggerFoodScan);
+  const closeFoodBtn = document.querySelector('[data-action="close-food-scan"]');
+  if(closeFoodBtn) closeFoodBtn.addEventListener('click', ()=>{ foodScanResult = null; render(); });
+  const applyFoodBtn = document.querySelector('[data-action="apply-food-scan"]');
+  if(applyFoodBtn) applyFoodBtn.addEventListener('click', async ()=>{
+    if(!foodScanResult) return;
+    const totalProtein = foodScanResult.items.reduce((s,it)=> s + (Number(it.protein)||0), 0);
+    const todayIso = isoDate(new Date());
+    if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
+    entries[todayIso].protein = (entries[todayIso].protein||0) + Math.round(totalProtein);
+    await saveEntries();
+    foodScanResult = null;
+    render();
   });
   document.querySelectorAll('[data-action="topic-difficulty"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
@@ -2832,7 +3019,7 @@ function initTabSwipe(){
 
 (async ()=>{
   await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers();
-  await loadSettings(); await loadSubjects(); await loadAiSummaryCache(); await loadStudyNotes();
+  await loadSettings(); await loadSubjects(); await loadAiSummaryCache(); await loadAiUsage(); await loadStudyNotes();
   const normalizedChanged = normalizeCurriculumData();
   if(normalizedChanged) await saveSubjects();
   if(!settings.wizardDone && subjects.length === 0) wizardStep = 'intro'; // truly new user — auto-show; otherwise it only opens via Settings
