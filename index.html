@@ -494,7 +494,7 @@ let aiSummaryCache = { date: null, text: '', lastRefreshAt: 0 };
 let aiMascotBusy = false;
 const AI_REFRESH_MIN_GAP_MS = 3 * 60 * 60 * 1000; // 3 hours -- a hard floor between AI calls, not a timer, not a poll
 let subjects = []; // [{id, name, curriculum:[{phase,label}], index}] -- replaces the old hardcoded AI/Quantum pair
-let settings = { proteinTarget: 80, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false };
+let settings = { proteinTarget: 80, caloriesTarget: 2000, carbsTarget: 200, fatTarget: 65, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false };
 let studyNotes = {};
 let studySubject = null;
 let buddyNudgedAt = 0; // real app state, not a DOM dataset flag \u2014 survives across the full re-renders that a dataset attribute doesn't
@@ -614,7 +614,7 @@ function applyAllAutoResets(){
 }
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
-  const defaults = { proteinTarget: 80, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false };
+  const defaults = { proteinTarget: 80, caloriesTarget: 2000, carbsTarget: 200, fatTarget: 65, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false };
   settings = raw ? Object.assign({}, defaults, JSON.parse(raw)) : defaults;
 }
 async function saveSettings(){ await storageSet('tracker:settings', JSON.stringify(settings)); }
@@ -755,10 +755,8 @@ function renderDayCard(iso, isToday){
     </div>`;
 
   const sleepVal = e.sleep || '';
-  const proteinVal = e.protein || '';
   const waterVal = e.water || 0;
   const sleepHit = (e.sleep||0) >= SLEEP_TARGET;
-  const proteinHit = (e.protein||0) >= settings.proteinTarget;
   const waterHit = waterVal >= settings.waterTargetBottles;
   const waterLiters = (waterVal * settings.waterBottleLiters).toFixed(1);
 
@@ -769,13 +767,6 @@ function renderDayCard(iso, isToday){
         <div class="input-row">
           <input type="number" min="0" max="14" step="0.5" placeholder="0" value="${sleepVal}" data-action="sleep" data-date="${iso}">
           <span class="unit">hrs</span>
-        </div>
-      </div>
-      <div class="wellness-field ${proteinHit?'hit':''}">
-        <label>Protein (target ${settings.proteinTarget}g)</label>
-        <div class="input-row">
-          <input type="number" min="0" max="300" step="5" placeholder="0" value="${proteinVal}" data-action="protein" data-date="${iso}">
-          <span class="unit">g</span>
         </div>
       </div>
       <div class="wellness-field ${waterHit?'hit':''}">
@@ -800,6 +791,7 @@ function renderDayCard(iso, isToday){
         ${noWorkoutRow}
         ${tasksHtml}
         ${wellnessHtml}
+        ${renderFoodLogCard(iso)}
       </div>
     </div>`;
 }
@@ -1254,6 +1246,53 @@ function fileToBase64(file){
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+function recalcFoodTotals(e){
+  const log = e.foodLog || [];
+  e.calories = log.reduce((s,i)=> s + (Number(i.calories)||0), 0);
+  e.protein  = log.reduce((s,i)=> s + (Number(i.protein)||0), 0);
+  e.carbs    = log.reduce((s,i)=> s + (Number(i.carbs)||0), 0);
+  e.fat      = log.reduce((s,i)=> s + (Number(i.fat)||0), 0);
+}
+function foodBar(label, used, target, unit){
+  const pct = target>0 ? Math.min(100, Math.round((used/target)*100)) : 0;
+  return `<div style="margin-bottom:10px;">
+    <div style="display:flex;justify-content:space-between;font-size:0.72rem;color:var(--muted);margin-bottom:3px;">
+      <span>${label}</span><span>${Math.round(used)} / ${target}${unit}</span>
+    </div>
+    <div class="progress-track" style="height:6px;"><div class="progress-fill" style="width:${pct}%;"></div></div>
+  </div>`;
+}
+function renderFoodLogCard(iso){
+  const e = entries[iso] || {};
+  const log = e.foodLog || [];
+  const bars = foodBar('Calories', e.calories||0, settings.caloriesTarget, '')
+    + foodBar('Protein', e.protein||0, settings.proteinTarget, 'g')
+    + foodBar('Carbs', e.carbs||0, settings.carbsTarget, 'g')
+    + foodBar('Fat', e.fat||0, settings.fatTarget, 'g');
+
+  const rows = log.length ? log.map(item=>`
+    <div class="task-row" style="border-bottom:1px solid var(--line);">
+      <div class="task-label" style="flex:1;">
+        ${item.name}
+        <span class="water-sub" style="display:block;margin:0;">${Math.round(item.calories||0)}cal \u00b7 P${Math.round(item.protein||0)} C${Math.round(item.carbs||0)} F${Math.round(item.fat||0)}${item.source==='scan'?' \u00b7 scanned':''}</span>
+      </div>
+      <button class="icon-btn" data-action="remove-food-item" data-date="${iso}" data-id="${item.id}" title="Remove">\u2715</button>
+    </div>`).join('') : `<p class="note" style="margin:6px 0 10px;">Nothing logged yet today.</p>`;
+
+  return `<div class="day-card" style="margin-top:14px;">
+    <div class="day-head" style="margin-bottom:12px;"><span class="day-name" style="font-size:0.9rem;">Food Log</span></div>
+    ${bars}
+    ${rows}
+    <div class="water-row" style="gap:6px;margin-top:10px;flex-wrap:wrap;">
+      <input class="edit-input" style="flex:2 1 100px;" type="text" id="foodName-${iso}" placeholder="Food name">
+      <input class="edit-input" style="flex:1 1 50px;" type="number" id="foodKcal-${iso}" placeholder="kcal">
+      <input class="edit-input" style="flex:1 1 50px;" type="number" id="foodP-${iso}" placeholder="P g">
+      <input class="edit-input" style="flex:1 1 50px;" type="number" id="foodC-${iso}" placeholder="C g">
+      <input class="edit-input" style="flex:1 1 50px;" type="number" id="foodF-${iso}" placeholder="F g">
+    </div>
+    <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="add-food-manual" data-date="${iso}">+ Add to log</button>
+  </div>`;
 }
 function fileToDataUrl(file){
   return new Promise((resolve, reject)=>{
@@ -1953,6 +1992,22 @@ async function renderReminders(){
       <p class="note">A day only counts toward your streak if protein logged meets this number, and sleep is 7h or more.</p>
     </div>
     <div class="reminder-card">
+      <div class="section-label" style="margin-bottom:14px;">Daily food targets</div>
+      <div class="reminder-row">
+        <label for="caloriesTarget">Calories/day</label>
+        <input type="number" id="caloriesTarget" min="0" max="6000" step="50" value="${settings.caloriesTarget}">
+      </div>
+      <div class="reminder-row">
+        <label for="carbsTarget">Carbs (g)/day</label>
+        <input type="number" id="carbsTarget" min="0" max="800" step="5" value="${settings.carbsTarget}">
+      </div>
+      <div class="reminder-row">
+        <label for="fatTarget">Fat (g)/day</label>
+        <input type="number" id="fatTarget" min="0" max="300" step="5" value="${settings.fatTarget}">
+      </div>
+      <button class="btn-primary" id="saveFoodTargets">Save food targets</button>
+    </div>
+    <div class="reminder-card">
       <div class="section-label" style="margin-bottom:14px;">Water tracking</div>
       <div class="reminder-row">
         <label for="waterBottleLiters">Bottle size (litres)</label>
@@ -2157,6 +2212,28 @@ function bindWorkoutCard(root){
   root.querySelectorAll('[data-action="sleep"],[data-action="protein"]').forEach(el=>el.addEventListener('change',async()=>{
     const date=el.dataset.date;if(!entries[date]) entries[date]={tasks:{}};entries[date][el.dataset.action]=parseFloat(el.value)||0;await saveEntries();patchEntryUI(date);
   }));
+  root.querySelectorAll('[data-action="add-food-manual"]').forEach(el=>el.addEventListener('click',async()=>{
+    const date=el.dataset.date;
+    const nameEl=document.getElementById('foodName-'+date);
+    const name=nameEl?nameEl.value.trim():'';
+    if(!name) return;
+    const kcal=parseFloat(document.getElementById('foodKcal-'+date)?.value)||0;
+    const p=parseFloat(document.getElementById('foodP-'+date)?.value)||0;
+    const c=parseFloat(document.getElementById('foodC-'+date)?.value)||0;
+    const f=parseFloat(document.getElementById('foodF-'+date)?.value)||0;
+    if(!entries[date]) entries[date]={tasks:{}};
+    if(!entries[date].foodLog) entries[date].foodLog=[];
+    entries[date].foodLog.push({id:'food-'+Date.now(),name,calories:kcal,protein:p,carbs:c,fat:f,source:'manual'});
+    recalcFoodTotals(entries[date]);
+    await saveEntries(); render();
+  }));
+  root.querySelectorAll('[data-action="remove-food-item"]').forEach(el=>el.addEventListener('click',async()=>{
+    const date=el.dataset.date;
+    if(!entries[date] || !entries[date].foodLog) return;
+    entries[date].foodLog=entries[date].foodLog.filter(x=>x.id!==el.dataset.id);
+    recalcFoodTotals(entries[date]);
+    await saveEntries(); render();
+  }));
   root.querySelectorAll('[data-action="noworkout"]').forEach(el=>el.addEventListener('click',async()=>{
     const date=el.dataset.date;if(!entries[date]) entries[date]={tasks:{}};entries[date].noWorkout=!entries[date].noWorkout;await saveEntries();patchWorkoutDay(date);
   }));
@@ -2217,6 +2294,33 @@ function attachHandlers(){
       if(!entries[date]) entries[date] = {tasks:{}};
       entries[date].protein = parseFloat(el.value) || 0;
       await saveEntries(); patchEntryUI(date);
+    });
+  });
+
+  document.querySelectorAll('[data-action="add-food-manual"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const date = el.dataset.date;
+      const nameEl = document.getElementById('foodName-'+date);
+      const name = nameEl ? nameEl.value.trim() : '';
+      if(!name) return;
+      const kcal = parseFloat(document.getElementById('foodKcal-'+date)?.value) || 0;
+      const p = parseFloat(document.getElementById('foodP-'+date)?.value) || 0;
+      const c = parseFloat(document.getElementById('foodC-'+date)?.value) || 0;
+      const f = parseFloat(document.getElementById('foodF-'+date)?.value) || 0;
+      if(!entries[date]) entries[date] = {tasks:{}};
+      if(!entries[date].foodLog) entries[date].foodLog = [];
+      entries[date].foodLog.push({id:'food-'+Date.now(), name, calories:kcal, protein:p, carbs:c, fat:f, source:'manual'});
+      recalcFoodTotals(entries[date]);
+      await saveEntries(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="remove-food-item"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const date = el.dataset.date;
+      if(!entries[date] || !entries[date].foodLog) return;
+      entries[date].foodLog = entries[date].foodLog.filter(x=>x.id!==el.dataset.id);
+      recalcFoodTotals(entries[date]);
+      await saveEntries(); render();
     });
   });
 
@@ -2638,6 +2742,15 @@ function attachHandlers(){
   if(saveProteinBtn) saveProteinBtn.addEventListener('click', async ()=>{
     const val = parseFloat(document.getElementById('proteinTarget').value) || 80;
     settings.proteinTarget = val;
+    await saveSettings();
+    render();
+  });
+
+  const saveFoodTargetsBtn = document.getElementById('saveFoodTargets');
+  if(saveFoodTargetsBtn) saveFoodTargetsBtn.addEventListener('click', async ()=>{
+    settings.caloriesTarget = parseFloat(document.getElementById('caloriesTarget').value) || 2000;
+    settings.carbsTarget = parseFloat(document.getElementById('carbsTarget').value) || 200;
+    settings.fatTarget = parseFloat(document.getElementById('fatTarget').value) || 65;
     await saveSettings();
     render();
   });
