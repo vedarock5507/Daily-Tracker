@@ -868,6 +868,147 @@ const JEE_MATHS_CURRICULUM = [{"phase":"Sets, Relations and Functions","label":"
 
 const NEET_BIOLOGY_CURRICULUM = [{"phase":"Diversity in Living World","label":"Taxonomy, classification & biological nomenclature","learningHours":3,"practiceHours":1.5},{"phase":"Diversity in Living World","label":"Five kingdom classification & plant/animal kingdom","learningHours":4,"practiceHours":2.0},{"phase":"Structural Organisation in Plants","label":"Morphology of flowering plants","learningHours":3,"practiceHours":1.5},{"phase":"Structural Organisation in Plants","label":"Anatomy of flowering plants (tissues)","learningHours":3,"practiceHours":1.5},{"phase":"Structural Organisation in Animals","label":"Animal tissues","learningHours":2,"practiceHours":1.0},{"phase":"Structural Organisation in Animals","label":"Morphology & anatomy of an insect/frog (as prescribed)","learningHours":2,"practiceHours":1.0},{"phase":"Cell Structure and Function","label":"Cell theory, prokaryotic/eukaryotic cells","learningHours":2,"practiceHours":1.0},{"phase":"Cell Structure and Function","label":"Cell organelles","learningHours":3,"practiceHours":1.5},{"phase":"Cell Structure and Function","label":"Cell cycle & cell division","learningHours":3,"practiceHours":1.5},{"phase":"Cell Structure and Function","label":"Biomolecules (proteins, carbohydrates, enzymes)","learningHours":3,"practiceHours":1.5},{"phase":"Plant Physiology","label":"Transport in plants","learningHours":2,"practiceHours":1.0},{"phase":"Plant Physiology","label":"Mineral nutrition","learningHours":2,"practiceHours":1.0},{"phase":"Plant Physiology","label":"Photosynthesis","learningHours":4,"practiceHours":2.0},{"phase":"Plant Physiology","label":"Respiration in plants","learningHours":3,"practiceHours":1.5},{"phase":"Plant Physiology","label":"Plant growth & development, hormones","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Digestion & absorption","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Breathing & exchange of gases","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Body fluids & circulation","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Excretory products & their elimination","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Locomotion & movement","learningHours":2,"practiceHours":1.0},{"phase":"Human Physiology","label":"Neural control & coordination","learningHours":4,"practiceHours":2.0},{"phase":"Human Physiology","label":"Chemical coordination & integration (endocrine)","learningHours":3,"practiceHours":1.5},{"phase":"Reproduction","label":"Sexual reproduction in flowering plants","learningHours":3,"practiceHours":1.5},{"phase":"Reproduction","label":"Human reproduction","learningHours":3,"practiceHours":1.5},{"phase":"Reproduction","label":"Reproductive health","learningHours":2,"practiceHours":1.0},{"phase":"Genetics and Evolution","label":"Principles of inheritance (Mendelian genetics)","learningHours":4,"practiceHours":2.0},{"phase":"Genetics and Evolution","label":"Molecular basis of inheritance (DNA, RNA, replication)","learningHours":4,"practiceHours":2.0},{"phase":"Genetics and Evolution","label":"Evolution","learningHours":3,"practiceHours":1.5},{"phase":"Biology and Human Welfare","label":"Human health & disease","learningHours":3,"practiceHours":1.5},{"phase":"Biology and Human Welfare","label":"Microbes in human welfare","learningHours":2,"practiceHours":1.0},{"phase":"Biotechnology","label":"Principles & processes","learningHours":3,"practiceHours":1.5},{"phase":"Biotechnology","label":"Applications of biotechnology","learningHours":2,"practiceHours":1.0},{"phase":"Ecology and Environment","label":"Organisms and populations","learningHours":3,"practiceHours":1.5},{"phase":"Ecology and Environment","label":"Ecosystem","learningHours":2,"practiceHours":1.0},{"phase":"Ecology and Environment","label":"Biodiversity & conservation","learningHours":2,"practiceHours":1.0}];
 
+
+// MBBS templates are split by the NMC CBME phases so the syllabus is manageable.
+// These are planning templates, not a replacement for the official college timetable.
+function mbbsCurriculum(subjectId, phase, labels){
+  return labels.map((label,i)=>({id:`${subjectId}-${i+1}`, phase, label}));
+}
+
+const MBBS_1ST_YEAR_TEMPLATES = [
+  {id:'mbbs1-anatomy', name:'Anatomy', curriculum:mbbsCurriculum('mbbs1-anatomy','Anatomy',[
+    'Introduction to anatomy, anatomical terminology, planes and movements',
+    'Bones and ossification', 'Joints and types of joints', 'Muscles and connective tissue',
+    'General anatomy of blood vessels and lymphatics', 'General anatomy of nerves',
+    'Upper limb', 'Lower limb', 'Thorax', 'Abdomen', 'Pelvis and perineum',
+    'Head and neck', 'Neuroanatomy', 'Histology', 'Embryology and developmental anatomy'
+  ])},
+  {id:'mbbs1-physiology', name:'Physiology', curriculum:mbbsCurriculum('mbbs1-physiology','Physiology',[
+    'General physiology and homeostasis', 'Blood and body fluids', 'Nerve and muscle physiology',
+    'Cardiovascular system', 'Respiratory system', 'Gastrointestinal physiology',
+    'Renal physiology and acid-base balance', 'Endocrine physiology', 'Reproductive physiology',
+    'Central nervous system', 'Special senses', 'Temperature regulation and environmental physiology'
+  ])},
+  {id:'mbbs1-biochemistry', name:'Biochemistry', curriculum:mbbsCurriculum('mbbs1-biochemistry','Biochemistry',[
+    'Cell and biological membranes', 'Amino acids and proteins', 'Enzymes', 'Carbohydrate metabolism',
+    'Lipid metabolism', 'Protein and amino-acid metabolism', 'Nucleic acids and molecular biology',
+    'Vitamins and minerals', 'Nutrition and energy metabolism', 'Clinical biochemistry and laboratory medicine',
+    'Acid-base balance and fluid-electrolyte chemistry', 'Biochemical genetics and inborn errors of metabolism'
+  ])}
+];
+
+const MBBS_2ND_YEAR_TEMPLATES = [
+  {id:'mbbs2-pathology', name:'Pathology', curriculum:mbbsCurriculum('mbbs2-pathology','Pathology',[
+    'Introduction to pathology and cellular adaptation', 'Cell injury and cell death', 'Inflammation and repair',
+    'Hemodynamic disorders, thrombosis and shock', 'Genetic and immune disorders', 'Neoplasia',
+    'Infectious diseases and basic mechanisms', 'Diseases of the cardiovascular system', 'Respiratory pathology',
+    'Gastrointestinal and hepatobiliary pathology', 'Renal pathology', 'Endocrine and reproductive pathology',
+    'Nervous system pathology', 'Musculoskeletal and skin pathology', 'Hematology and transfusion medicine'
+  ])},
+  {id:'mbbs2-pharmacology', name:'Pharmacology', curriculum:mbbsCurriculum('mbbs2-pharmacology','Pharmacology',[
+    'General pharmacology and pharmacokinetics', 'Pharmacodynamics and drug receptors', 'Autonomic nervous system drugs',
+    'Drugs for cardiovascular diseases', 'Drugs affecting blood and coagulation', 'Drugs for respiratory diseases',
+    'Drugs for gastrointestinal diseases', 'Drugs acting on the central nervous system', 'Analgesics and anti-inflammatory drugs',
+    'Endocrine pharmacology', 'Antimicrobial chemotherapy', 'Anticancer drugs', 'Immunopharmacology and vaccines',
+    'Toxicology and rational prescribing'
+  ])},
+  {id:'mbbs2-microbiology', name:'Microbiology', curriculum:mbbsCurriculum('mbbs2-microbiology','Microbiology',[
+    'General microbiology and laboratory methods', 'Immunology', 'Bacteriology', 'Virology', 'Mycology',
+    'Parasitology', 'Systemic infections', 'Hospital-acquired infections and infection control',
+    'Antimicrobial susceptibility and resistance', 'Applied and clinical microbiology'
+  ])},
+  {id:'mbbs2-fmt', name:'Forensic Medicine & Toxicology', curriculum:mbbsCurriculum('mbbs2-fmt','Forensic Medicine & Toxicology',[
+    'Introduction to forensic medicine and medical law', 'Identification and forensic examination',
+    'Death, postmortem changes and medicolegal autopsy', 'Injuries and wound interpretation',
+    'Asphyxial deaths', 'Sexual offences and medicolegal examination', 'Forensic toxicology',
+    'Consent, negligence, ethics and professional responsibilities'
+  ])}
+];
+
+const MBBS_3RD_YEAR_TEMPLATES = [
+  {id:'mbbs3-community', name:'Community Medicine', curriculum:mbbsCurriculum('mbbs3-community','Community Medicine',[
+    'Concepts of health, disease and determinants', 'Epidemiology and study designs', 'Biostatistics',
+    'Screening and health promotion', 'Communicable disease epidemiology and control',
+    'Non-communicable diseases and prevention', 'Maternal and child health', 'National health programmes',
+    'Nutrition and nutritional disorders', 'Environmental and occupational health', 'Health planning and management',
+    'Family medicine, primary health care and community diagnosis'
+  ])},
+  {id:'mbbs3-ophthal', name:'Ophthalmology', curriculum:mbbsCurriculum('mbbs3-ophthal','Ophthalmology',[
+    'Basic anatomy and examination of the eye', 'Refractive errors and optics', 'Conjunctiva and cornea',
+    'Lens and cataract', 'Glaucoma', 'Uvea and ocular inflammation', 'Retina and diabetic eye disease',
+    'Neuro-ophthalmology', 'Squint and pediatric ophthalmology', 'Ocular trauma and emergencies'
+  ])},
+  {id:'mbbs3-ent', name:'ENT', curriculum:mbbsCurriculum('mbbs3-ent','ENT',[
+    'Ear anatomy, examination and hearing', 'Otitis and other ear infections', 'Hearing loss and audiology',
+    'Vertigo and vestibular disorders', 'Nose and paranasal sinuses', 'Throat and larynx',
+    'Head and neck infections', 'Common ENT emergencies and basic procedures'
+  ])}
+];
+
+const MBBS_4TH_YEAR_TEMPLATES = [
+  {id:'mbbs4-medicine', name:'General Medicine & Allied', curriculum:mbbsCurriculum('mbbs4-medicine','General Medicine & Allied',[
+    'Approach to the clinical patient and common symptoms', 'Cardiovascular medicine', 'Respiratory medicine',
+    'Gastroenterology and hepatology', 'Nephrology and electrolyte disorders', 'Endocrinology and diabetes',
+    'Neurology', 'Infectious diseases', 'Rheumatology and connective tissue disease',
+    'Hematology', 'Geriatric medicine', 'Dermatology in medicine', 'Psychiatry in medicine',
+    'Emergency medicine and critical care', 'Clinical therapeutics and rational prescribing'
+  ])},
+  {id:'mbbs4-surgery', name:'General Surgery & Allied', curriculum:mbbsCurriculum('mbbs4-surgery','General Surgery & Allied',[
+    'Principles of surgery and perioperative care', 'Wounds, infection and sepsis', 'Shock and fluid therapy',
+    'Trauma and emergency surgery', 'Gastrointestinal surgery', 'Hepatobiliary and pancreatic surgery',
+    'Breast and endocrine surgery', 'Vascular surgery basics', 'Urology basics', 'Orthopedics and fractures',
+    'Anesthesia and pain management basics', 'Radiology and imaging in surgery', 'Pediatric surgery basics',
+    'Neurosurgery basics', 'Common surgical procedures and postoperative care'
+  ])},
+  {id:'mbbs4-obg', name:'Obstetrics & Gynecology', curriculum:mbbsCurriculum('mbbs4-obg','Obstetrics & Gynecology',[
+    'Normal pregnancy and antenatal care', 'Normal labour and puerperium', 'Abnormal labour and obstetric emergencies',
+    'Hypertensive disorders of pregnancy', 'Medical disorders complicating pregnancy', 'Fetal growth and fetal surveillance',
+    'Operative obstetrics and cesarean section', 'Postpartum complications', 'Contraception and family welfare',
+    'Gynecologic history and examination', 'Menstrual disorders and benign gynecology', 'Gynecologic infections',
+    'Infertility and assisted reproduction basics', 'Gynecologic malignancies'
+  ])},
+  {id:'mbbs4-pediatrics', name:'Pediatrics', curriculum:mbbsCurriculum('mbbs4-pediatrics','Pediatrics',[
+    'Growth, development and pediatric assessment', 'Neonatology and newborn care', 'Nutrition and nutritional disorders',
+    'Pediatric infections', 'Respiratory diseases in children', 'Gastrointestinal diseases in children',
+    'Pediatric cardiology', 'Neurology and seizures in children', 'Pediatric emergencies', 'Adolescent health'
+  ])},
+  {id:'mbbs4-orthopedics', name:'Orthopedics', curriculum:mbbsCurriculum('mbbs4-orthopedics','Orthopedics',[
+    'Fractures and fracture healing', 'Dislocations and soft-tissue injuries', 'Arthritis and joint disorders',
+    'Spine disorders', 'Bone and joint infections', 'Bone tumors and metabolic bone disease', 'Common orthopedic procedures'
+  ])},
+  {id:'mbbs4-psychiatry', name:'Psychiatry', curriculum:mbbsCurriculum('mbbs4-psychiatry','Psychiatry',[
+    'Psychiatric history and mental status examination', 'Psychosis and schizophrenia', 'Mood disorders',
+    'Anxiety and related disorders', 'Substance use disorders', 'Child and geriatric psychiatry', 'Emergency psychiatry'
+  ])},
+  {id:'mbbs4-dermatology', name:'Dermatology, Venereology & Leprosy', curriculum:mbbsCurriculum('mbbs4-dermatology','Dermatology, Venereology & Leprosy',[
+    'Approach to common skin lesions', 'Bacterial, fungal and viral skin infections', 'Eczema and dermatitis',
+    'Psoriasis and papulosquamous disorders', 'Acne and common follicular disorders', 'Sexually transmitted infections and leprosy'
+  ])},
+  {id:'mbbs4-radiology', name:'Radiodiagnosis', curriculum:mbbsCurriculum('mbbs4-radiology','Radiodiagnosis',[
+    'Radiation physics and safety', 'Plain radiography', 'Ultrasound', 'CT', 'MRI', 'Common emergency imaging'
+  ])},
+  {id:'mbbs4-anesthesia', name:'Anesthesiology', curriculum:mbbsCurriculum('mbbs4-anesthesia','Anesthesiology',[
+    'Preoperative assessment', 'Airway management', 'General anesthesia', 'Regional anesthesia',
+    'Pain management', 'Fluid therapy and perioperative emergencies'
+  ])}
+];
+
+const MBBS_INTERNSHIP_TEMPLATE = [
+  {id:'mbbs-internship', name:'Compulsory Rotating Internship', curriculum:mbbsCurriculum('mbbs-internship','Internship',[
+    'Medicine and allied clinical exposure', 'Surgery and allied clinical exposure', 'Obstetrics and Gynecology',
+    'Pediatrics', 'Community Medicine / primary care', 'Emergency and casualty exposure',
+    'Elective / specialty exposure', 'Clinical documentation, communication and professional practice'
+  ])}
+];
+
+const MBBS_TEMPLATES = {
+  'mbbs-1': {label:'MBBS 1st Year', subjects:MBBS_1ST_YEAR_TEMPLATES},
+  'mbbs-2': {label:'MBBS 2nd Year', subjects:MBBS_2ND_YEAR_TEMPLATES},
+  'mbbs-3': {label:'MBBS 3rd Year — Phase III Part I', subjects:MBBS_3RD_YEAR_TEMPLATES},
+  'mbbs-4': {label:'MBBS 4th Year — Phase III Part II', subjects:MBBS_4TH_YEAR_TEMPLATES},
+  'mbbs-internship': {label:'MBBS Internship', subjects:MBBS_INTERNSHIP_TEMPLATE},
+};
+
 const WORKOUT_TEMPLATE_BEGINNER = [[{"label":"Bodyweight Squats","sets":"3 sets x 10-12 reps"},{"label":"Incline Push-Ups","sets":"3 sets x 8-10 reps"},{"label":"Inverted Rows / Door Pulls","sets":"3 sets x 8-10 reps"},{"label":"Reverse Lunges","sets":"3 sets x 8 reps/leg"},{"label":"Plank Hold","sets":"3 sets x 20-30 secs"}],[{"label":"Light walking","sets":"20-30 min"},{"label":"Full-body stretching & mobility","sets":"5-10 min"}],[{"label":"Bodyweight Squats","sets":"3 sets x 10-12 reps"},{"label":"Incline Push-Ups","sets":"3 sets x 8-10 reps"},{"label":"Inverted Rows / Door Pulls","sets":"3 sets x 8-10 reps"},{"label":"Reverse Lunges","sets":"3 sets x 8 reps/leg"},{"label":"Plank Hold","sets":"3 sets x 20-30 secs"}],[{"label":"Light walking","sets":"20-30 min"},{"label":"Full-body stretching & mobility","sets":"5-10 min"}],[{"label":"Bodyweight Squats","sets":"3 sets x 10-12 reps"},{"label":"Incline Push-Ups","sets":"3 sets x 8-10 reps"},{"label":"Inverted Rows / Door Pulls","sets":"3 sets x 8-10 reps"},{"label":"Reverse Lunges","sets":"3 sets x 8 reps/leg"},{"label":"Plank Hold","sets":"3 sets x 20-30 secs"}],[{"label":"Side Planks","sets":"2 sets x 20 secs/side"},{"label":"Glute Bridges","sets":"2 sets x 12 reps"},{"label":"20 min light walk or activity","sets":""}],[]];
 
 const WORKOUT_TEMPLATE_VETERAN = [[{"label":"Barbell/Dumbbell Bench Press","sets":"4 sets x 8-10 reps"},{"label":"Incline Dumbbell Press","sets":"3 sets x 10 reps"},{"label":"Overhead Shoulder Press","sets":"3 sets x 8-10 reps"},{"label":"Lateral Raises","sets":"3 sets x 12-15 reps"},{"label":"Tricep Pushdowns","sets":"3 sets x 12 reps"}],[{"label":"Deadlifts","sets":"3 sets x 6-8 reps"},{"label":"Lat Pulldowns / Pull-Ups","sets":"3 sets x 8-10 reps"},{"label":"Barbell/Dumbbell Rows","sets":"3 sets x 10 reps"},{"label":"Face Pulls","sets":"3 sets x 15 reps"},{"label":"Bicep Curls","sets":"3 sets x 12 reps"}],[{"label":"Barbell Squats","sets":"4 sets x 8-10 reps"},{"label":"Romanian Deadlifts","sets":"3 sets x 10 reps"},{"label":"Leg Press","sets":"3 sets x 12 reps"},{"label":"Walking Lunges","sets":"3 sets x 10 reps/leg"},{"label":"Calf Raises","sets":"3 sets x 15 reps"}],[{"label":"20-30 min light cardio","sets":""},{"label":"Full-body mobility work","sets":"10 min"}],[{"label":"Incline Bench Press","sets":"3 sets x 8-10 reps"},{"label":"Seated Cable Rows","sets":"3 sets x 10 reps"},{"label":"Arnold Press","sets":"3 sets x 10 reps"},{"label":"Hammer Curls","sets":"3 sets x 12 reps"},{"label":"Skull Crushers","sets":"3 sets x 12 reps"}],[{"label":"Front Squats","sets":"3 sets x 8 reps"},{"label":"Hip Thrusts","sets":"3 sets x 10 reps"},{"label":"Leg Curls","sets":"3 sets x 12 reps"},{"label":"Standing Calf Raises","sets":"3 sets x 15 reps"}],[]];
@@ -903,7 +1044,10 @@ let customTrackers = []; // [{id,name,type:'counter'|'checklist',reset:'daily'|'
 let addingTracker = false;
 let newTrackerType = 'counter';
 let newTrackerReset = 'daily';
-let wizardStep = null; // null = not showing. 'intro' | 'workout' | 'subjects' | 'done' while active
+let wizardStep = null; // null | intro | workout | subjects | template-plan | done
+let wizardTemplate = null;
+let wizardPlanBusy = false;
+let wizardPlanStatus = '';
 let wizardNewSubjectName = '';
 let wizardWorkoutChoice = null; // null | 'yes' | 'no' — tracked only within the workout step
 let settingsOpen = false;
@@ -1469,27 +1613,58 @@ function renderWizard(){
       <div class="day-card" style="padding:12px 14px;">
         <div class="day-head" style="margin-bottom:6px;">
           <span class="day-name" style="font-size:0.9rem;">${s.name}</span>
-          <button class="icon-btn" data-action="subject-delete" data-id="${s.id}" title="Remove">\u2715</button>
+          <button class="icon-btn" data-action="subject-delete" data-id="${s.id}" title="Remove">✕</button>
         </div>
         <div class="water-sub" style="margin:0 0 8px;">${s.curriculum.length} topic${s.curriculum.length===1?'':'s'} loaded</div>
-        <button class="btn-secondary" style="width:100%;" data-action="scan-study" data-subject="${s.id}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add topics from a photo'}</button>
+        <button class="btn-secondary" style="width:100%;" data-action="scan-study" data-subject="${s.id}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo…':'📷 Add topics from a photo'}</button>
       </div>`).join('');
     return `
-      <div class="wrap" style="padding-top:40px;">
-        <h1 style="font-size:1.3rem;">What do you study?</h1>
-        <p class="sub">Load a preset for JEE or NEET (all subjects at once), or build your own \u2014 add each subject, then upload whatever planner/index you already have for it, photos, one or several.</p>
-        <div class="water-row" style="gap:8px;margin-bottom:14px;">
-          <button class="btn-secondary" style="flex:1;" data-action="subject-preset" data-preset="jee">Load JEE (Physics, Chem, Maths)</button>
+      <div class="wrap" style="padding-top:34px;">
+        <h1 style="font-size:1.3rem;">Choose a study template</h1>
+        <p class="sub">Templates load the curriculum first. When you choose one, we'll immediately ask when you want to finish and how much time you can study each day — then plan it for you.</p>
+        <div class="section-label" style="margin:14px 0 8px;">Entrance exams</div>
+        <div class="water-row" style="gap:8px;margin-bottom:10px;">
+          <button class="btn-secondary" style="flex:1;" data-action="subject-preset" data-preset="jee">JEE</button>
+          <button class="btn-secondary" style="flex:1;" data-action="subject-preset" data-preset="neet">NEET</button>
         </div>
-        <div class="water-row" style="gap:8px;margin-bottom:14px;">
-          <button class="btn-secondary" style="flex:1;" data-action="subject-preset" data-preset="neet">Load NEET (Physics, Chem, Biology)</button>
+        <div class="section-label" style="margin:14px 0 8px;">MBBS — choose the portion you are actually studying</div>
+        <div class="water-row" style="flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+          <button class="btn-secondary" style="flex:1 1 45%;" data-action="subject-preset" data-preset="mbbs-1">1st Year</button>
+          <button class="btn-secondary" style="flex:1 1 45%;" data-action="subject-preset" data-preset="mbbs-2">2nd Year</button>
+          <button class="btn-secondary" style="flex:1 1 45%;" data-action="subject-preset" data-preset="mbbs-3">3rd Year</button>
+          <button class="btn-secondary" style="flex:1 1 45%;" data-action="subject-preset" data-preset="mbbs-4">4th Year</button>
+          <button class="btn-secondary" style="flex:1 1 100%;" data-action="subject-preset" data-preset="mbbs-internship">Internship</button>
         </div>
         ${list}
         <div class="water-row" style="margin:14px 0;">
           <input class="edit-input" style="flex:1;" type="text" id="newSubjectName" placeholder="Own subject name, e.g. Anatomy">
           <button class="icon-btn" data-action="subject-create">+</button>
         </div>
-        <button class="btn-primary" style="width:100%;margin-top:10px;" data-action="wizard-to-done">Continue</button>
+        <button class="btn-primary" style="width:100%;margin-top:10px;" data-action="wizard-to-done">Continue without template planning</button>
+      </div>`;
+  }
+  if(wizardStep === 'template-plan'){
+    const template = wizardTemplate ? (wizardTemplate.label || wizardTemplate) : 'Study template';
+    const selected = subjects.length ? subjects.map(s=>`<div class="plan-item"><div class="plan-num">•</div><div class="plan-copy"><b>${s.name}</b><span>${s.curriculum.length} topics</span></div></div>`).join('') : '<p class="note">No template loaded yet.</p>';
+    return `
+      <div class="wrap" style="padding-top:34px;">
+        <h1 style="font-size:1.3rem;">Plan ${template}</h1>
+        <p class="sub">This is the actual setup step. Tell Daily Rhythm your deadline and real daily study capacity. It will estimate each topic separately and split the work into sessions — no fixed time per topic.</p>
+        <div class="reminder-card">
+          <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="wizardPlanDate" type="date" value="${studyPlannerDraft.targetDate||addDays(isoDate(new Date()),30)}"></div>
+          <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="wizardPlanMinutes" type="number" min="15" max="600" step="15" value="${studyPlannerDraft.minutes||60}"></div>
+          <div class="reminder-row"><label>Starting level</label><select class="edit-input" id="wizardPlanLevel" style="width:55%;"><option ${studyPlannerDraft.level==='starting'?'selected':''}>starting</option><option ${studyPlannerDraft.level==='familiar'?'selected':''}>familiar</option><option ${studyPlannerDraft.level==='strong'?'selected':''}>strong</option></select></div>
+          <div class="reminder-row"><label>Goal</label><input class="edit-input" id="wizardPlanGoal" type="text" value="${(studyPlannerDraft.goal||`Complete ${template}`).replace(/"/g,'&quot;')}" style="width:65%;"></div>
+        </div>
+        <div class="study-card">
+          <div class="study-title">Loaded curriculum</div>
+          <div class="plan-lane">${selected}</div>
+        </div>
+        <div class="study-action-grid">
+          <button class="btn-primary" data-action="wizard-plan-template">${wizardPlanBusy?'Planning…':'Plan this template'}</button>
+          <button class="btn-secondary" data-action="wizard-skip-template-plan">Skip planning for now</button>
+        </div>
+        ${wizardPlanStatus ? `<p class="note" style="margin-top:10px;color:var(--gold);">${wizardPlanStatus}</p>` : ''}
       </div>`;
   }
   if(wizardStep === 'done'){
@@ -2083,6 +2258,141 @@ function localSmartPlan(subj, opts){
   subj.planSource = 'smart-local';
   subj.planUpdatedAt = new Date().toISOString();
   return {count:planned.length, source:'smart-local'};
+}
+
+
+function buildBundleStudySessions(subjectList, estimates, startDate, dailyMinutes){
+  const budget = Math.max(15, Number(dailyMinutes)||60);
+  const byKey = new Map(estimates.map(x=>[`${x.subjectId}::${x.id}`, x]));
+  const queues = subjectList.map(subj => {
+    const topics = (subj.curriculum||[]).slice(subj.index||0).map((item, i)=>({
+      item,
+      order: Number(byKey.get(`${subj.id}::${item.id}`)?.order ?? i),
+      estimatedMinutes: Math.max(15, Number(byKey.get(`${subj.id}::${item.id}`)?.estimatedMinutes) || estimateTopicMinutes(item))
+    })).sort((a,b)=>a.order-b.order);
+    return {subj, topics, topicIndex:0, remaining:topics[0]?.estimatedMinutes||0, sessionNumber:1};
+  });
+  const result = subjectList.map(s=>({subjectId:s.id, sessions:[]}));
+  const resultMap = new Map(result.map(x=>[x.subjectId,x.sessions]));
+  let day = startDate || isoDate(new Date());
+  let used = 0;
+  let guard = 0;
+  while(queues.some(q=>q.topicIndex < q.topics.length) && guard++ < 10000){
+    let progressed = false;
+    for(const q of queues){
+      if(q.topicIndex >= q.topics.length) continue;
+      if(used >= budget){ day = addDays(day,1); used = 0; }
+      const topic = q.topics[q.topicIndex];
+      if(!q.remaining) q.remaining = topic.estimatedMinutes;
+      const sessionMinutes = Math.min(q.remaining, budget-used);
+      resultMap.get(q.subj.id).push({
+        topicId:topic.item.id,
+        sessionNumber:q.sessionNumber,
+        sessionMinutes,
+        scheduledDate:day,
+        estimatedMinutes:topic.estimatedMinutes
+      });
+      used += sessionMinutes;
+      q.remaining -= sessionMinutes;
+      progressed = true;
+      if(q.remaining <= 0.0001){ q.topicIndex++; q.remaining = q.topics[q.topicIndex]?.estimatedMinutes||0; q.sessionNumber=1; }
+      else q.sessionNumber++;
+      if(used >= budget) break;
+    }
+    if(!progressed) break;
+  }
+  result.forEach(group => {
+    const counts = new Map();
+    group.sessions.forEach(session => counts.set(session.topicId, (counts.get(session.topicId) || 0) + 1));
+    const seen = new Map();
+    group.sessions.forEach(session => {
+      const n = (seen.get(session.topicId) || 0) + 1;
+      seen.set(session.topicId, n);
+      session.sessionNumber = n;
+      session.sessionTotal = counts.get(session.topicId) || 1;
+    });
+  });
+  return result;
+}
+
+async function aiPlanTemplate(subjectList, opts){
+  const payload = {
+    goal: opts.goal || 'Complete this study template thoroughly',
+    targetDate: opts.targetDate || '',
+    dailyMinutes: Number(opts.minutes)||60,
+    currentLevel: opts.level || 'starting',
+    subjects: subjectList.map(s=>({
+      id:s.id,
+      name:s.name,
+      curriculum:(s.curriculum||[]).slice(s.index||0).map(x=>({
+        id:x.id,
+        phase:x.phase||'',
+        label:x.baseLabel||x.label||'',
+        difficulty:x.difficulty||null,
+        learningHours:x.learningHours,
+        practiceHours:x.practiceHours
+      }))
+    }))
+  };
+  try{
+    await trackAiCall();
+    const res=await fetch(WORKER_URL+'/plan-bundle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!res.ok || data.error || !Array.isArray(data.items)) throw new Error(data.error || 'AI template planner unavailable');
+    return {items:data.items, source:'ai'};
+  }catch(err){
+    console.warn('AI template planner failed; using local estimates:', err.message);
+    const items=[];
+    subjectList.forEach((s,si)=> (s.curriculum||[]).slice(s.index||0).forEach((x,i)=>items.push({
+      subjectId:s.id,id:x.id,estimatedMinutes:estimateTemplateMinutes(x),order:si*10000+i
+    })));
+    return {items, source:'local'};
+  }
+}
+
+function estimateTemplateMinutes(item){
+  if(Number.isFinite(Number(item?.learningHours)) && Number(item.learningHours)>0) return Math.max(15, Math.round(Number(item.learningHours)*60));
+  return estimateTopicMinutes(item);
+}
+
+function applyBundlePlan(subjectList, estimates, opts){
+  const sessionGroups = buildBundleStudySessions(subjectList, estimates, opts.startDate||isoDate(new Date()), opts.minutes);
+  const groupMap = new Map(sessionGroups.map(x=>[x.subjectId,x.sessions]));
+  subjectList.forEach(subj=>{
+    const pending=(subj.curriculum||[]).slice(subj.index||0);
+    const completed=(subj.curriculum||[]).slice(0,subj.index||0);
+    const estimateMap=new Map(estimates.filter(x=>x.subjectId===subj.id).map(x=>[x.id,x]));
+    const sessions=groupMap.get(subj.id)||[];
+    const byTopic=new Map();
+    sessions.forEach(s=>{ if(!byTopic.has(s.topicId)) byTopic.set(s.topicId,[]); byTopic.get(s.topicId).push(s); });
+    const ordered=pending.slice().sort((a,b)=>Number(estimateMap.get(a.id)?.order??999999)-Number(estimateMap.get(b.id)?.order??999999));
+    const planned=[];
+    ordered.forEach((item,i)=>{
+      const topicSessions=byTopic.get(item.id)||[];
+      const total=topicSessions.length||1;
+      topicSessions.forEach((session,si)=>planned.push({
+        ...item,
+        id:`${item.id}-s${session.sessionNumber}-${si}`,
+        parentTopicId:item.id,
+        originalTopicId:item.id,
+        baseLabel:item.baseLabel||item.label,
+        label:`${item.baseLabel||item.label} — Session ${session.sessionNumber}/${total}`,
+        sessionNumber:session.sessionNumber,
+        sessionTotal:total,
+        sessionMinutes:session.sessionMinutes,
+        learningMinutes:session.sessionMinutes,
+        practiceMinutes:0,
+        estimatedMinutes:session.estimatedMinutes,
+        scheduledDate:session.scheduledDate,
+        isStudySession:true
+      }));
+    });
+    subj.curriculum=completed.concat(planned);
+    subj.index=Math.min(subj.index||0,subj.curriculum.length);
+    subj.planSource=opts.source==='ai'?'ai':'smart-local';
+    subj.planUpdatedAt=new Date().toISOString();
+  });
+  return subjectList.reduce((n,s)=>n+(s.curriculum||[]).length-(s.index||0),0);
 }
 
 async function aiPlanSubject(subj, opts){
@@ -3509,6 +3819,7 @@ function attachHandlers(){
   if(rerunWizardBtn) rerunWizardBtn.addEventListener('click', ()=>{
     settingsOpen = false;
     wizardWorkoutChoice = null;
+    wizardTemplate = null; wizardPlanBusy = false; wizardPlanStatus = '';
     wizardStep = 'intro';
     render();
   });
@@ -3570,31 +3881,67 @@ function attachHandlers(){
   });
   document.querySelectorAll('[data-action="subject-preset"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
-      // Physics & Chemistry are shared between JEE and NEET, so they use fixed ids and are
-      // never duplicated. Maths (JEE-only) and Biology (NEET-only) are mutually exclusive \u2014
-      // picking one exam removes the other's exam-specific subject, since you can't be tracking
-      // both Maths and Biology as "the same JEE/NEET setup" at once.
       const preset = el.dataset.preset;
       const ensure = (id, name, curriculum) => {
-        if(!subjects.find(s=>s.id===id)) subjects.push({id, name, curriculum:[...curriculum], index:0});
+        const existing = subjects.find(s=>s.id===id);
+        if(existing){ existing.curriculum=[...curriculum]; existing.index=0; return; }
+        subjects.push({id, name, curriculum:[...curriculum], index:0});
       };
+      subjects = [];
       if(preset === 'jee'){
-        ensure('physics', 'Physics', JEE_NEET_PHYSICS_CURRICULUM);
-        ensure('chem', 'Chemistry', JEE_NEET_CHEMISTRY_CURRICULUM);
-        ensure('jee-maths', 'Maths', JEE_MATHS_CURRICULUM);
-        subjects = subjects.filter(s => s.id !== 'neet-bio');
-        studySubject = 'physics';
+        ensure('physics','Physics',JEE_NEET_PHYSICS_CURRICULUM);
+        ensure('chem','Chemistry',JEE_NEET_CHEMISTRY_CURRICULUM);
+        ensure('jee-maths','Maths',JEE_MATHS_CURRICULUM);
+        wizardTemplate={label:'JEE', id:'jee'};
       } else if(preset === 'neet'){
-        ensure('physics', 'Physics', JEE_NEET_PHYSICS_CURRICULUM);
-        ensure('chem', 'Chemistry', JEE_NEET_CHEMISTRY_CURRICULUM);
-        ensure('neet-bio', 'Biology', NEET_BIOLOGY_CURRICULUM);
-        subjects = subjects.filter(s => s.id !== 'jee-maths');
-        studySubject = 'physics';
-      } else {
-        return;
-      }
-      await saveSubjects(); render();
+        ensure('physics','Physics',JEE_NEET_PHYSICS_CURRICULUM);
+        ensure('chem','Chemistry',JEE_NEET_CHEMISTRY_CURRICULUM);
+        ensure('neet-bio','Biology',NEET_BIOLOGY_CURRICULUM);
+        wizardTemplate={label:'NEET', id:'neet'};
+      } else if(MBBS_TEMPLATES[preset]){
+        MBBS_TEMPLATES[preset].subjects.forEach(s=>ensure(s.id,s.name,s.curriculum));
+        wizardTemplate={label:MBBS_TEMPLATES[preset].label,id:preset};
+      } else return;
+      studySubject=subjects[0]?.id || null;
+      studyPlannerDraft={goal:`Complete ${wizardTemplate.label}`,targetDate:addDays(isoDate(new Date()),30),minutes:60,level:'starting'};
+      wizardPlanStatus='';
+      await saveSubjects();
+      wizardStep='template-plan';
+      render();
     });
+  });
+
+  const wizardPlanTemplateBtn=document.querySelector('[data-action="wizard-plan-template"]');
+  if(wizardPlanTemplateBtn) wizardPlanTemplateBtn.addEventListener('click', async ()=>{
+    if(wizardPlanBusy) return;
+    const targetDate=document.getElementById('wizardPlanDate')?.value||'';
+    const minutes=parseInt(document.getElementById('wizardPlanMinutes')?.value||'60',10);
+    const level=document.getElementById('wizardPlanLevel')?.value||'starting';
+    const goal=(document.getElementById('wizardPlanGoal')?.value||'').trim();
+    if(!targetDate){ wizardPlanStatus='Pick an end date first.'; render(); return; }
+    if(targetDate < isoDate(new Date())){ wizardPlanStatus='The end date needs to be today or later.'; render(); return; }
+    wizardPlanDraft={goal,targetDate,minutes:Math.max(15,minutes),level};
+    wizardPlanBusy=true; wizardPlanStatus='AI is estimating every topic and building your day-by-day sessions…'; render();
+    const result=await aiPlanTemplate(subjects,{...wizardPlanDraft,startDate:isoDate(new Date())});
+    const estimateItems=result.items||[];
+    applyBundlePlan(subjects,estimateItems,{...wizardPlanDraft,startDate:isoDate(new Date()),source:result.source});
+    await saveSubjects();
+    wizardPlanBusy=false;
+    const lastDates=subjects.flatMap(s=>(s.curriculum||[]).map(x=>x.scheduledDate).filter(Boolean));
+    const finish=lastDates.sort().pop();
+    const missedDeadline=!!(finish && finish>targetDate);
+    const deadlineNote=missedDeadline
+      ? ` Your ${targetDate} deadline is tighter than the current daily-time budget; the plan finishes ${finish}. Increase daily study time or move the deadline if you want it to fit.`
+      : ` It fits your ${targetDate} deadline.`;
+    wizardPlanStatus=result.source==='ai'
+      ? `Planned ${subjects.reduce((n,s)=>n+s.curriculum.length,0)} sessions across ${subjects.length} subjects${finish?` through ${finish}`:''}.${targetDate?deadlineNote:''}`
+      : `AI was unavailable, so a local planner used each template's built-in topic durations and split them into sessions${finish?` through ${finish}`:''}.${targetDate?deadlineNote:''}`;
+    wizardStep='done';
+    render();
+  });
+  const wizardSkipPlanBtn=document.querySelector('[data-action="wizard-skip-template-plan"]');
+  if(wizardSkipPlanBtn) wizardSkipPlanBtn.addEventListener('click', async ()=>{
+    wizardPlanBusy=false; wizardPlanStatus=''; await saveSubjects(); wizardStep='done'; render();
   });
 
   const wizToSubjectsBtn = document.querySelector('[data-action="wizard-to-subjects"]');
