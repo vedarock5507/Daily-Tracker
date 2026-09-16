@@ -2014,19 +2014,58 @@ function smartOrderCurriculum(curriculum){
     .map(x=>x.item);
 }
 
-function distributePlan(items, startDate, dailyMinutes){
+function estimateTopicMinutes(item){
+  const text = `${item?.phase||''} ${item?.label||''}`;
+  const match = text.match(/(?:—|\-|:|\(|\s)(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m)\b/i);
+  if(match){
+    const n = Number(match[1]);
+    const unit = match[2].toLowerCase();
+    const mins = unit.startsWith('h') ? n * 60 : n;
+    if(Number.isFinite(mins) && mins > 0) return Math.max(15, Math.round(mins / 15) * 15);
+  }
+  return 60;
+}
+
+function buildStudySessions(items, startDate, dailyMinutes){
   const result = [];
-  const mins = Math.max(15, Number(dailyMinutes)||60);
+  const dayBudget = Math.max(15, Number(dailyMinutes)||60);
   let day = startDate || isoDate(new Date());
   let used = 0;
-  items.forEach((item, i)=>{
-    const est = Math.max(20, Number(item.learningMinutes)||30);
-    if(used + est > mins && used > 0){ day = addDays(day,1); used = 0; }
-    item.learningMinutes = est;
-    item.scheduledDate = day;
-    used += est;
-    result.push(item);
+
+  items.forEach((item, topicIndex)=>{
+    const perTopic = Math.max(15, Number(item.estimatedMinutes)||estimateTopicMinutes(item));
+    const totalSessions = Math.max(1, Math.ceil(perTopic / dayBudget));
+    let remaining = perTopic;
+
+    for(let sessionNumber=1; sessionNumber<=totalSessions; sessionNumber++){
+      const sessionMinutes = Math.min(dayBudget, remaining);
+      if(used + sessionMinutes > dayBudget && used > 0){
+        day = addDays(day,1);
+        used = 0;
+      }
+
+      result.push({
+        ...item,
+        id: `${item.id || makeTopicId()}-s${sessionNumber}-${topicIndex}`,
+        parentTopicId: item.id || null,
+        originalTopicId: item.id || null,
+        sessionNumber,
+        sessionTotal: totalSessions,
+        sessionMinutes,
+        estimatedMinutes: perTopic,
+        learningMinutes: sessionMinutes,
+        practiceMinutes: 0,
+        scheduledDate: day,
+        isStudySession: true,
+        baseLabel: item.baseLabel || item.label,
+        label: `${item.baseLabel || item.label} — Session ${sessionNumber}/${totalSessions}`
+      });
+
+      used += sessionMinutes;
+      remaining -= sessionMinutes;
+    }
   });
+
   return result;
 }
 
@@ -2034,8 +2073,11 @@ function localSmartPlan(subj, opts){
   const completed = (subj.curriculum||[]).slice(0, subj.index||0);
   const pending = (subj.curriculum||[]).slice(subj.index||0);
   const ordered = smartOrderCurriculum(pending);
-  const planned = distributePlan(ordered, opts.targetDate < isoDate(new Date()) ? isoDate(new Date()) : (opts.startDate||isoDate(new Date())), opts.minutes);
-  // Keep completed items untouched; replace pending region with the computed order.
+  const planned = buildStudySessions(
+    ordered,
+    opts.targetDate < isoDate(new Date()) ? isoDate(new Date()) : (opts.startDate||isoDate(new Date())),
+    opts.minutes
+  );
   subj.curriculum = completed.concat(planned);
   subj.index = Math.min(subj.index||0, subj.curriculum.length);
   subj.planSource = 'smart-local';
@@ -2051,7 +2093,12 @@ async function aiPlanSubject(subj, opts){
     dailyMinutes: Number(opts.minutes)||60,
     currentLevel: opts.level || 'starting',
     completedCount: subj.index||0,
-    curriculum: (subj.curriculum||[]).slice(subj.index||0).map((x,i)=>({id:x.id||String(i),phase:x.phase||'',label:x.label||'',difficulty:x.difficulty||null}))
+    curriculum: (subj.curriculum||[]).slice(subj.index||0).map((x,i)=>({
+      id:x.id||String(i),
+      phase:x.phase||'',
+      label:x.baseLabel||x.label||'',
+      difficulty:x.difficulty||null
+    }))
   };
   try{
     await trackAiCall();
@@ -2062,25 +2109,57 @@ async function aiPlanSubject(subj, opts){
     });
     const data = await res.json();
     if(!res.ok || data.error || !Array.isArray(data.items)) throw new Error(data.error || 'AI planner unavailable');
+
     const byId = new Map(subj.curriculum.map(x=>[x.id,x]));
     const completed = subj.curriculum.slice(0, subj.index||0);
-    const ordered = [];
+    const planned = [];
+
     data.items.forEach((it, i)=>{
       const original = byId.get(it.id);
       if(!original) return;
-      original.learningMinutes = Number(it.learningMinutes)||original.learningMinutes||30;
-      original.practiceMinutes = Number(it.practiceMinutes)||original.practiceMinutes||0;
-      original.scheduledDate = it.scheduledDate || original.scheduledDate;
-      if(it.prerequisiteIds) original.prerequisiteIds = it.prerequisiteIds;
-      ordered.push(original);
+
+      const sessions = Array.isArray(it.sessions) && it.sessions.length
+        ? it.sessions
+        : [{
+            sessionNumber:1,
+            sessionTotal:1,
+            sessionMinutes:Number(it.learningMinutes)||Number(opts.minutes)||60,
+            scheduledDate:it.scheduledDate||isoDate(new Date())
+          }];
+
+      sessions.forEach((session, si)=>{
+        const sessionMinutes = Math.max(15, Number(session.sessionMinutes)||Number(opts.minutes)||60);
+        const sessionNumber = Number(session.sessionNumber)||si+1;
+        const sessionTotal = Number(session.sessionTotal)||sessions.length;
+        planned.push({
+          ...original,
+          id: `${original.id}-s${sessionNumber}-${i}`,
+          parentTopicId: original.id,
+          originalTopicId: original.id,
+          baseLabel: original.baseLabel || original.label,
+          label: `${original.baseLabel || original.label} — Session ${sessionNumber}/${sessionTotal}`,
+          sessionNumber,
+          sessionTotal,
+          sessionMinutes,
+          learningMinutes: sessionMinutes,
+          practiceMinutes: Number(session.practiceMinutes)||0,
+          scheduledDate: session.scheduledDate || addDays(isoDate(new Date()), planned.length),
+          isStudySession:true
+        });
+      });
     });
-    const missing = subj.curriculum.slice(subj.index||0).filter(x=>!ordered.includes(x));
-    subj.curriculum = completed.concat(ordered.concat(missing));
+
+    // If the AI ever omits a topic, keep it rather than silently losing curriculum.
+    const plannedParents = new Set(planned.map(x=>x.parentTopicId));
+    const missing = subj.curriculum.slice(subj.index||0).filter(x=>!plannedParents.has(x.id));
+    const fallback = buildStudySessions(missing, isoDate(new Date()), opts.minutes);
+
+    subj.curriculum = completed.concat(planned.concat(fallback));
     subj.planSource = 'ai';
     subj.planUpdatedAt = new Date().toISOString();
-    return {count:ordered.length || missing.length, source:'ai'};
+    return {count:planned.length + fallback.length, source:'ai'};
   }catch(err){
-    console.warn('AI planner failed; using local dependency planner:', err.message);
+    console.warn('AI planner failed; using local session planner:', err.message);
     return localSmartPlan(subj, opts);
   }
 }
@@ -2135,11 +2214,12 @@ function renderStudyOverlay(){
         <h2>Build my study plan</h2>
         <button class="settings-close" data-action="close-study-overlay">×</button>
       </div>
-      <p class="note">Tell the planner the destination and the time you actually have. It decides the sequence, dates and session size. It will try the AI planner first, then safely fall back to the local dependency planner.</p>
+      <p class="note">You don't need to give one fixed time per topic. AI estimates each topic separately based on its complexity and your level, then splits every topic into sessions that fit your daily study time.</p>
       <div class="reminder-card">
         <div class="reminder-row"><label>Goal</label><input class="edit-input" id="planGoal" type="text" value="${(studyPlannerDraft.goal||`Master ${subject?.name||'this subject'}`).replace(/"/g,'&quot;')}" style="width:65%;"></div>
         <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="planDate" type="date" value="${studyPlannerDraft.targetDate||addDays(isoDate(new Date()),30)}"></div>
         <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="planMinutes" type="number" min="15" max="600" step="15" value="${studyPlannerDraft.minutes||60}"></div>
+        <p class="note" style="margin:8px 0 0;">AI will estimate different durations for different topics — for example 30 min, 3 hrs, or 6 hrs — and split them into realistic sessions.</p>
         <div class="reminder-row"><label>Starting level</label><select class="edit-input" id="planLevel" style="width:55%;"><option ${studyPlannerDraft.level==='starting'?'selected':''}>starting</option><option ${studyPlannerDraft.level==='familiar'?'selected':''}>familiar</option><option ${studyPlannerDraft.level==='strong'?'selected':''}>strong</option></select></div>
       </div>
       <div class="study-action-grid">
@@ -3062,13 +3142,13 @@ function attachHandlers(){
       minutes:parseInt(document.getElementById('planMinutes')?.value||'60',10),
       level:document.getElementById('planLevel')?.value||'starting'
     };
-    studyPlanBusy=true; studyPlanStatus='Reordering topics and placing sessions…'; render();
+    studyPlanBusy=true; studyPlanStatus='Breaking topics into realistic study sessions and placing them…'; render();
     const result=await aiPlanSubject(subj,{...studyPlannerDraft,startDate:isoDate(new Date())});
     await saveSubjects();
     studyPlanBusy=false;
     studyPlanStatus=result.source==='ai'
-      ? `AI organized ${result.count} remaining topics around prerequisites and your time.`
-      : `Smart planner organized ${result.count} remaining topics locally.`;
+      ? `AI built ${result.count} study sessions from your remaining topics and your real daily limit.`
+      : `Smart planner built ${result.count} realistic study sessions locally.`;
     render();
   });
   const bulkParseBtn = document.querySelector('[data-action="bulk-parse"]');
