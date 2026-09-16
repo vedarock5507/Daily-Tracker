@@ -497,7 +497,34 @@ html[data-theme="light"] .appearance-preview.light{background:linear-gradient(14
 html[data-theme="light"] .appearance-preview.light::before{background:#fffefa;box-shadow:42px 0 0 #fffefa}
 html[data-theme="light"] .appearance-preview.light::after{background:#b57a1c;opacity:.25}
 html[data-theme="light"] .appearance-preview{box-shadow:inset 0 1px rgba(255,255,255,.8)}
-html[data-theme="light"] .settings-btn{box-shadow:0 7px 18px rgba(79,59,28,.14),inset 0 1px 1px rgba(255,255,255,.65),inset 0 -2px 4px rgba(80,55,20,.12)}
+html[data-theme="light"] .settings-btn{
+  background:linear-gradient(145deg,#fffdf8,#e9e4da);
+  border:1px solid rgba(86,73,52,.12);
+  box-shadow:0 7px 18px rgba(79,59,28,.14),inset 1px 1px 2px rgba(255,255,255,.92),inset -2px -2px 4px rgba(80,55,20,.12);
+  color:#b77918;
+}
+html[data-theme="light"] .settings-btn::after{
+  border-radius:13px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9);
+}
+html[data-theme="light"] .settings-btn .settings-embossed-icon{
+  filter:drop-shadow(0 2px 3px rgba(121,78,16,.24));
+}
+
+/* Light-mode weekly rhythm: keep the workout bars colorful without the leftover dark block. */
+html[data-theme="light"] .rhythm{
+  background:linear-gradient(145deg,rgba(255,255,255,.88),rgba(238,234,226,.82));
+  border-color:rgba(74,65,52,.10);
+  box-shadow:0 12px 28px rgba(62,52,39,.10),inset 0 1px rgba(255,255,255,.95);
+}
+html[data-theme="light"] .bar{
+  box-shadow:inset 0 1px rgba(255,255,255,.30),0 6px 12px rgba(55,46,35,.10);
+}
+html[data-theme="light"] .bar.today{
+  box-shadow:0 0 0 2px var(--gold),inset 0 1px rgba(255,255,255,.42),0 7px 15px rgba(181,122,28,.16);
+}
+html[data-theme="light"] .daylabel{color:#817a70;}
+html[data-theme="light"] .daylabel.today{color:#b77918;}
 
 /* Final light-mode polish: remove leftover dark surfaces and keep the buddy readable. */
 html[data-theme="light"]{
@@ -1621,12 +1648,31 @@ function fileToBase64(file){
     reader.readAsDataURL(file);
   });
 }
+function macroNumber(value){
+  if(typeof value === 'number' && Number.isFinite(value)) return value;
+  if(value === null || value === undefined || value === '') return 0;
+  const n = parseFloat(String(value).replace(/,/g,''));
+  return Number.isFinite(n) ? n : 0;
+}
+function normalizeFoodItem(item){
+  const x = item || {};
+  const macros = x.macros || x.nutrition || {};
+  return {
+    ...x,
+    name: String(x.name || x.food || x.item || 'Scanned food').trim(),
+    calories: macroNumber(x.calories ?? x.kcal ?? x.energy ?? macros.calories ?? macros.kcal),
+    protein: macroNumber(x.protein ?? x.protein_g ?? x.proteinGrams ?? macros.protein ?? macros.protein_g),
+    carbs: macroNumber(x.carbs ?? x.carbohydrates ?? x.carbs_g ?? x.carbohydrate_g ?? x.carbohydrates_g ?? macros.carbs ?? macros.carbohydrates ?? macros.carbs_g ?? macros.carbohydrates_g),
+    fat: macroNumber(x.fat ?? x.fats ?? x.fat_g ?? x.fats_g ?? x.total_fat ?? macros.fat ?? macros.fats ?? macros.fat_g ?? macros.fats_g),
+  };
+}
+function normalizeFoodItems(items){ return (Array.isArray(items) ? items : []).map(normalizeFoodItem); }
 function recalcFoodTotals(e){
   const log = e.foodLog || [];
-  e.calories = log.reduce((s,i)=> s + (Number(i.calories)||0), 0);
-  e.protein  = log.reduce((s,i)=> s + (Number(i.protein)||0), 0);
-  e.carbs    = log.reduce((s,i)=> s + (Number(i.carbs)||0), 0);
-  e.fat      = log.reduce((s,i)=> s + (Number(i.fat)||0), 0);
+  e.calories = log.reduce((s,i)=> s + macroNumber(i.calories), 0);
+  e.protein  = log.reduce((s,i)=> s + macroNumber(i.protein), 0);
+  e.carbs    = log.reduce((s,i)=> s + macroNumber(i.carbs), 0);
+  e.fat      = log.reduce((s,i)=> s + macroNumber(i.fat), 0);
 }
 function foodBar(label, used, target, unit){
   const pct = target>0 ? Math.min(100, Math.round((used/target)*100)) : 0;
@@ -1716,7 +1762,7 @@ function processFoodImage(file){
       });
       const data = await res.json();
       if(!res.ok || data.error) throw new Error(data.error || 'Scan failed');
-      foodScanResult = { imageDataUrl: dataUrl, items: data.items || [] };
+      foodScanResult = { imageDataUrl: dataUrl, items: normalizeFoodItems(data.items || []) };
     } catch(e) {
       alert('Could not read that food photo: ' + e.message);
     } finally {
@@ -2982,14 +3028,14 @@ function attachHandlers(){
     const todayIso = isoDate(new Date());
     if(!entries[todayIso]) entries[todayIso] = {tasks:{}};
     if(!entries[todayIso].foodLog) entries[todayIso].foodLog = [];
-    foodScanResult.items.forEach((it,i)=>{
+    normalizeFoodItems(foodScanResult.items).forEach((it,i)=>{
       entries[todayIso].foodLog.push({
         id:'food-scan-'+Date.now()+'-'+i,
-        name:String(it.name || 'Scanned food').trim(),
-        calories:Number(it.calories)||0,
-        protein:Number(it.protein)||0,
-        carbs:Number(it.carbs)||0,
-        fat:Number(it.fat)||0,
+        name:it.name,
+        calories:macroNumber(it.calories),
+        protein:macroNumber(it.protein),
+        carbs:macroNumber(it.carbs),
+        fat:macroNumber(it.fat),
         source:'scan'
       });
     });
