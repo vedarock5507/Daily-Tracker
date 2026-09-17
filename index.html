@@ -244,10 +244,6 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 .notebook-empty{font-size:.75rem;color:var(--muted);padding:14px 0;text-align:center;}
 .study-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:70;padding:18px;backdrop-filter:blur(3px);overflow:auto;}
 .study-overlay.open{display:block;}
-.study-overlay.planner-busy{cursor:wait;}
-.study-overlay.planner-busy .study-overlay-panel{position:relative;}
-.study-overlay.planner-busy button,.study-overlay.planner-busy input,.study-overlay.planner-busy select{pointer-events:none!important;opacity:.42!important;filter:grayscale(.55);}
-.study-overlay.planner-busy .planner-loading{opacity:1!important;filter:none;}
 .planner-loading{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(224,170,74,.08);border:1px solid rgba(224,170,74,.18);color:var(--gold);font-size:.9rem;font-weight:700;}
 .planner-spinner{width:18px;height:18px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:plannerSpin .75s linear infinite;flex:0 0 auto;}
 @keyframes plannerSpin{to{transform:rotate(360deg)}}
@@ -1127,6 +1123,7 @@ let currentSwipeDate = isoDate(new Date());
 let timerState = {seconds:0, remaining:0, running:false, interval:null, label:''};
 let studyOverlay = null; // null | 'planner' | 'paste' | 'notebook'
 let studyPlanBusy = false;
+let studyPlanBusySubject = null;
 let studyPlanStatus = '';
 let studyPlannerDraft = { goal:'', targetDate:'', minutes:60, level:'starting' };
 
@@ -2631,26 +2628,25 @@ function renderStudyOverlay(){
     </div>`;
   }
   const subject = getSubject(studySubject);
-  return `<div class="study-overlay open ${studyPlanBusy?'planner-busy':''}" id="studyOverlay">
+  return `<div class="study-overlay open" id="studyOverlay">
     <div class="study-overlay-panel">
       <div class="study-overlay-head">
         <h2>Build my study plan</h2>
-        <button class="settings-close" data-action="close-study-overlay" ${studyPlanBusy?'disabled':''}>×</button>
+        <button class="settings-close" data-action="close-study-overlay">×</button>
       </div>
       <p class="note">You don't need to give one fixed time per topic. AI estimates each topic separately based on its complexity and your level, then splits every topic into sessions that fit your daily study time.</p>
       <div class="reminder-card">
-        <div class="reminder-row"><label>Goal</label><input class="edit-input" id="planGoal" type="text" value="${(studyPlannerDraft.goal||`Master ${subject?.name||'this subject'}`).replace(/"/g,'&quot;')}" style="width:65%;" ${studyPlanBusy?'disabled':''}></div>
-        <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="planDate" type="date" value="${studyPlannerDraft.targetDate||addDays(isoDate(new Date()),30)}" ${studyPlanBusy?'disabled':''}></div>
-        <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="planMinutes" type="number" min="15" max="600" step="15" value="${studyPlannerDraft.minutes||60}" ${studyPlanBusy?'disabled':''}></div>
+        <div class="reminder-row"><label>Goal</label><input class="edit-input" id="planGoal" type="text" value="${(studyPlannerDraft.goal||`Master ${subject?.name||'this subject'}`).replace(/"/g,'&quot;')}" style="width:65%;"></div>
+        <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="planDate" type="date" value="${studyPlannerDraft.targetDate||addDays(isoDate(new Date()),30)}"></div>
+        <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="planMinutes" type="number" min="15" max="600" step="15" value="${studyPlannerDraft.minutes||60}"></div>
         <p class="note" style="margin:8px 0 0;">AI will estimate different durations for different topics — for example 30 min, 3 hrs, or 6 hrs — and split them into realistic sessions.</p>
-        <div class="reminder-row"><label>Starting level</label><select class="edit-input" id="planLevel" style="width:55%;" ${studyPlanBusy?'disabled':''}><option ${studyPlannerDraft.level==='starting'?'selected':''}>starting</option><option ${studyPlannerDraft.level==='familiar'?'selected':''}>familiar</option><option ${studyPlannerDraft.level==='strong'?'selected':''}>strong</option></select></div>
+        <div class="reminder-row"><label>Starting level</label><select class="edit-input" id="planLevel" style="width:55%;"><option ${studyPlannerDraft.level==='starting'?'selected':''}>starting</option><option ${studyPlannerDraft.level==='familiar'?'selected':''}>familiar</option><option ${studyPlannerDraft.level==='strong'?'selected':''}>strong</option></select></div>
       </div>
       <div class="study-action-grid">
-        <button class="btn-primary" data-action="build-study-plan" ${studyPlanBusy?'disabled':''}>${studyPlanBusy?'<span class="planner-spinner" aria-hidden="true"></span> Planning…':'Build plan'}</button>
-        <button class="btn-secondary" data-action="close-study-overlay" ${studyPlanBusy?'disabled':''}>Cancel</button>
+        <button class="btn-primary" data-action="build-study-plan">Build plan</button>
+        <button class="btn-secondary" data-action="close-study-overlay">Cancel</button>
       </div>
-      ${studyPlanBusy ? `<div class="planner-loading"><span class="planner-spinner" aria-hidden="true"></span><span>Planning your study schedule… Please wait.</span></div>` : ''}
-      ${studyPlanStatus && !studyPlanBusy ? `<p class="note" style="margin-top:10px;color:var(--gold);">${studyPlanStatus}</p>` : ''}
+      ${studyPlanStatus ? `<p class="note" style="margin-top:10px;color:var(--gold);">${studyPlanStatus}</p>` : ''}
     </div>
   </div>`;
 }
@@ -2708,7 +2704,7 @@ function renderStudy(){
         <div class="study-kpi"><b>${notesCount}</b><span>note sets</span></div>
       </div>
       <div class="study-action-grid">
-        <button class="btn-primary" data-action="open-study-planner">✦ Plan for me</button>
+        <button class="btn-primary" data-action="open-study-planner" ${studyPlanBusy && studyPlanBusySubject===subject.id?'disabled':''}>${studyPlanBusy && studyPlanBusySubject===subject.id?'<span class="planner-spinner" aria-hidden="true"></span> Planning…':'✦ Plan for me'}</button>
         <button class="btn-secondary" data-action="open-notebook">📓 Subject notes</button>
         <button class="btn-secondary" data-action="open-bulk-paste">Paste syllabus</button>
         <button class="btn-secondary" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}">${isEditingSubject?'✓ Done editing':'Quick edit'}</button>
@@ -3559,21 +3555,35 @@ function attachHandlers(){
   const buildPlanBtn = document.querySelector('[data-action="build-study-plan"]');
   if(buildPlanBtn) buildPlanBtn.addEventListener('click', async ()=>{
     const subj=getSubject(studySubject);
-    if(!subj) return;
+    if(!subj || studyPlanBusy) return;
     studyPlannerDraft = {
       goal:(document.getElementById('planGoal')?.value||'').trim(),
       targetDate:document.getElementById('planDate')?.value||'',
       minutes:parseInt(document.getElementById('planMinutes')?.value||'60',10),
       level:document.getElementById('planLevel')?.value||'starting'
     };
-    studyPlanBusy=true; studyPlanStatus='Breaking topics into realistic study sessions and placing them…'; render();
-    const result=await aiPlanSubject(subj,{...studyPlannerDraft,startDate:isoDate(new Date())});
-    await saveSubjects();
-    studyPlanBusy=false;
-    studyPlanStatus=result.source==='ai'
-      ? `AI built ${result.count} study sessions from your remaining topics and your real daily limit.`
-      : `Smart planner built ${result.count} realistic study sessions locally.`;
+    const plannedSubjectId=subj.id;
+    studyPlanBusy=true;
+    studyPlanBusySubject=plannedSubjectId;
+    studyPlanStatus='';
+    // Close the modal immediately. The AI request continues in the background so the user
+    // can keep using the rest of the app. Only the Plan for me button remains in a loading state.
+    studyOverlay=null;
     render();
+    try{
+      const result=await aiPlanSubject(subj,{...studyPlannerDraft,startDate:isoDate(new Date())});
+      await saveSubjects();
+      studyPlanStatus=result.source==='ai'
+        ? `AI built ${result.count} study sessions from your remaining topics and your real daily limit.`
+        : `Smart planner built ${result.count} realistic study sessions locally.`;
+    }catch(err){
+      console.warn('Study planner request failed:',err);
+      studyPlanStatus='Planning failed. Please try Plan for me again.';
+    }finally{
+      studyPlanBusy=false;
+      studyPlanBusySubject=null;
+      render();
+    }
   });
   const bulkParseBtn = document.querySelector('[data-action="bulk-parse"]');
   if(bulkParseBtn) bulkParseBtn.addEventListener('click', async ()=>{
