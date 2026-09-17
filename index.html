@@ -1706,7 +1706,7 @@ function renderWizard(){
             <button class="btn-secondary" style="flex:1 1 45%;" data-action="wizard-workout-template" data-template="pro">Pro</button>
             <button class="btn-secondary" style="flex:1 1 45%;" data-action="wizard-workout-template" data-template="extreme">Extreme</button>
           </div>
-          <button class="btn-primary" style="width:100%;margin-top:4px;" data-action="wizard-scan-workout" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Scan my own workout plan'}</button>
+          <button class="btn-primary" style="width:100%;margin-top:4px;" data-action="wizard-scan-workout" ${scanBusy?'disabled':''}>${scanBusy?'<span class="planner-spinner" aria-hidden="true"></span> Reading photo…':'📷 Scan my own workout plan'}</button>
           <button class="btn-secondary" style="width:100%;margin-top:10px;" data-action="wizard-to-subjects">I'll build it manually later \u2192</button>
         </div>`;
     }
@@ -1771,9 +1771,10 @@ function renderWizard(){
           <div class="plan-lane">${selected}</div>
         </div>
         <div class="study-action-grid">
-          <button class="btn-primary" data-action="wizard-plan-template">${wizardPlanBusy?'Planning…':'Plan this template'}</button>
+          <button class="btn-primary" data-action="wizard-plan-template" ${wizardPlanBusy?'disabled':''}>${wizardPlanBusy?'<span class="planner-spinner" aria-hidden="true"></span> Planning…':'Plan this template'}</button>
           <button class="btn-secondary" data-action="wizard-skip-template-plan">Skip planning for now</button>
         </div>
+        ${wizardPlanBusy ? `<div class="planner-loading"><span class="planner-spinner" aria-hidden="true"></span><span>AI is estimating the curriculum and building your sessions…</span></div>` : ''}
         ${wizardPlanStatus ? `<p class="note" style="margin-top:10px;color:var(--gold);">${wizardPlanStatus}</p>` : ''}
       </div>`;
   }
@@ -2147,17 +2148,57 @@ function renderFoodScanOverlay(){
   </div>`;
 }
 
+// Shared Camera / Gallery chooser used by every non-food photo scan.
+function closePhotoSourcePicker(){
+  const picker=document.getElementById('photoSourcePicker');
+  if(picker) picker.remove();
+}
+function choosePhotoSource(onPick){
+  closePhotoSourcePicker();
+  const overlay=document.createElement('div');
+  overlay.id='photoSourcePicker';
+  overlay.className='modal-overlay open';
+  overlay.innerHTML=`
+    <div class="modal food-source-modal" role="dialog" aria-modal="true" aria-label="Choose photo source">
+      <h3>Choose photo source</h3>
+      <div class="sets">Take a new photo or choose one from your gallery.</div>
+      <div class="food-source-actions">
+        <button class="btn-primary food-source-btn" id="photoSourceCamera">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h2l1.2-2h3.6l1.2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13.5" r="3.2"/><path d="M17.5 10.5h.01"/></svg>
+          Camera
+        </button>
+        <button class="btn-secondary food-source-btn" id="photoSourceGallery">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4.5 17 5-5 3.5 3 2.5-2.5 4 4.5"/></svg>
+          Gallery
+        </button>
+      </div>
+      <button class="modal-close" id="photoSourceCancel">Cancel</button>
+    </div>`;
+  document.body.appendChild(overlay);
+
+  const openPicker=(capture)=>{
+    const input=document.createElement('input');
+    input.type='file';
+    input.accept='image/*';
+    input.multiple=true;
+    if(capture) input.setAttribute('capture','environment');
+    input.addEventListener('change',()=>{
+      const files=Array.from(input.files||[]);
+      closePhotoSourcePicker();
+      if(files.length) onPick(files);
+    },{once:true});
+    input.click();
+  };
+  document.getElementById('photoSourceCamera').addEventListener('click',()=>openPicker(true));
+  document.getElementById('photoSourceGallery').addEventListener('click',()=>openPicker(false));
+  document.getElementById('photoSourceCancel').addEventListener('click',closePhotoSourcePicker);
+  overlay.addEventListener('click',e=>{ if(e.target===overlay) closePhotoSourcePicker(); });
+}
+
 // Sends one or more photos to the Worker and merges the returned items into one list.
 // Each item may carry a `day` field (from a multi-day photo like "[FRIDAY]...") for the caller to route.
 function scanPhoto(mode, onSuccess){
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.multiple = true; // lets a multi-day plan be scanned as several photos in one go
-  // no `capture` attribute on purpose — lets the picker offer Camera, Gallery, and Files, not just a forced live camera
-  input.addEventListener('change', async ()=>{
-    const files = Array.from(input.files || []);
-    if(!files.length) return;
+  choosePhotoSource(async (files)=>{
     scanBusy = true; render();
     try{
       let allItems = [];
@@ -2184,7 +2225,6 @@ function scanPhoto(mode, onSuccess){
       scanBusy = false; render();
     }
   });
-  input.click();
 }
 
 
@@ -2710,6 +2750,7 @@ function renderStudy(){
         <button class="btn-secondary" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}">${isEditingSubject?'✓ Done editing':'Quick edit'}</button>
       </div>
       ${planSource==='Not planned yet' && pendingCount ? `<p class="note" style="margin-bottom:0;">Stop entering dates one by one. Plan once, then the queue runs from here.</p>` : ''}
+      <button class="btn-secondary" style="width:100%;margin-top:10px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'<span class="planner-spinner" aria-hidden="true"></span> Reading photo…':'📷 Add topics from a photo'}</button>
     </div>`;
 
   const editToggleRow = isEditingSubject ? `
@@ -2784,7 +2825,6 @@ function renderStudy(){
       </div>
       ${doneToday ? `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="studyextra" data-subject="${studySubject}">+ Have time \u2014 do this next one too</button>` : ''}
       ${extraToday ? `<div class="water-sub" style="margin-top:6px;">${1+extraToday} sessions done today</div>` : ''}
-      <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add topics from a photo'}</button>
       <div class="notes-wrap">
         <div class="notes-label">Notes</div>
         <textarea class="notes-textarea" data-action="studynote" data-key="${noteKey}" placeholder="Jot notes while you study...">${noteVal}</textarea>
@@ -4050,7 +4090,7 @@ function attachHandlers(){
     const goal=(document.getElementById('wizardPlanGoal')?.value||'').trim();
     if(!targetDate){ wizardPlanStatus='Pick an end date first.'; render(); return; }
     if(targetDate < isoDate(new Date())){ wizardPlanStatus='The end date needs to be today or later.'; render(); return; }
-    wizardPlanDraft={goal,targetDate,minutes:Math.max(15,minutes),level};
+    studyPlannerDraft={goal,targetDate,minutes:Math.max(15,minutes),level};
     wizardPlanBusy=true; wizardPlanStatus='AI is estimating every topic and building your day-by-day sessions…'; render();
     const result=await aiPlanTemplate(subjects,{...wizardPlanDraft,startDate:isoDate(new Date())});
     const estimateItems=result.items||[];
