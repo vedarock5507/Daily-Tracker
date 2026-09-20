@@ -9,10 +9,6 @@
 <title>Daily Rhythm</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
-:root{
-  --bg:#121418; --surface:#1b1e24; --surface-2:#232730; --text:#f0ede6; --muted:#8b8780;
-  --strength:#c05e37; --cardio:#3f8a76; --recovery:#6d7280; --gold:#e0aa4a; --line: rgba(240,237,230,0.08);
-}
 *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans', sans-serif;padding:22px 16px 60px;min-height:100vh;overscroll-behavior-y:contain;}
 .wrap{max-width:520px;margin:0 auto;}
@@ -98,7 +94,7 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 /* swipe deck */
 .swipe-hint{text-align:center;font-size:0.68rem;color:var(--muted);margin-bottom:10px;}
 .swipe-viewport{overflow:hidden;position:relative;border-radius:16px;touch-action:pan-y;}
-.swipe-track{display:flex;transition:transform 0.28s cubic-bezier(.2,.8,.2,1);}
+.swipe-track{display:flex;transition:transform 0.28s cubic-bezier(.2,.8,.2,1);}.swipe-page{width:100%;flex:0 0 100%;min-width:100%;}
 .dots{display:flex;justify-content:center;gap:6px;margin-top:14px;}
 .dot-nav{width:6px;height:6px;border-radius:50%;background:var(--line);transition:all 0.2s;}
 .dot-nav.active{background:var(--gold);width:16px;border-radius:4px;}
@@ -244,9 +240,6 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 .notebook-empty{font-size:.75rem;color:var(--muted);padding:14px 0;text-align:center;}
 .study-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.76);z-index:70;padding:18px;backdrop-filter:blur(3px);overflow:auto;}
 .study-overlay.open{display:block;}
-.planner-loading{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px;padding:10px 12px;border-radius:14px;background:rgba(224,170,74,.08);border:1px solid rgba(224,170,74,.18);color:var(--gold);font-size:.9rem;font-weight:700;}
-.planner-spinner{width:18px;height:18px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:plannerSpin .75s linear infinite;flex:0 0 auto;}
-@keyframes plannerSpin{to{transform:rotate(360deg)}}
 .study-overlay-panel{max-width:520px;margin:16px auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:18px;}
 .study-overlay-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
 .study-overlay-head h2{font-family:'Space Grotesk';font-size:1.05rem;margin:0;}
@@ -285,6 +278,7 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 .btn-secondary{background:var(--surface-2);color:var(--text);border:1px solid var(--line);padding:9px 16px;border-radius:9px;font-size:0.78rem;cursor:pointer;font-family:inherit;transition:transform 0.1s ease, background 0.15s ease;}
 .btn-secondary:active{transform:scale(0.97);background:var(--surface);}
 .note{font-size:0.72rem;color:var(--muted);margin-top:8px;line-height:1.5;}
+.study-overlay button.day-card{color:var(--text);}
 .status-ok{color:var(--gold);}
 
 .reset{display:block;margin:24px auto 0;background:none;border:1px solid var(--line);color:var(--muted);font-size:0.7rem;padding:8px 14px;border-radius:9px;cursor:pointer;}
@@ -304,6 +298,56 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 .loading{text-align:center;color:var(--muted);padding:40px 0;font-size:0.85rem;}
 
 .food-log-card{margin-top:16px!important;padding:18px!important;overflow:hidden;}
+.food-block,.workout-block{margin-top:16px!important;padding:18px!important;overflow:hidden;}
+.block-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;}
+.block-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;}
+.block-sub{font-size:.63rem;color:var(--muted);line-height:1.35;}
+.calorie-ring-wrap{display:flex;align-items:center;justify-content:center;margin:2px 0 16px;}
+.home-dual-ring-wrap{display:flex;justify-content:center;align-items:center;margin:16px 0 6px;padding:6px 0 12px;}
+.home-dual-ring{position:relative;width:220px;height:220px;}
+.home-dual-ring svg{width:100%;height:100%;display:block;transform:rotate(-90deg);}
+.home-ring-track,.home-ring-fill,.home-study-track,.home-study-fill{fill:none;stroke-linecap:round;}
+.home-ring-track{stroke:rgba(255,255,255,.075);stroke-width:12;}
+.home-ring-fill{stroke:var(--gold);stroke-width:12;transition:stroke-dashoffset .45s ease;}
+.home-study-track{stroke:rgba(255,255,255,.075);stroke-width:10;}
+.home-study-fill{stroke:var(--cardio);stroke-width:10;transition:stroke-dashoffset .45s ease;}
+.home-dual-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;}
+.home-ring-number{font-family:'Space Grotesk';font-size:1.55rem;font-weight:700;line-height:1;}
+.home-ring-label{font-size:.62rem;color:var(--muted);margin-top:5px;}
+.home-ring-study{font-size:.66rem;color:var(--cardio);font-weight:700;margin-top:8px;}
+.home-ring-legend{display:flex;justify-content:center;gap:14px;margin-top:2px;font-size:.61rem;color:var(--muted);}
+.home-ring-legend span{display:inline-flex;align-items:center;gap:5px;}
+.home-ring-dot{width:7px;height:7px;border-radius:50%;display:inline-block;background:var(--gold);}
+.home-ring-dot.study{background:var(--cardio);}
+.add-exercise-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(224,170,74,.22);background:rgba(224,170,74,.08);color:var(--gold);border-radius:999px;padding:6px 9px;font-size:.62rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.add-exercise-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
+html[data-theme="light"] .home-ring-track,html[data-theme="light"] .home-study-track{stroke:rgba(74,62,44,.10);}
+html[data-theme="light"] .add-exercise-btn{background:rgba(176,122,26,.08);border-color:rgba(176,122,26,.20);}
+
+.calorie-ring{position:relative;width:154px;height:154px;}
+.calorie-ring svg{width:100%;height:100%;display:block;transform:rotate(-90deg);}
+.calorie-ring-track{fill:none;stroke:rgba(255,255,255,.075);stroke-width:10;}
+.calorie-ring-fill{fill:none;stroke:var(--gold);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset .45s ease;}
+.calorie-ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.calorie-ring-number{font-family:'Space Grotesk';font-size:1.55rem;font-weight:700;line-height:1;}
+.calorie-ring-label{font-size:.61rem;color:var(--muted);margin-top:5px;}
+.calorie-ring-target{font-size:.58rem;color:var(--muted);margin-top:2px;}
+.food-section-divider{height:1px;background:var(--line);margin:18px 0;}
+.saved-meals{margin-top:18px;padding-top:16px;border-top:1px solid var(--line);}
+.saved-meals-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.saved-meals-title{font-family:'Space Grotesk';font-weight:700;font-size:.88rem;}
+.saved-meals-empty{font-size:.7rem;color:var(--muted);padding:8px 0;}
+.saved-meal-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line);}
+.saved-meal-row:first-child{border-top:0;}
+.saved-meal-copy{min-width:0;flex:1;}
+.saved-meal-name{font-size:.76rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.saved-meal-meta{font-size:.59rem;color:var(--muted);margin-top:3px;line-height:1.35;}
+.saved-meal-actions{display:flex;gap:5px;flex-shrink:0;}
+.saved-meal-actions .icon-btn{width:30px;height:30px;}
+.workout-block .task-row:last-of-type{border-bottom:0;}
+html[data-theme="light"] .calorie-ring-track{stroke:rgba(74,62,44,.10);}
+html[data-theme="light"] .saved-meal-row{border-color:rgba(74,62,44,.10);}
+
 .food-log-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px;}
 .food-log-title{font-family:'Space Grotesk';font-weight:700;font-size:1rem;}
 .food-log-day{font-size:.62rem;color:var(--muted);background:rgba(240,237,230,.06);border:1px solid rgba(240,237,230,.08);padding:4px 8px;border-radius:999px;}
@@ -599,11 +643,20 @@ html[data-theme="light"] .food-chip{
   background:rgba(53,45,35,.78);
 }
 
-<style>
 /* Final visual pass — cinematic liquid-glass dashboard */
+/* Theme tokens: single source of truth. Component/theme overrides live below. */
 :root{
-  --bg:#0b0d11;--surface:#151820;--surface-2:#1b1f28;--text:#f5f1e9;--muted:#918e88;
-  --gold:#e5a63e;--gold-soft:#f5bf62;--line:rgba(255,255,255,.09);
+  --bg:#0b0d11;
+  --surface:#151820;
+  --surface-2:#1b1f28;
+  --text:#f5f1e9;
+  --muted:#918e88;
+  --strength:#c05e37;
+  --cardio:#3f8a76;
+  --recovery:#6d7280;
+  --gold:#e5a63e;
+  --line:rgba(255,255,255,.09);
+  --gold-soft:#f5bf62;
 }
 html,body{min-height:100%;}
 body{
@@ -692,7 +745,6 @@ html[data-theme="light"] .bottom-nav:after{
 html[data-theme="light"] .nav-btn{color:rgba(48,44,38,.58);}
 html[data-theme="light"] .nav-btn.active{color:#b97917;}
 html[data-theme="light"] .progress-track,html[data-theme="light"] .food-progress .progress-track{background:rgba(74,62,44,.10)!important;}
-</style>
 </style>
 </head>
 <body>
@@ -863,77 +915,13 @@ const QUANTUM_CURRICULUM = [
   {phase:'Checkpoint', label:'Explain SHM, waves, and derivatives out loud, no notes'},
   {phase:'Griffiths', label:'Read the preface + chapter 1 intro, just to see what\u2019s coming'},
 ];
-const makeExamCurriculum = (chapters, baseHours=2.5, practiceRatio=0.6) => chapters.map((x,i)=>({
-  id:`exam-${i+1}`, phase:x.phase, label:x.label,
-  learningHours:x.hours ?? baseHours,
-  practiceHours:Math.round(((x.hours ?? baseHours) * practiceRatio) * 10)/10
-}));
+const JEE_NEET_PHYSICS_CURRICULUM = [{"phase":"Physics & Measurement","label":"Units, dimensions, and dimensional analysis","learningHours":3,"practiceHours":1.8},{"phase":"Physics & Measurement","label":"Errors in measurement & significant figures","learningHours":2,"practiceHours":1.2},{"phase":"Kinematics","label":"Motion in a straight line, graphs","learningHours":3,"practiceHours":1.8},{"phase":"Kinematics","label":"Vectors and scalars","learningHours":2,"practiceHours":1.2},{"phase":"Kinematics","label":"Projectile motion","learningHours":3,"practiceHours":1.8},{"phase":"Kinematics","label":"Relative velocity","learningHours":2,"practiceHours":1.2},{"phase":"Laws of Motion","label":"Newton's laws & free body diagrams","learningHours":3,"practiceHours":1.8},{"phase":"Laws of Motion","label":"Friction","learningHours":3,"practiceHours":1.8},{"phase":"Laws of Motion","label":"Circular motion dynamics","learningHours":3,"practiceHours":1.8},{"phase":"Work, Energy and Power","label":"Work-energy theorem","learningHours":2,"practiceHours":1.2},{"phase":"Work, Energy and Power","label":"Conservation of energy","learningHours":2,"practiceHours":1.2},{"phase":"Work, Energy and Power","label":"Collisions (elastic/inelastic)","learningHours":3,"practiceHours":1.8},{"phase":"Rotational Motion","label":"Centre of mass","learningHours":3,"practiceHours":1.8},{"phase":"Rotational Motion","label":"Moment of inertia","learningHours":3,"practiceHours":1.8},{"phase":"Rotational Motion","label":"Angular momentum & torque","learningHours":3,"practiceHours":1.8},{"phase":"Rotational Motion","label":"Rolling motion","learningHours":2,"practiceHours":1.2},{"phase":"Gravitation","label":"Newton's law of gravitation","learningHours":2,"practiceHours":1.2},{"phase":"Gravitation","label":"Gravitational potential energy & escape velocity","learningHours":2,"practiceHours":1.2},{"phase":"Gravitation","label":"Kepler's laws & satellites","learningHours":3,"practiceHours":1.8},{"phase":"Properties of Solids and Liquids","label":"Elasticity (stress-strain)","learningHours":2,"practiceHours":1.2},{"phase":"Properties of Solids and Liquids","label":"Fluid pressure & Pascal's law","learningHours":2,"practiceHours":1.2},{"phase":"Properties of Solids and Liquids","label":"Viscosity & Bernoulli's principle","learningHours":3,"practiceHours":1.8},{"phase":"Properties of Solids and Liquids","label":"Surface tension","learningHours":2,"practiceHours":1.2},{"phase":"Thermodynamics","label":"Thermal expansion & calorimetry","learningHours":2,"practiceHours":1.2},{"phase":"Thermodynamics","label":"First law of thermodynamics","learningHours":2,"practiceHours":1.2},{"phase":"Thermodynamics","label":"Heat engines & second law","learningHours":3,"practiceHours":1.8},{"phase":"Thermodynamics","label":"Kinetic theory of gases","learningHours":2,"practiceHours":1.2},{"phase":"Oscillations","label":"Simple harmonic motion (SHM) basics","learningHours":3,"practiceHours":1.8},{"phase":"Oscillations","label":"Energy in SHM","learningHours":2,"practiceHours":1.2},{"phase":"Oscillations","label":"Simple pendulum & spring systems","learningHours":2,"practiceHours":1.2},{"phase":"Oscillations","label":"Damped & forced oscillations","learningHours":2,"practiceHours":1.2},{"phase":"Waves","label":"Wave motion & basic terminology","learningHours":3,"practiceHours":1.8},{"phase":"Waves","label":"Transverse and longitudinal waves","learningHours":2,"practiceHours":1.2},{"phase":"Waves","label":"Speed of wave on a string","learningHours":2,"practiceHours":1.2},{"phase":"Waves","label":"Principle of superposition of waves","learningHours":3,"practiceHours":1.8},{"phase":"Waves","label":"Standing waves & normal modes","learningHours":4,"practiceHours":2.4},{"phase":"Waves","label":"Beats","learningHours":2,"practiceHours":1.2},{"phase":"Waves","label":"Doppler effect","learningHours":3,"practiceHours":1.8},{"phase":"Electrostatics","label":"Coulomb's law & electric field","learningHours":3,"practiceHours":1.8},{"phase":"Electrostatics","label":"Gauss's law","learningHours":3,"practiceHours":1.8},{"phase":"Electrostatics","label":"Electric potential & potential energy","learningHours":3,"practiceHours":1.8},{"phase":"Electrostatics","label":"Capacitors & dielectrics","learningHours":3,"practiceHours":1.8},{"phase":"Current Electricity","label":"Ohm's law, resistivity","learningHours":2,"practiceHours":1.2},{"phase":"Current Electricity","label":"Kirchhoff's laws & circuits","learningHours":3,"practiceHours":1.8},{"phase":"Current Electricity","label":"Wheatstone bridge & meter bridge","learningHours":2,"practiceHours":1.2},{"phase":"Current Electricity","label":"Potentiometer","learningHours":2,"practiceHours":1.2},{"phase":"Magnetic Effects of Current and Magnetism","label":"Biot-Savart law & Ampere's law","learningHours":3,"practiceHours":1.8},{"phase":"Magnetic Effects of Current and Magnetism","label":"Force on a moving charge/current-carrying conductor","learningHours":3,"practiceHours":1.8},{"phase":"Magnetic Effects of Current and Magnetism","label":"Moving coil galvanometer","learningHours":2,"practiceHours":1.2},{"phase":"Magnetic Effects of Current and Magnetism","label":"Magnetism (bar magnet, earth's magnetism)","learningHours":2,"practiceHours":1.2},{"phase":"Electromagnetic Induction and Alternating Currents","label":"Faraday's & Lenz's law","learningHours":3,"practiceHours":1.8},{"phase":"Electromagnetic Induction and Alternating Currents","label":"Self and mutual inductance","learningHours":2,"practiceHours":1.2},{"phase":"Electromagnetic Induction and Alternating Currents","label":"AC circuits (LCR, resonance)","learningHours":3,"practiceHours":1.8},{"phase":"Electromagnetic Induction and Alternating Currents","label":"Transformers & AC generators","learningHours":2,"practiceHours":1.2},{"phase":"Electromagnetic Waves","label":"Displacement current & EM wave properties","learningHours":2,"practiceHours":1.2},{"phase":"Electromagnetic Waves","label":"EM spectrum","learningHours":2,"practiceHours":1.2},{"phase":"Optics","label":"Reflection & refraction at surfaces","learningHours":3,"practiceHours":1.8},{"phase":"Optics","label":"Lenses & lens maker's formula","learningHours":3,"practiceHours":1.8},{"phase":"Optics","label":"Optical instruments (microscope, telescope)","learningHours":2,"practiceHours":1.2},{"phase":"Optics","label":"Wave optics: interference (YDSE)","learningHours":3,"practiceHours":1.8},{"phase":"Optics","label":"Diffraction & polarisation","learningHours":3,"practiceHours":1.8},{"phase":"Dual Nature of Matter and Radiation","label":"Photoelectric effect","learningHours":3,"practiceHours":1.8},{"phase":"Dual Nature of Matter and Radiation","label":"de Broglie wavelength","learningHours":2,"practiceHours":1.2},{"phase":"Atoms and Nuclei","label":"Bohr model & hydrogen spectrum","learningHours":3,"practiceHours":1.8},{"phase":"Atoms and Nuclei","label":"Nuclear structure, mass defect, binding energy","learningHours":2,"practiceHours":1.2},{"phase":"Atoms and Nuclei","label":"Radioactivity & decay laws","learningHours":3,"practiceHours":1.8},{"phase":"Atoms and Nuclei","label":"Nuclear fission & fusion","learningHours":2,"practiceHours":1.2},{"phase":"Electronic Devices","label":"Semiconductors, p-n junction diode","learningHours":3,"practiceHours":1.8},{"phase":"Electronic Devices","label":"Diode as rectifier","learningHours":2,"practiceHours":1.2},{"phase":"Electronic Devices","label":"Transistors & logic gates","learningHours":3,"practiceHours":1.8}];
 
-// JEE/NEET are chapter-level templates on purpose. They are not split into every
-// sub-concept, formula, question type, or exercise. The planner can split a chapter
-// across multiple study sessions when it needs more than one day.
-const JEE_NEET_PHYSICS_CURRICULUM = makeExamCurriculum([
-  ['Units & Measurements','Units, dimensions, errors and significant figures',2],
-  ['Kinematics','Motion in one dimension',3],['Kinematics','Motion in two dimensions, vectors and projectile motion',3],
-  ['Laws of Motion','Newton’s laws, free-body diagrams and friction',4],['Laws of Motion','Circular motion',2.5],
-  ['Work, Energy & Power','Work, energy, power and collisions',4],['Rotational Motion','Centre of mass, torque, angular momentum and rotation',5],
-  ['Gravitation','Gravitation, satellites and escape velocity',3],['Properties of Matter','Elasticity, fluids, viscosity and surface tension',3],
-  ['Thermal Physics','Thermal properties, calorimetry and kinetic theory',3],['Thermodynamics','Laws of thermodynamics and heat engines',3],
-  ['Oscillations','Simple harmonic motion',3],['Waves','Wave motion, sound, standing waves and Doppler effect',4],
-  ['Electrostatics','Electric charges, fields and Gauss law',4],['Electrostatics','Potential, capacitance and dielectrics',3],
-  ['Current Electricity','Current, resistance and circuit analysis',4],['Magnetism','Moving charges, magnetic field and force',4],
-  ['Magnetism','Magnetism and magnetic materials',2],['Electromagnetic Induction','Faraday law, inductance and AC',4],
-  ['Electromagnetic Waves','Electromagnetic waves and spectrum',1.5],['Optics','Ray optics and optical instruments',4],
-  ['Wave Optics','Interference, diffraction and polarisation',3],['Modern Physics','Dual nature and photoelectric effect',2],
-  ['Atoms & Nuclei','Atoms, nuclei, radioactivity and nuclear physics',3],['Electronic Devices','Semiconductors, diodes, transistors and logic gates',3]
-].map(([phase,label,hours])=>({phase,label,hours})));
+const JEE_NEET_CHEMISTRY_CURRICULUM = [{"phase":"Some Basic Concepts of Chemistry","label":"Mole concept & stoichiometry","learningHours":4,"practiceHours":2.0},{"phase":"Some Basic Concepts of Chemistry","label":"Empirical/molecular formula, limiting reagent","learningHours":2,"practiceHours":1.0},{"phase":"Structure of Atom","label":"Atomic models (Bohr, quantum)","learningHours":3,"practiceHours":1.5},{"phase":"Structure of Atom","label":"Quantum numbers & orbital shapes","learningHours":3,"practiceHours":1.5},{"phase":"Structure of Atom","label":"Electronic configuration & Aufbau/Hund's rule","learningHours":2,"practiceHours":1.0},{"phase":"Classification of Elements and Periodicity","label":"Periodic trends (radius, IE, EA, electronegativity)","learningHours":3,"practiceHours":1.5},{"phase":"Chemical Bonding and Molecular Structure","label":"Ionic & covalent bonding, Lewis structures","learningHours":3,"practiceHours":1.5},{"phase":"Chemical Bonding and Molecular Structure","label":"VSEPR theory & molecular geometry","learningHours":2,"practiceHours":1.0},{"phase":"Chemical Bonding and Molecular Structure","label":"Hybridisation","learningHours":2,"practiceHours":1.0},{"phase":"Chemical Bonding and Molecular Structure","label":"Molecular orbital theory","learningHours":3,"practiceHours":1.5},{"phase":"States of Matter","label":"Gas laws & ideal gas equation","learningHours":3,"practiceHours":1.5},{"phase":"States of Matter","label":"Kinetic theory & real gases","learningHours":2,"practiceHours":1.0},{"phase":"Thermodynamics (Chemical)","label":"First law, enthalpy, Hess's law","learningHours":3,"practiceHours":1.5},{"phase":"Thermodynamics (Chemical)","label":"Entropy, Gibbs free energy, spontaneity","learningHours":3,"practiceHours":1.5},{"phase":"Equilibrium","label":"Chemical equilibrium, Kc/Kp, Le Chatelier's principle","learningHours":3,"practiceHours":1.5},{"phase":"Equilibrium","label":"Ionic equilibrium, pH, buffers, Ksp","learningHours":4,"practiceHours":2.0},{"phase":"Redox Reactions","label":"Oxidation states & balancing redox equations","learningHours":2,"practiceHours":1.0},{"phase":"Electrochemistry","label":"Electrochemical cells & Nernst equation","learningHours":3,"practiceHours":1.5},{"phase":"Electrochemistry","label":"Conductance & Kohlrausch's law","learningHours":2,"practiceHours":1.0},{"phase":"Chemical Kinetics","label":"Rate law, order of reaction","learningHours":3,"practiceHours":1.5},{"phase":"Chemical Kinetics","label":"Integrated rate equations & half-life","learningHours":2,"practiceHours":1.0},{"phase":"Chemical Kinetics","label":"Arrhenius equation & activation energy","learningHours":2,"practiceHours":1.0},{"phase":"Surface Chemistry (NEET only)","label":"Adsorption & catalysis","learningHours":2,"practiceHours":1.0},{"phase":"Surface Chemistry (NEET only)","label":"Colloids","learningHours":2,"practiceHours":1.0},{"phase":"Hydrogen","label":"Position, isotopes, hydrides, hydrogen peroxide","learningHours":2,"practiceHours":1.0},{"phase":"s-Block Elements","label":"Alkali metals & compounds","learningHours":2,"practiceHours":1.0},{"phase":"s-Block Elements","label":"Alkaline earth metals & compounds","learningHours":2,"practiceHours":1.0},{"phase":"p-Block Elements","label":"Group 13-14 elements & compounds","learningHours":3,"practiceHours":1.5},{"phase":"p-Block Elements","label":"Group 15-16 elements & compounds","learningHours":3,"practiceHours":1.5},{"phase":"p-Block Elements","label":"Group 17-18 elements & compounds","learningHours":2,"practiceHours":1.0},{"phase":"d and f Block Elements","label":"Transition elements: properties & trends","learningHours":3,"practiceHours":1.5},{"phase":"d and f Block Elements","label":"Lanthanoids & actinoids","learningHours":2,"practiceHours":1.0},{"phase":"Coordination Compounds","label":"Nomenclature & Werner's theory","learningHours":2,"practiceHours":1.0},{"phase":"Coordination Compounds","label":"Bonding theories (VBT, CFT) & isomerism","learningHours":3,"practiceHours":1.5},{"phase":"General Principles of Isolation of Elements","label":"Metallurgy principles & extraction methods","learningHours":2,"practiceHours":1.0},{"phase":"Organic Chemistry: Basic Principles","label":"IUPAC nomenclature","learningHours":3,"practiceHours":1.5},{"phase":"Organic Chemistry: Basic Principles","label":"Isomerism (structural & stereo)","learningHours":3,"practiceHours":1.5},{"phase":"Organic Chemistry: Basic Principles","label":"Reaction mechanisms (inductive, resonance, hyperconjugation)","learningHours":3,"practiceHours":1.5},{"phase":"Hydrocarbons","label":"Alkanes: preparation & reactions","learningHours":2,"practiceHours":1.0},{"phase":"Hydrocarbons","label":"Alkenes & alkynes: preparation & reactions","learningHours":3,"practiceHours":1.5},{"phase":"Hydrocarbons","label":"Aromatic hydrocarbons & electrophilic substitution","learningHours":3,"practiceHours":1.5},{"phase":"Haloalkanes and Haloarenes","label":"Preparation, SN1/SN2 reactions","learningHours":3,"practiceHours":1.5},{"phase":"Alcohols, Phenols and Ethers","label":"Preparation & reactions of alcohols/phenols","learningHours":3,"practiceHours":1.5},{"phase":"Alcohols, Phenols and Ethers","label":"Ethers","learningHours":2,"practiceHours":1.0},{"phase":"Aldehydes, Ketones and Carboxylic Acids","label":"Nucleophilic addition reactions","learningHours":3,"practiceHours":1.5},{"phase":"Aldehydes, Ketones and Carboxylic Acids","label":"Carboxylic acid preparation & reactions","learningHours":2,"practiceHours":1.0},{"phase":"Amines","label":"Preparation, basicity, reactions","learningHours":3,"practiceHours":1.5},{"phase":"Biomolecules","label":"Carbohydrates, proteins, enzymes","learningHours":3,"practiceHours":1.5},{"phase":"Biomolecules","label":"Nucleic acids & vitamins","learningHours":2,"practiceHours":1.0},{"phase":"Polymers (NEET only)","label":"Classification & important polymers","learningHours":2,"practiceHours":1.0},{"phase":"Chemistry in Everyday Life (NEET only)","label":"Drugs, food chemistry, cleansing agents","learningHours":2,"practiceHours":1.0},{"phase":"Environmental Chemistry (NEET only)","label":"Pollution & environmental chemistry basics","learningHours":2,"practiceHours":1.0}];
 
-const JEE_NEET_CHEMISTRY_CURRICULUM = makeExamCurriculum([
-  ['Some Basic Concepts','Mole concept, stoichiometry and concentration terms',4],['Atomic Structure','Atomic models, quantum numbers and electronic configuration',3],
-  ['Periodicity','Periodic table and periodic trends',2],['Chemical Bonding','Ionic/covalent bonding, VSEPR, hybridisation and MOT',5],
-  ['States of Matter','Gases and liquids',2.5],['Thermodynamics','Enthalpy, Hess law, entropy and Gibbs energy',4],
-  ['Equilibrium','Chemical and ionic equilibrium, pH and solubility',5],['Redox','Oxidation number and redox reactions',2],
-  ['Electrochemistry','Electrochemical cells, conductance and Nernst equation',4],['Chemical Kinetics','Rate laws, order and Arrhenius equation',3],
-  ['Solutions','Concentration, colligative properties and related numericals',3],['Surface Chemistry','Adsorption, colloids and catalysis',2],
-  ['Inorganic Chemistry','Hydrogen and s-block elements',2],['Inorganic Chemistry','p-block elements',5],
-  ['Inorganic Chemistry','d- and f-block elements',3],['Coordination Chemistry','Coordination compounds and isomerism',4],
-  ['Organic Basics','Organic nomenclature, isomerism and general organic chemistry',5],['Hydrocarbons','Alkanes, alkenes, alkynes and aromatic hydrocarbons',4],
-  ['Haloalkanes & Haloarenes','Preparation, properties and reactions',2.5],['Alcohols, Phenols & Ethers','Preparation, properties and reactions',3],
-  ['Aldehydes, Ketones & Acids','Carbonyl compounds and carboxylic acids',4],['Amines','Amines and diazonium chemistry',3],
-  ['Biomolecules','Carbohydrates, proteins, enzymes, vitamins and nucleic acids',2.5],['Polymers','Polymer classification and important examples',1.5],
-  ['Chemistry in Everyday Life','Drugs, food additives and cleansing agents',1.5]
-].map(([phase,label,hours])=>({phase,label,hours})));
+const JEE_MATHS_CURRICULUM = [{"phase":"Sets, Relations and Functions","label":"Set theory & operations","learningHours":2,"practiceHours":1.4},{"phase":"Sets, Relations and Functions","label":"Relations & types of functions","learningHours":2,"practiceHours":1.4},{"phase":"Complex Numbers and Quadratic Equations","label":"Complex number algebra & Argand plane","learningHours":3,"practiceHours":2.1},{"phase":"Complex Numbers and Quadratic Equations","label":"Quadratic equations, nature of roots","learningHours":3,"practiceHours":2.1},{"phase":"Matrices and Determinants","label":"Matrix operations & types","learningHours":2,"practiceHours":1.4},{"phase":"Matrices and Determinants","label":"Determinants & properties","learningHours":2,"practiceHours":1.4},{"phase":"Matrices and Determinants","label":"Inverse of a matrix & solving linear equations","learningHours":3,"practiceHours":2.1},{"phase":"Permutations and Combinations","label":"Fundamental counting principle","learningHours":2,"practiceHours":1.4},{"phase":"Permutations and Combinations","label":"Permutations & combinations problems","learningHours":3,"practiceHours":2.1},{"phase":"Binomial Theorem","label":"Expansion & general term","learningHours":3,"practiceHours":2.1},{"phase":"Sequences and Series","label":"Arithmetic & geometric progressions","learningHours":3,"practiceHours":2.1},{"phase":"Sequences and Series","label":"Special series & sum to n terms","learningHours":2,"practiceHours":1.4},{"phase":"Trigonometry","label":"Trigonometric ratios & identities","learningHours":3,"practiceHours":2.1},{"phase":"Trigonometry","label":"Trigonometric equations","learningHours":2,"practiceHours":1.4},{"phase":"Trigonometry","label":"Inverse trigonometric functions","learningHours":2,"practiceHours":1.4},{"phase":"Trigonometry","label":"Properties of triangles","learningHours":2,"practiceHours":1.4},{"phase":"Limits, Continuity and Differentiability","label":"Limits & standard limit forms","learningHours":3,"practiceHours":2.1},{"phase":"Limits, Continuity and Differentiability","label":"Continuity & differentiability","learningHours":3,"practiceHours":2.1},{"phase":"Limits, Continuity and Differentiability","label":"Differentiation rules & techniques","learningHours":3,"practiceHours":2.1},{"phase":"Applications of Derivatives","label":"Tangents, normals, rate of change","learningHours":2,"practiceHours":1.4},{"phase":"Applications of Derivatives","label":"Maxima, minima & curve sketching","learningHours":3,"practiceHours":2.1},{"phase":"Integral Calculus","label":"Indefinite integration techniques","learningHours":4,"practiceHours":2.8},{"phase":"Integral Calculus","label":"Definite integration & properties","learningHours":3,"practiceHours":2.1},{"phase":"Integral Calculus","label":"Area under curves","learningHours":2,"practiceHours":1.4},{"phase":"Differential Equations","label":"Order/degree, formation of DEs","learningHours":2,"practiceHours":1.4},{"phase":"Differential Equations","label":"Solving first-order DEs (variable separable, linear)","learningHours":3,"practiceHours":2.1},{"phase":"Coordinate Geometry","label":"Straight lines","learningHours":3,"practiceHours":2.1},{"phase":"Coordinate Geometry","label":"Circles","learningHours":3,"practiceHours":2.1},{"phase":"Coordinate Geometry","label":"Parabola, ellipse, hyperbola (conic sections)","learningHours":4,"practiceHours":2.8},{"phase":"Three Dimensional Geometry","label":"Direction cosines/ratios, lines in 3D","learningHours":2,"practiceHours":1.4},{"phase":"Three Dimensional Geometry","label":"Planes in 3D","learningHours":2,"practiceHours":1.4},{"phase":"Vector Algebra","label":"Vector operations, dot & cross product","learningHours":3,"practiceHours":2.1},{"phase":"Statistics and Probability","label":"Mean, variance, standard deviation","learningHours":2,"practiceHours":1.4},{"phase":"Statistics and Probability","label":"Probability theory & Bayes' theorem","learningHours":3,"practiceHours":2.1},{"phase":"Mathematical Reasoning","label":"Logical statements & truth tables","learningHours":1,"practiceHours":0.7}];
 
-const JEE_MATHS_CURRICULUM = makeExamCurriculum([
-  ['Sets, Relations & Functions','Sets, relations and functions',3],['Complex Numbers','Complex numbers and quadratic equations',4],
-  ['Matrices & Determinants','Matrices, determinants and linear equations',4],['Permutations & Combinations','Counting, permutations and combinations',3],
-  ['Binomial Theorem','Binomial expansion and applications',2],['Sequences & Series','AP, GP and standard series',3],
-  ['Trigonometry','Trigonometric functions, identities and equations',4],['Mathematical Reasoning','Statements, logic and reasoning',1.5],
-  ['Statistics','Statistics and measures of dispersion',2],['Probability','Probability and Bayes theorem',3],
-  ['Straight Lines','Straight lines and pair of lines',3],['Circles','Circle and its equations',3],
-  ['Conic Sections','Parabola, ellipse and hyperbola',5],['Vector Algebra','Vectors and scalar/vector products',3],
-  ['Three Dimensional Geometry','Lines and planes in 3D',3],['Limits & Continuity','Limits, continuity and differentiability',4],
-  ['Differential Calculus','Applications of derivatives',3],['Integral Calculus','Indefinite and definite integration',5],
-  ['Area Under Curves','Area bounded by curves',2],['Differential Equations','First-order differential equations',3]
-].map(([phase,label,hours])=>({phase,label,hours})));
-
-const NEET_BIOLOGY_CURRICULUM = makeExamCurriculum([
-  ['Diversity in Living World','The Living World and biological classification',3],['Plant Kingdom','Plant kingdom',3],['Animal Kingdom','Animal kingdom',3],
-  ['Morphology of Flowering Plants','Morphology of flowering plants',2.5],['Anatomy of Flowering Plants','Plant tissues and anatomy',2.5],
-  ['Structural Organisation in Animals','Animal tissues and structural organisation',2.5],['Cell Biology','Cell structure, organelles and biomembranes',3],
-  ['Biomolecules','Biomolecules and enzymes',2.5],['Cell Cycle','Cell cycle and cell division',3],
-  ['Plant Physiology','Transport in plants and mineral nutrition',3],['Plant Physiology','Photosynthesis in higher plants',3],
-  ['Plant Physiology','Respiration and plant growth/development',3],['Human Physiology','Digestion and absorption',2.5],
-  ['Human Physiology','Breathing and exchange of gases',2.5],['Human Physiology','Body fluids and circulation',3],
-  ['Human Physiology','Excretory products and elimination',2.5],['Human Physiology','Locomotion and movement',2],
-  ['Human Physiology','Neural control and coordination',3.5],['Human Physiology','Chemical coordination and integration',3],
-  ['Reproduction','Sexual reproduction in flowering plants',3],['Reproduction','Human reproduction',3],['Reproductive Health','Reproductive health',2],
-  ['Genetics','Principles of inheritance and variation',4],['Molecular Biology','Molecular basis of inheritance',4],['Evolution','Evolution',2.5],
-  ['Human Health','Human health and disease',3],['Microbes','Microbes in human welfare',2],['Biotechnology','Biotechnology: principles and processes',3],
-  ['Biotechnology','Biotechnology and its applications',2],['Ecology','Organisms, populations and communities',3],
-  ['Ecosystem','Ecosystem and energy flow',2.5],['Biodiversity','Biodiversity and conservation',2]
-].map(([phase,label,hours])=>({phase,label,hours})));
-
+const NEET_BIOLOGY_CURRICULUM = [{"phase":"Diversity in Living World","label":"Taxonomy, classification & biological nomenclature","learningHours":3,"practiceHours":1.5},{"phase":"Diversity in Living World","label":"Five kingdom classification & plant/animal kingdom","learningHours":4,"practiceHours":2.0},{"phase":"Structural Organisation in Plants","label":"Morphology of flowering plants","learningHours":3,"practiceHours":1.5},{"phase":"Structural Organisation in Plants","label":"Anatomy of flowering plants (tissues)","learningHours":3,"practiceHours":1.5},{"phase":"Structural Organisation in Animals","label":"Animal tissues","learningHours":2,"practiceHours":1.0},{"phase":"Structural Organisation in Animals","label":"Morphology & anatomy of an insect/frog (as prescribed)","learningHours":2,"practiceHours":1.0},{"phase":"Cell Structure and Function","label":"Cell theory, prokaryotic/eukaryotic cells","learningHours":2,"practiceHours":1.0},{"phase":"Cell Structure and Function","label":"Cell organelles","learningHours":3,"practiceHours":1.5},{"phase":"Cell Structure and Function","label":"Cell cycle & cell division","learningHours":3,"practiceHours":1.5},{"phase":"Cell Structure and Function","label":"Biomolecules (proteins, carbohydrates, enzymes)","learningHours":3,"practiceHours":1.5},{"phase":"Plant Physiology","label":"Transport in plants","learningHours":2,"practiceHours":1.0},{"phase":"Plant Physiology","label":"Mineral nutrition","learningHours":2,"practiceHours":1.0},{"phase":"Plant Physiology","label":"Photosynthesis","learningHours":4,"practiceHours":2.0},{"phase":"Plant Physiology","label":"Respiration in plants","learningHours":3,"practiceHours":1.5},{"phase":"Plant Physiology","label":"Plant growth & development, hormones","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Digestion & absorption","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Breathing & exchange of gases","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Body fluids & circulation","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Excretory products & their elimination","learningHours":3,"practiceHours":1.5},{"phase":"Human Physiology","label":"Locomotion & movement","learningHours":2,"practiceHours":1.0},{"phase":"Human Physiology","label":"Neural control & coordination","learningHours":4,"practiceHours":2.0},{"phase":"Human Physiology","label":"Chemical coordination & integration (endocrine)","learningHours":3,"practiceHours":1.5},{"phase":"Reproduction","label":"Sexual reproduction in flowering plants","learningHours":3,"practiceHours":1.5},{"phase":"Reproduction","label":"Human reproduction","learningHours":3,"practiceHours":1.5},{"phase":"Reproduction","label":"Reproductive health","learningHours":2,"practiceHours":1.0},{"phase":"Genetics and Evolution","label":"Principles of inheritance (Mendelian genetics)","learningHours":4,"practiceHours":2.0},{"phase":"Genetics and Evolution","label":"Molecular basis of inheritance (DNA, RNA, replication)","learningHours":4,"practiceHours":2.0},{"phase":"Genetics and Evolution","label":"Evolution","learningHours":3,"practiceHours":1.5},{"phase":"Biology and Human Welfare","label":"Human health & disease","learningHours":3,"practiceHours":1.5},{"phase":"Biology and Human Welfare","label":"Microbes in human welfare","learningHours":2,"practiceHours":1.0},{"phase":"Biotechnology","label":"Principles & processes","learningHours":3,"practiceHours":1.5},{"phase":"Biotechnology","label":"Applications of biotechnology","learningHours":2,"practiceHours":1.0},{"phase":"Ecology and Environment","label":"Organisms and populations","learningHours":3,"practiceHours":1.5},{"phase":"Ecology and Environment","label":"Ecosystem","learningHours":2,"practiceHours":1.0},{"phase":"Ecology and Environment","label":"Biodiversity & conservation","learningHours":2,"practiceHours":1.0}];
 
 // MBBS templates are split by the NMC CBME phases so the syllabus is manageable.
 // These are planning templates, not a replacement for the official college timetable.
@@ -1101,6 +1089,7 @@ let buddyNudgedAt = 0; // real app state, not a DOM dataset flag \u2014 survives
 let aiUsage = { date: null, count: 0 };
 let foodScanResult = null; // {imageDataUrl, items:[{name,position,calories,protein,carbs,fat,confident,note}]} | null
 let foodScanBusy = false;
+let savedMeals = []; // [{id,name,calories,protein,carbs,fat}]
 const AI_DAILY_BUDGET_ESTIMATE = 10000; // rough proxy matching Cloudflare Workers AI's published free daily neuron allowance --
                                           // NOT an exact "requests" count, since neuron cost varies per call/model. There's no
                                           // API that tells the Worker its own real remaining quota, so this is a local estimate only.
@@ -1123,8 +1112,8 @@ let currentSwipeDate = isoDate(new Date());
 let timerState = {seconds:0, remaining:0, running:false, interval:null, label:''};
 let studyOverlay = null; // null | 'planner' | 'paste' | 'notebook'
 let studyPlanBusy = false;
-let studyPlanBusySubject = null;
 let studyPlanStatus = '';
+let studyPlannerMode = 'choose'; // choose | ai | manual
 let studyPlannerDraft = { goal:'', targetDate:'', minutes:60, level:'starting' };
 
 let transitioning = false;
@@ -1184,6 +1173,28 @@ async function loadCustomTrackers(){
   customTrackers = raw ? JSON.parse(raw) : [];
 }
 async function saveCustomTrackers(){ await storageSet('tracker:customtrackers', JSON.stringify(customTrackers)); }
+async function loadSavedMeals(){
+  const raw = await storageGet('tracker:savedmeals');
+  savedMeals = raw ? JSON.parse(raw) : [];
+  if(!Array.isArray(savedMeals)) savedMeals = [];
+  savedMeals = savedMeals.map(x=>({
+    id: x.id || ('saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)),
+    name: String(x.name || 'Saved food'),
+    calories: macroNumber(x.calories),
+    protein: macroNumber(x.protein),
+    carbs: macroNumber(x.carbs),
+    fat: macroNumber(x.fat)
+  }));
+}
+async function saveSavedMeals(){ await storageSet('tracker:savedmeals', JSON.stringify(savedMeals)); }
+function isMealSaved(item){
+  const name=String(item.name||'').trim().toLowerCase();
+  return savedMeals.some(x=>x.name.trim().toLowerCase()===name &&
+    Math.round(macroNumber(x.calories))===Math.round(macroNumber(item.calories)) &&
+    Math.round(macroNumber(x.protein)*10)===Math.round(macroNumber(item.protein)*10) &&
+    Math.round(macroNumber(x.carbs)*10)===Math.round(macroNumber(item.carbs)*10) &&
+    Math.round(macroNumber(x.fat)*10)===Math.round(macroNumber(item.fat)*10));
+}
 
 function periodKeyFor(reset, d){
   const date = d || new Date();
@@ -1250,7 +1261,8 @@ async function saveReminder(data){ await storageSet('tracker:reminder', JSON.str
 function dayComplete(iso){
   const e = entries[iso]; if(!e) return false;
   const taskList = getTasksForDow(weekdayIndex(iso));
-  const allTasksDone = e.noWorkout || taskList.every(t => e.tasks && e.tasks[t.id]);
+  const workoutRequired = settings.workoutEnabled !== false && !e.noWorkout;
+  const allTasksDone = !workoutRequired || taskList.every(t => e.tasks && e.tasks[t.id]);
   const sleepOk = (e.sleep || 0) >= SLEEP_TARGET;
   const proteinOk = (e.protein || 0) >= settings.proteinTarget;
   return allTasksDone && sleepOk && proteinOk;
@@ -1405,7 +1417,6 @@ function renderDayCard(iso, isToday){
         ${noWorkoutRow}
         ${tasksHtml}
         ${wellnessHtml}
-        ${renderFoodLogCard(iso)}
       </div>
     </div>`;
 }
@@ -1428,76 +1439,33 @@ function buildTodaySnapshot(){
   };
 }
 
-function buildAiContext(){
+function buildClaudeSummary(){
   const todayIso = isoDate(new Date());
   const e = entries[todayIso] || {};
   const streak = computeStreak(todayIso);
+  const workoutOk = dayComplete(todayIso);
   const dow = weekdayIndex(todayIso);
   const taskList = getTasksForDow(dow);
   const tasksDone = taskList.filter(t => e.tasks && e.tasks[t.id]).length;
-  const foodLog = normalizeFoodItems(e.foodLog || []);
 
-  const studyLines = subjects.map(s=>{
-    const idx = Math.min(s.index || 0, s.curriculum.length);
+  const subjectLines = subjects.flatMap(s=>{
+    const idx = s.index || 0;
     const doneToday = !!(e.study && e.study[s.id]);
     const current = idx < s.curriculum.length ? s.curriculum[idx].label : 'curriculum complete';
     const pct = s.curriculum.length ? Math.round((idx/s.curriculum.length)*100) : 0;
-    return `${s.name}: ${idx}/${s.curriculum.length} sessions/topics (${pct}%), current: ${current}${doneToday?' [done today]':' [not done today]'}`;
-  });
-
-  const foodLines = foodLog.length
-    ? foodLog.map((f,i)=>`${i+1}. ${f.name} — ${Math.round(f.calories||0)} kcal | P ${Math.round(f.protein||0)}g | C ${Math.round(f.carbs||0)}g | F ${Math.round(f.fat||0)}g${f.source==='scan'?' | scanned':''}`)
-    : ['No food logged today.'];
-
-  const customLines = (customTrackers||[]).map(t=>{
-    const value = e.custom && e.custom[t.id] !== undefined ? e.custom[t.id] : 'not logged';
-    return `${t.name}: ${value}`;
-  });
-
-  const noteLines = [];
-  subjects.forEach(s=>{
-    (s.curriculum||[]).forEach((item,i)=>{
-      const key = noteKeyFor(s.id,item,i);
-      const text = (studyNotes[key]||'').trim();
-      if(text && noteLines.length < 12) noteLines.push(`${s.name} — ${item.label}: ${text.replace(/\s+/g,' ').slice(0,500)}`);
-    });
+    return [
+      ``,
+      `${s.name}: session ${idx} of ${s.curriculum.length} (${pct}%)`,
+      `  Current: ${current}${doneToday?' \u2014 marked done today':' \u2014 not done today'}`,
+    ];
   });
 
   return [
-    `DAILY RHYTHM — AI CONTEXT`,
-    `Date: ${todayIso}`,
+    `Daily Rhythm check-in \u2014 ${todayIso}`,
     ``,
-    `TODAY`,
-    `Streak: ${streak} day${streak===1?'':'s'}`,
-    `Workout: ${e.noWorkout ? 'no-workout day' : `${tasksDone}/${taskList.length} tasks done`}`,
-    `Sleep: ${e.sleep||0}h`,
-    `Water: ${e.water||0}/${settings.waterTargetBottles} bottles`,
-    ``,
-    `FOOD`,
-    `Calories: ${Math.round(e.calories||0)}/${settings.caloriesTarget} kcal`,
-    `Protein: ${Math.round(e.protein||0)}/${settings.proteinTarget}g`,
-    `Carbs: ${Math.round(e.carbs||0)}/${settings.carbsTarget}g`,
-    `Fat: ${Math.round(e.fat||0)}/${settings.fatTarget}g`,
-    `Food entries:`,
-    ...foodLines,
-    ``,
-    `STUDY`,
-    ...(studyLines.length ? studyLines : ['No study subjects set up.']),
-    ``,
-    `CUSTOM TRACKERS`,
-    ...(customLines.length ? customLines : ['No custom trackers.']),
-    ``,
-    `STUDY NOTES`,
-    ...(noteLines.length ? noteLines : ['No saved study notes found.']),
-    ``,
-    `SETTINGS / TARGETS`,
-    `Daily calories target: ${settings.caloriesTarget} kcal`,
-    `Daily protein target: ${settings.proteinTarget}g`,
-    `Daily carbs target: ${settings.carbsTarget}g`,
-    `Daily fat target: ${settings.fatTarget}g`,
-    `Water target: ${settings.waterTargetBottles} bottles of ${settings.waterBottleLiters}L`,
-    ``,
-    `Use this context to help me review today, identify what is incomplete, and suggest my next practical actions. Do not invent data that is not included above.`
+    `Workout streak: ${streak} day${streak===1?'':'s'}`,
+    `Today's workout: ${e.noWorkout ? 'marked as no-workout day' : tasksDone+'/'+taskList.length+' tasks done'}, sleep ${e.sleep||0}h, protein ${e.protein||0}g, water ${e.water||0}/${settings.waterTargetBottles} bottles${workoutOk?' \u2014 day complete':''}`,
+    ...subjectLines,
   ].join('\n');
 }
 
@@ -1615,28 +1583,48 @@ function renderHome(){
         </div>`;
       }).join('');
 
-  // Water row (reuses water-plus/minus actions from the Workout tab)
-  const waterVal = e.water || 0;
-  const waterHit = waterVal >= settings.waterTargetBottles;
-  const waterRow = `
-    <div class="water-controls" style="justify-content:flex-start;gap:14px;">
-      <button class="icon-btn" data-action="water-minus" data-date="${todayIso}">\u2212</button>
-      <span class="water-value">${waterVal} / ${settings.waterTargetBottles}</span>
-      <button class="icon-btn" data-action="water-plus" data-date="${todayIso}">+</button>
-      ${waterHit ? `<span style="color:var(--cardio);font-size:0.75rem;">target hit</span>` : ''}
+  const foodTarget = Math.max(1, Number(settings.caloriesTarget)||1);
+  const foodUsed = Math.max(0, Number(e.calories)||0);
+  const foodPct = Math.min(1, foodUsed / foodTarget);
+  const totalStudyTopics = subjects.reduce((n,s)=>n + ((s.curriculum||[]).length || 0), 0);
+  const completedStudyTopics = subjects.reduce((n,s)=>n + Math.min((s.index||0), (s.curriculum||[]).length || 0), 0);
+  const studyPct = totalStudyTopics ? Math.min(1, completedStudyTopics / totalStudyTopics) : 0;
+  const foodR=72, studyR=50;
+  const foodC=2*Math.PI*foodR, studyC=2*Math.PI*studyR;
+  const foodOffset=foodC-(foodC*foodPct), studyOffset=studyC-(studyC*studyPct);
+  const dualRing = `
+    <div class="home-dual-ring-wrap">
+      <div>
+        <div class="home-dual-ring" aria-label="${Math.round(foodUsed)} of ${Math.round(foodTarget)} calories eaten; ${Math.round(studyPct*100)} percent study progress">
+          <svg viewBox="0 0 190 190" aria-hidden="true">
+            <circle class="home-ring-track" cx="95" cy="95" r="${foodR}"/>
+            <circle class="home-ring-fill" cx="95" cy="95" r="${foodR}" stroke-dasharray="${foodC}" stroke-dashoffset="${foodOffset}"/>
+            <circle class="home-study-track" cx="95" cy="95" r="${studyR}"/>
+            <circle class="home-study-fill" cx="95" cy="95" r="${studyR}" stroke-dasharray="${studyC}" stroke-dashoffset="${studyOffset}"/>
+          </svg>
+          <div class="home-dual-center">
+            <div class="home-ring-number">${Math.round(foodUsed)}</div>
+            <div class="home-ring-label">kcal eaten · ${Math.round(Math.max(0,foodTarget-foodUsed))} left</div>
+            <div class="home-ring-study">Study ${Math.round(studyPct*100)}%</div>
+          </div>
+        </div>
+        <div class="home-ring-legend">
+          <span><i class="home-ring-dot"></i> Food</span>
+          <span><i class="home-ring-dot study"></i> Study</span>
+        </div>
+      </div>
     </div>`;
 
-  // Custom trackers summary (reuses tracker-counter/tracker-item actions from the + tab)
   let trackerRows;
   if(customTrackers.length === 0){
-    trackerRows = `<p class="note" style="margin:4px 0 0;">No custom trackers yet \u2014 build one on the + tab.</p>`;
+    trackerRows = `<p class="note" style="margin:4px 0 0;">No custom trackers yet — build one on the + tab.</p>`;
   } else {
     trackerRows = customTrackers.map(t=>{
       if(t.type === 'counter'){
         return `<div class="task-row" style="border-bottom:none;">
           <div class="task-label" style="flex:1;">${t.name}</div>
           <div style="display:flex;align-items:center;gap:10px;">
-            <button class="icon-btn" data-action="tracker-counter-minus" data-id="${t.id}">\u2212</button>
+            <button class="icon-btn" data-action="tracker-counter-minus" data-id="${t.id}">−</button>
             <span class="water-value">${t.value||0}</span>
             <button class="icon-btn" data-action="tracker-counter-plus" data-id="${t.id}">+</button>
           </div>
@@ -1651,37 +1639,23 @@ function renderHome(){
     }).join('');
   }
 
+  const workoutVisible = settings.workoutEnabled !== false && !noWorkout;
   return `
     <div class="streak-card">
       <div><div class="streak-num">${streak}</div><div class="streak-label">day streak &middot; full day complete</div></div>
-      <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
+      <div class="streak-note">${streak===0 ? "Complete your planned tasks, sleep, and food targets to start one." : "Today's planned tracking has landed."}</div>
     </div>
     ${redBanner}
     ${aiUsageWarningBanner()}
-    ${settings.workoutEnabled!==false ? `<div class="section-label" style="margin-top:18px;">Workout</div>${workoutRows}` : `
-    <div class="section-label" style="margin-top:18px;">Sleep &amp; Protein</div>
-    <div class="wellness">
-      <div class="wellness-field ${(e.sleep||0) >= SLEEP_TARGET?'hit':''}">
-        <label>Sleep</label>
-        <div class="input-row">
-          <input type="number" min="0" max="14" step="0.5" placeholder="0" value="${e.sleep||''}" data-action="sleep" data-date="${todayIso}">
-          <span class="unit">hrs</span>
-        </div>
-      </div>
-      <div class="wellness-field ${(e.protein||0) >= settings.proteinTarget?'hit':''}">
-        <label>Protein (target ${settings.proteinTarget}g)</label>
-        <div class="input-row">
-          <input type="number" min="0" max="300" step="5" placeholder="0" value="${e.protein||''}" data-action="protein" data-date="${todayIso}">
-          <span class="unit">g</span>
-        </div>
-      </div>
-    </div>`}
+    ${dualRing}
+    ${workoutVisible ? `<div class="section-label" style="margin-top:18px;">Workout</div>${workoutRows}` : ''}
     <div class="section-label" style="margin-top:18px;">Study</div>
     ${studyRows}
-    <div class="section-label" style="margin-top:18px;">Water</div>
-    ${waterRow}
-    <div class="section-label" style="margin-top:18px;">Custom trackers</div>
-    ${trackerRows}
+    ${workoutVisible ? `
+      <div class="section-label" style="margin-top:18px;">Custom trackers</div>
+      ${trackerRows}` : `
+      <div class="section-label" style="margin-top:18px;">Custom trackers</div>
+      ${trackerRows}`}
   `;
 }
 
@@ -1713,7 +1687,7 @@ function renderWizard(){
     return `
       <div class="wrap" style="padding-top:60px;text-align:center;">
         <h1 style="font-size:1.3rem;">Do you want workout tracking?</h1>
-        <p class="sub" style="margin-bottom:24px;">If you don't lift/train, we'll skip that whole tab.</p>
+        <p class="sub" style="margin-bottom:24px;">If you don't lift/train, the Workout tab stays available for sleep, water, and food.</p>
         <button class="btn-primary" style="width:100%;margin-bottom:10px;" data-action="wizard-workout-yes">Yes, I work out</button>
         <button class="btn-secondary" style="width:100%;" data-action="wizard-workout-no">No, skip this</button>
       </div>`;
@@ -1783,7 +1757,7 @@ function renderWizard(){
       <div class="wrap" style="padding-top:60px;text-align:center;">
         <h1>You're set up.</h1>
         <p class="sub" style="margin-bottom:30px;">
-          ${settings.workoutEnabled===false ? 'Workout tracking is off.' : 'Workout tab is ready.'}
+          ${settings.workoutEnabled===false ? 'Workout routines are off — the Workout tab will track sleep, water, and food.' : 'Workout tab is ready.'}
           ${subjects.length ? ` ${subjects.length} subject${subjects.length===1?'':'s'} added.` : ' No subjects added yet \u2014 you can add them anytime from the Study tab.'}
         </p>
         <button class="btn-primary" style="width:100%;" data-action="wizard-finish">Start using Daily Rhythm</button>
@@ -1970,55 +1944,98 @@ function foodBar(label, used, target, unit){
     <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
   </div>`;
 }
+function renderSavedMealsCard(iso){
+  const rows = savedMeals.length ? savedMeals.map(item=>{
+    const safeName=String(item.name||'Saved food').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<div class="saved-meal-row">
+      <div class="saved-meal-copy">
+        <div class="saved-meal-name">${safeName}</div>
+        <div class="saved-meal-meta">${Math.round(item.calories)} kcal · P ${Math.round(item.protein)}g · C ${Math.round(item.carbs)}g · F ${Math.round(item.fat)}g</div>
+      </div>
+      <div class="saved-meal-actions">
+        <button class="icon-btn" data-action="add-saved-food" data-id="${item.id}" data-date="${iso}" title="Add to today's log">+</button>
+        <button class="icon-btn" data-action="delete-saved-food" data-id="${item.id}" title="Delete saved food">×</button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="saved-meals-empty">Save foods or meals you eat regularly, then add them here in one tap.</div>`;
+
+  return `<div class="saved-meals">
+    <div class="saved-meals-head">
+      <div>
+        <div class="saved-meals-title">Regular foods &amp; meals</div>
+        <div class="block-sub">Your saved nutrition stays ready for the next day.</div>
+      </div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
 function renderFoodLogCard(iso){
   const e = entries[iso] || {};
   const log = e.foodLog || [];
-  const bars = foodBar('Calories', e.calories||0, settings.caloriesTarget, '')
-    + foodBar('Protein', e.protein||0, settings.proteinTarget, 'g')
+  const target = Math.max(1, Number(settings.caloriesTarget)||1);
+  const used = Math.max(0, Number(e.calories)||0);
+  const pct = Math.min(1, used/target);
+  const r=58, c=2*Math.PI*r;
+  const offset=c-(c*pct);
+  const remaining=Math.max(0,target-used);
+
+  const bars = foodBar('Protein', e.protein||0, settings.proteinTarget, 'g')
     + foodBar('Carbs', e.carbs||0, settings.carbsTarget, 'g')
     + foodBar('Fat', e.fat||0, settings.fatTarget, 'g');
 
   const rows = log.length ? `<div class="food-log-list">${log.map(item=>{
     const safeName = String(item.name||'Food').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const saved = isMealSaved(item);
     return `<div class="food-log-item">
       <div class="food-log-copy">
         <div class="food-log-name">${safeName}</div>
-        <div class="food-log-meta">${Math.round(item.calories||0)} kcal &middot; P ${Math.round(item.protein||0)}g &middot; C ${Math.round(item.carbs||0)}g &middot; F ${Math.round(item.fat||0)}g${item.source==='scan'?' &middot; scanned':''}</div>
+        <div class="food-log-meta">${Math.round(item.calories||0)} kcal · P ${Math.round(item.protein||0)}g · C ${Math.round(item.carbs||0)}g · F ${Math.round(item.fat||0)}g${item.source==='scan'?' · scanned':''}</div>
       </div>
-      <button class="icon-btn food-log-remove" data-action="remove-food-item" data-date="${iso}" data-id="${item.id}" title="Remove">\u2715</button>
+      ${saved ? `<span class="status-ok" style="font-size:.6rem;white-space:nowrap;">Saved</span>` : `<button class="icon-btn" data-action="save-food-item" data-date="${iso}" data-id="${item.id}" title="Save as regular food">☆</button>`}
+      <button class="icon-btn food-log-remove" data-action="remove-food-item" data-date="${iso}" data-id="${item.id}" title="Remove">×</button>
     </div>`;
   }).join('')}</div>` : `<div class="food-log-empty">Nothing logged yet today.</div>`;
 
-  return `<div class="day-card food-log-card">
-    <div class="food-log-head">
-      <span class="food-log-title">Food Log</span>
-      <span class="food-log-day">TODAY</span>
+  return `<div class="day-card food-log-card food-block">
+    <div class="block-head">
+      <div>
+        <div class="block-title">Food</div>
+        <div class="block-sub">Calories are the main daily intake target; macros stay visible underneath.</div>
+      </div>
+      <span class="food-log-day">${iso===isoDate(new Date())?'TODAY':iso}</span>
+    </div>
+    <div class="calorie-ring-wrap">
+      <div class="calorie-ring" aria-label="${Math.round(used)} of ${Math.round(target)} calories">
+        <svg viewBox="0 0 140 140" aria-hidden="true">
+          <circle class="calorie-ring-track" cx="70" cy="70" r="${r}"/>
+          <circle class="calorie-ring-fill" cx="70" cy="70" r="${r}" stroke-dasharray="${c}" stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="calorie-ring-center">
+          <div class="calorie-ring-number">${Math.round(used)}</div>
+          <div class="calorie-ring-label">kcal eaten</div>
+          <div class="calorie-ring-target">${Math.round(remaining)} kcal left</div>
+        </div>
+      </div>
     </div>
     <div class="food-progress-stack">${bars}</div>
     ${rows}
     <div class="food-entry">
-      <label class="food-entry-label" for="foodName-${iso}">Add food manually</label>
-      <input class="food-name-input" type="text" id="foodName-${iso}" placeholder="Food name" autocomplete="off">
+      <label class="food-entry-label" for="foodName-${iso}">Add food / meal</label>
+      <input class="food-name-input" type="text" id="foodName-${iso}" placeholder="Food or meal name" autocomplete="off">
       <div class="food-macro-grid">
-        <div class="food-macro-field">
-          <label for="foodKcal-${iso}">Calories</label>
-          <input class="food-macro-input" type="number" min="0" step="1" id="foodKcal-${iso}" placeholder="kcal" inputmode="decimal">
-        </div>
-        <div class="food-macro-field">
-          <label for="foodP-${iso}">Protein</label>
-          <input class="food-macro-input" type="number" min="0" step="0.1" id="foodP-${iso}" placeholder="g" inputmode="decimal">
-        </div>
-        <div class="food-macro-field">
-          <label for="foodC-${iso}">Carbs</label>
-          <input class="food-macro-input" type="number" min="0" step="0.1" id="foodC-${iso}" placeholder="g" inputmode="decimal">
-        </div>
-        <div class="food-macro-field">
-          <label for="foodF-${iso}">Fat</label>
-          <input class="food-macro-input" type="number" min="0" step="0.1" id="foodF-${iso}" placeholder="g" inputmode="decimal">
-        </div>
+        <div class="food-macro-field"><label for="foodKcal-${iso}">Calories</label><input class="food-macro-input" type="number" min="0" step="1" id="foodKcal-${iso}" placeholder="kcal" inputmode="decimal"></div>
+        <div class="food-macro-field"><label for="foodP-${iso}">Protein</label><input class="food-macro-input" type="number" min="0" step="0.1" id="foodP-${iso}" placeholder="g" inputmode="decimal"></div>
+        <div class="food-macro-field"><label for="foodC-${iso}">Carbs</label><input class="food-macro-input" type="number" min="0" step="0.1" id="foodC-${iso}" placeholder="g" inputmode="decimal"></div>
+        <div class="food-macro-field"><label for="foodF-${iso}">Fat</label><input class="food-macro-input" type="number" min="0" step="0.1" id="foodF-${iso}" placeholder="g" inputmode="decimal"></div>
       </div>
-      <button class="btn-secondary food-log-add" data-action="add-food-manual" data-date="${iso}">+ Add to log</button>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+        <button class="btn-primary food-log-add" style="margin-top:0;" data-action="add-food-manual" data-date="${iso}">+ Add to log</button>
+        <button class="btn-secondary food-log-add" style="margin-top:0;" data-action="save-food-manual" data-date="${iso}">Save regular</button>
+      </div>
+      <p class="note">Use <b>Save regular</b> for foods you eat often; they will stay available below for one-tap logging.</p>
     </div>
+    ${renderSavedMealsCard(iso)}
   </div>`;
 }
 function fileToDataUrl(file){
@@ -2148,57 +2165,17 @@ function renderFoodScanOverlay(){
   </div>`;
 }
 
-// Shared Camera / Gallery chooser used by every non-food photo scan.
-function closePhotoSourcePicker(){
-  const picker=document.getElementById('photoSourcePicker');
-  if(picker) picker.remove();
-}
-function choosePhotoSource(onPick){
-  closePhotoSourcePicker();
-  const overlay=document.createElement('div');
-  overlay.id='photoSourcePicker';
-  overlay.className='modal-overlay open';
-  overlay.innerHTML=`
-    <div class="modal food-source-modal" role="dialog" aria-modal="true" aria-label="Choose photo source">
-      <h3>Choose photo source</h3>
-      <div class="sets">Take a new photo or choose one from your gallery.</div>
-      <div class="food-source-actions">
-        <button class="btn-primary food-source-btn" id="photoSourceCamera">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h2l1.2-2h3.6l1.2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13.5" r="3.2"/><path d="M17.5 10.5h.01"/></svg>
-          Camera
-        </button>
-        <button class="btn-secondary food-source-btn" id="photoSourceGallery">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4.5 17 5-5 3.5 3 2.5-2.5 4 4.5"/></svg>
-          Gallery
-        </button>
-      </div>
-      <button class="modal-close" id="photoSourceCancel">Cancel</button>
-    </div>`;
-  document.body.appendChild(overlay);
-
-  const openPicker=(capture)=>{
-    const input=document.createElement('input');
-    input.type='file';
-    input.accept='image/*';
-    input.multiple=true;
-    if(capture) input.setAttribute('capture','environment');
-    input.addEventListener('change',()=>{
-      const files=Array.from(input.files||[]);
-      closePhotoSourcePicker();
-      if(files.length) onPick(files);
-    },{once:true});
-    input.click();
-  };
-  document.getElementById('photoSourceCamera').addEventListener('click',()=>openPicker(true));
-  document.getElementById('photoSourceGallery').addEventListener('click',()=>openPicker(false));
-  document.getElementById('photoSourceCancel').addEventListener('click',closePhotoSourcePicker);
-  overlay.addEventListener('click',e=>{ if(e.target===overlay) closePhotoSourcePicker(); });
-}
-
 // Sends one or more photos to the Worker and merges the returned items into one list.
 // Each item may carry a `day` field (from a multi-day photo like "[FRIDAY]...") for the caller to route.
 function scanPhoto(mode, onSuccess){
-  choosePhotoSource(async (files)=>{
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.multiple = true; // lets a multi-day plan be scanned as several photos in one go
+  // no `capture` attribute on purpose — lets the picker offer Camera, Gallery, and Files, not just a forced live camera
+  input.addEventListener('change', async ()=>{
+    const files = Array.from(input.files || []);
+    if(!files.length) return;
     scanBusy = true; render();
     try{
       let allItems = [];
@@ -2225,6 +2202,7 @@ function scanPhoto(mode, onSuccess){
       scanBusy = false; render();
     }
   });
+  input.click();
 }
 
 
@@ -2239,6 +2217,27 @@ async function trackAiCall(){
   if(aiUsage.date !== todayIso){ aiUsage.date = todayIso; aiUsage.count = 0; }
   aiUsage.count += 1;
   await saveAiUsage();
+}
+
+// Network calls used by planning/scanning must never leave the student stuck on a loading screen.
+// fetch() can remain pending when a remote service is slow or unreachable, so give AI calls a hard
+// upper bound and let the local planner take over. AbortController is the browser-native way to
+// cancel a pending fetch request. See MDN Fetch/AbortController guidance.
+async function fetchJsonWithTimeout(url, options={}, timeoutMs=15000){
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), Math.max(1000, Number(timeoutMs)||15000));
+  try{
+    const response = await fetch(url, {...options, signal:controller.signal});
+    let data = null;
+    try { data = await response.json(); }
+    catch { throw new Error(`Invalid response from AI service (HTTP ${response.status})`); }
+    return {response, data};
+  }catch(err){
+    if(err?.name === 'AbortError') throw new Error('AI request timed out');
+    throw err;
+  }finally{
+    clearTimeout(timer);
+  }
 }
 function aiUsageWarningBanner(){
   const todayIso = isoDate(new Date());
@@ -2339,289 +2338,444 @@ function smartOrderCurriculum(curriculum){
     .map(x=>x.item);
 }
 
-function estimateTopicMinutes(item){
-  const text = `${item?.phase||''} ${item?.label||''}`;
-  const match = text.match(/(?:—|\-|:|\(|\s)(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m)\b/i);
-  if(match){
-    const n = Number(match[1]);
-    const unit = match[2].toLowerCase();
-    const mins = unit.startsWith('h') ? n * 60 : n;
-    if(Number.isFinite(mins) && mins > 0) return Math.max(15, Math.round(mins / 15) * 15);
-  }
-  return 60;
+function deterministicTopicEstimate(item){
+  const text = `${item?.phase||''} ${item?.label||item?.baseLabel||''}`.trim().toLowerCase();
+  const difficulty = String(item?.difficulty||'').toLowerCase();
+
+  // This is a safety-net estimate for curricula that do not carry hour metadata.
+  // It deliberately varies by topic instead of collapsing every topic to 60 min.
+  let minutes = difficulty === 'hard' ? 180 : difficulty === 'easy' ? 60 : 120;
+
+  const small = ['introduction','overview','terminology','definitions','basics','basic anatomy','general anatomy','units','measurement','classification','summary','revision'];
+  const large = ['system','physiology','pathology','pharmacology','biochemistry','mechanism','metabolism','regulation','development','embryology','neuro','cardio','respiratory','renal','gastro','endocrine','reproductive','immunology','genetics','microbiology','infection','clinical','diagnosis','management','electromagnetic','quantum','organic chemistry'];
+  const veryLarge = ['integrated','comprehensive','complete','major','complex'];
+
+  if(small.some(k=>text.includes(k))) minutes -= 45;
+  if(large.some(k=>text.includes(k))) minutes += 30;
+  if(veryLarge.some(k=>text.includes(k))) minutes += 45;
+  if(text.length > 80) minutes += 30;
+  else if(text.length < 28) minutes -= 15;
+
+  return Math.max(30, Math.min(360, Math.round(minutes / 15) * 15));
 }
 
-function buildStudySessions(items, startDate, dailyMinutes){
+function estimateTopicMinutes(item){
+  const explicitEstimated = Number(item?.estimatedMinutes);
+  if(Number.isFinite(explicitEstimated) && explicitEstimated > 0) return Math.max(15, Math.round(explicitEstimated));
+  const learning = Number(item?.learningMinutes) || (Number(item?.learningHours) || 0) * 60;
+  const practice = Number(item?.practiceMinutes) || (Number(item?.practiceHours) || 0) * 60;
+  const total = learning + practice;
+  return Math.max(30, Math.round(total || deterministicTopicEstimate(item)));
+}
+
+// Keep template planning on the same topic-estimation engine. This alias is used by
+// both the setup wizard and the Study-tab planner so a missing estimator can never
+// leave the planner stuck in its busy state.
+function estimateTemplateMinutes(item){
+  return estimateTopicMinutes(item);
+}
+
+function getStudyPlanBaseTopics(subj){
+  const curriculum = Array.isArray(subj?.curriculum) ? subj.curriculum : [];
+  const completedSessions = curriculum.slice(0, Math.max(0, Number(subj?.index)||0)).filter(x=>x?.isStudySession);
+  const hasGeneratedPlan = curriculum.some(x=>x?.isStudySession);
+  const source = Array.isArray(subj?.planTopics) && subj.planTopics.length
+    ? subj.planTopics
+    : (hasGeneratedPlan ? curriculum.filter(x=>!x?.isStudySession) : curriculum.slice(Math.max(0, Number(subj?.index)||0)));
+
+  // A generated plan replaces the visible topic list with sessions. Keep a clean
+  // topic-level model underneath so re-planning never duplicates old sessions.
+  const unique = new Map();
+  source.forEach((item, i)=>{
+    const id = item.id || `${subj?.id||'subject'}-topic-${i+1}`;
+    if(!unique.has(id)) unique.set(id, {...item, id, baseLabel:item.baseLabel||item.label});
+  });
+
+  const completedByTopic = new Map();
+  completedSessions.forEach(session=>{
+    const topicId = session.parentTopicId || session.originalTopicId || session.id;
+    const minutes = Math.max(0, Number(session.sessionMinutes)||0);
+    completedByTopic.set(topicId, (completedByTopic.get(topicId)||0) + minutes);
+  });
+
+  let topicList = Array.from(unique.values());
+  if(Array.isArray(subj?.planTopicsOrder) && subj.planTopicsOrder.length){
+    const rank = new Map(subj.planTopicsOrder.map((id,i)=>[id,i]));
+    topicList.sort((a,b)=>(rank.get(a.id)??999999)-(rank.get(b.id)??999999));
+  }
+  return topicList.map(item=>{
+    const total = Number(subj?.manualTopicMinutes?.[item.id]) || Number(item?.estimatedMinutes) || estimateTemplateMinutes(item);
+    const completed = Math.min(total, completedByTopic.get(item.id)||0);
+    return {
+      ...item,
+      estimatedMinutes: total,
+      completedMinutes: completed,
+      remainingMinutes: Math.max(0, total-completed)
+    };
+  }).filter(item=>item.remainingMinutes>0);
+}
+
+function buildStudySessions(items, startDate, dailyMinutes, targetDate){
   const result = [];
   const dayBudget = Math.max(15, Number(dailyMinutes)||60);
+  const deadline = targetDate || '';
   let day = startDate || isoDate(new Date());
   let used = 0;
 
   items.forEach((item, topicIndex)=>{
-    const perTopic = Math.max(15, Number(item.estimatedMinutes)||estimateTopicMinutes(item));
-    const totalSessions = Math.max(1, Math.ceil(perTopic / dayBudget));
-    let remaining = perTopic;
+    const totalMinutes = Math.max(15, Number(item.remainingMinutes) || estimateTopicMinutes(item));
+    const estimatedTotal = Math.max(totalMinutes, Number(item.estimatedMinutes)||totalMinutes);
+    let remaining = totalMinutes;
+    let sessionNumber = 1;
 
-    for(let sessionNumber=1; sessionNumber<=totalSessions; sessionNumber++){
-      const sessionMinutes = Math.min(dayBudget, remaining);
-      if(used + sessionMinutes > dayBudget && used > 0){
-        day = addDays(day,1);
-        used = 0;
-      }
-
+    while(remaining > 0.0001){
+      if(used >= dayBudget){ day=addDays(day,1); used=0; }
+      const sessionMinutes = Math.min(dayBudget-used, remaining);
+      const wouldMissDeadline = !!deadline && day > deadline;
       result.push({
         ...item,
-        id: `${item.id || makeTopicId()}-s${sessionNumber}-${topicIndex}`,
-        parentTopicId: item.id || null,
-        originalTopicId: item.id || null,
+        id:`${item.id || makeTopicId()}-s${sessionNumber}-${topicIndex}-${result.length}`,
+        parentTopicId:item.id || null,
+        originalTopicId:item.id || null,
         sessionNumber,
-        sessionTotal: totalSessions,
+        sessionTotal:0,
         sessionMinutes,
-        estimatedMinutes: perTopic,
-        learningMinutes: sessionMinutes,
-        practiceMinutes: 0,
-        scheduledDate: day,
-        isStudySession: true,
-        baseLabel: item.baseLabel || item.label,
-        label: `${item.baseLabel || item.label} — Session ${sessionNumber}/${totalSessions}`
+        learningMinutes:sessionMinutes,
+        practiceMinutes:0,
+        scheduledDate:day,
+        isStudySession:true,
+        isOverDeadline:wouldMissDeadline,
+        estimatedMinutes:estimatedTotal,
+        baseLabel:item.baseLabel || item.label,
+        label:`${item.baseLabel || item.label} — Session ${sessionNumber}`
       });
-
       used += sessionMinutes;
       remaining -= sessionMinutes;
+      sessionNumber++;
     }
   });
 
+  const counts=new Map();
+  result.forEach(x=>counts.set(x.parentTopicId,(counts.get(x.parentTopicId)||0)+1));
+  const seen=new Map();
+  result.forEach(x=>{
+    const n=(seen.get(x.parentTopicId)||0)+1;
+    seen.set(x.parentTopicId,n);
+    x.sessionNumber=n;
+    x.sessionTotal=counts.get(x.parentTopicId)||1;
+    x.label=`${x.baseLabel} — Session ${n}/${x.sessionTotal}`;
+  });
   return result;
 }
 
 function localSmartPlan(subj, opts){
-  const completed = (subj.curriculum||[]).slice(0, subj.index||0);
-  const pending = (subj.curriculum||[]).slice(subj.index||0);
+  const pending = getStudyPlanBaseTopics(subj);
   const ordered = smartOrderCurriculum(pending);
   const planned = buildStudySessions(
     ordered,
-    opts.targetDate < isoDate(new Date()) ? isoDate(new Date()) : (opts.startDate||isoDate(new Date())),
-    opts.minutes
+    opts.startDate||isoDate(new Date()),
+    opts.minutes,
+    opts.targetDate
   );
-  subj.curriculum = completed.concat(planned);
-  subj.index = Math.min(subj.index||0, subj.curriculum.length);
+  const completedSessions = (subj.curriculum||[]).slice(0, Number(subj.index)||0).filter(x=>x?.isStudySession);
+  subj.curriculum = completedSessions.concat(planned);
+  subj.index = Math.min(Number(subj.index)||0, subj.curriculum.length);
   subj.planSource = 'smart-local';
   subj.planUpdatedAt = new Date().toISOString();
-  return {count:planned.length, source:'smart-local'};
+  subj.planMeta = summarizeStudyPlan(subj, opts);
+  return {count:planned.length, source:'smart-local', ...subj.planMeta};
 }
 
-
-function buildBundleStudySessions(subjectList, estimates, startDate, dailyMinutes){
+function buildBundleStudySessions(subjectList, estimates, startDate, dailyMinutes, targetDate){
   const budget = Math.max(15, Number(dailyMinutes)||60);
   const byKey = new Map(estimates.map(x=>[`${x.subjectId}::${x.id}`, x]));
   const queues = subjectList.map(subj => {
-    const topics = (subj.curriculum||[]).slice(subj.index||0).map((item, i)=>({
-      item,
-      order: Number(byKey.get(`${subj.id}::${item.id}`)?.order ?? i),
-      estimatedMinutes: Math.max(15, Number(byKey.get(`${subj.id}::${item.id}`)?.estimatedMinutes) || estimateTopicMinutes(item))
-    })).sort((a,b)=>a.order-b.order);
-    return {subj, topics, topicIndex:0, remaining:topics[0]?.estimatedMinutes||0, sessionNumber:1};
+    const topics = getStudyPlanBaseTopics(subj).map((item, i)=>{
+      const estimate = byKey.get(`${subj.id}::${item.id}`);
+      const estimatedMinutes = Math.max(15, Number(estimate?.estimatedMinutes) || Number(item.estimatedMinutes) || estimateTemplateMinutes(item));
+      const completedMinutes = Math.min(estimatedMinutes, Math.max(0, Number(item.completedMinutes)||0));
+      return {
+        item,
+        order: Number(estimate?.order ?? i),
+        estimatedMinutes,
+        remainingMinutes: Math.max(0, estimatedMinutes-completedMinutes)
+      };
+    }).filter(x=>x.remainingMinutes>0).sort((a,b)=>a.order-b.order);
+    return {subj, topics, topicIndex:0, remaining:topics[0]?.remainingMinutes||0, sessionNumber:1};
   });
   const result = subjectList.map(s=>({subjectId:s.id, sessions:[]}));
   const resultMap = new Map(result.map(x=>[x.subjectId,x.sessions]));
   let day = startDate || isoDate(new Date());
   let used = 0;
   let guard = 0;
+
   while(queues.some(q=>q.topicIndex < q.topics.length) && guard++ < 10000){
     let progressed = false;
     for(const q of queues){
       if(q.topicIndex >= q.topics.length) continue;
-      if(used >= budget){ day = addDays(day,1); used = 0; }
-      const topic = q.topics[q.topicIndex];
-      if(!q.remaining) q.remaining = topic.estimatedMinutes;
-      const sessionMinutes = Math.min(q.remaining, budget-used);
+      if(used >= budget){ day=addDays(day,1); used=0; }
+      const topic=q.topics[q.topicIndex];
+      if(!q.remaining) q.remaining=topic.remainingMinutes;
+      const sessionMinutes=Math.min(q.remaining,budget-used);
       resultMap.get(q.subj.id).push({
         topicId:topic.item.id,
         sessionNumber:q.sessionNumber,
         sessionMinutes,
         scheduledDate:day,
-        estimatedMinutes:topic.estimatedMinutes
+        estimatedMinutes:topic.estimatedMinutes,
+        isOverDeadline:!!targetDate && day>targetDate
       });
-      used += sessionMinutes;
-      q.remaining -= sessionMinutes;
-      progressed = true;
-      if(q.remaining <= 0.0001){ q.topicIndex++; q.remaining = q.topics[q.topicIndex]?.estimatedMinutes||0; q.sessionNumber=1; }
-      else q.sessionNumber++;
-      if(used >= budget) break;
+      used+=sessionMinutes;
+      q.remaining-=sessionMinutes;
+      progressed=true;
+      if(q.remaining<=0.0001){
+        q.topicIndex++;
+        q.remaining=q.topics[q.topicIndex]?.remainingMinutes||0;
+        q.sessionNumber=1;
+      }else q.sessionNumber++;
+      if(used>=budget) break;
     }
     if(!progressed) break;
   }
-  result.forEach(group => {
-    const counts = new Map();
-    group.sessions.forEach(session => counts.set(session.topicId, (counts.get(session.topicId) || 0) + 1));
-    const seen = new Map();
-    group.sessions.forEach(session => {
-      const n = (seen.get(session.topicId) || 0) + 1;
-      seen.set(session.topicId, n);
-      session.sessionNumber = n;
-      session.sessionTotal = counts.get(session.topicId) || 1;
+
+  result.forEach(group=>{
+    const counts=new Map();
+    group.sessions.forEach(s=>counts.set(s.topicId,(counts.get(s.topicId)||0)+1));
+    const seen=new Map();
+    group.sessions.forEach(s=>{
+      const n=(seen.get(s.topicId)||0)+1;
+      seen.set(s.topicId,n);
+      s.sessionNumber=n;
+      s.sessionTotal=counts.get(s.topicId)||1;
     });
   });
   return result;
 }
 
+function summarizeStudyPlan(subj, opts){
+  const sessions=(subj?.curriculum||[]).filter(x=>x?.isStudySession);
+  const plannedMinutes=sessions.reduce((n,x)=>n+Math.max(0,Number(x.sessionMinutes)||0),0);
+  const start=opts?.startDate||isoDate(new Date());
+  const deadline=opts?.targetDate||'';
+  const finish=sessions.map(x=>x.scheduledDate).filter(Boolean).sort().pop()||start;
+  const overflow=sessions.filter(x=>deadline && x.scheduledDate>deadline)
+    .reduce((n,x)=>n+Math.max(0,Number(x.sessionMinutes)||0),0);
+  const days=deadline && deadline>=start
+    ? Math.max(1, Math.floor((new Date(deadline+'T00:00:00')-new Date(start+'T00:00:00'))/86400000)+1)
+    : 0;
+  const capacity=days ? days*Math.max(15,Number(opts.minutes)||60) : plannedMinutes;
+  return {
+    goal:opts?.goal||'',
+    targetDate:deadline,
+    dailyMinutes:Math.max(15,Number(opts?.minutes)||60),
+    level:opts?.level||'starting',
+    plannedMinutes,
+    finishDate:finish,
+    capacityMinutes:capacity,
+    overflowMinutes:overflow,
+    feasible:overflow<=0,
+    sessionCount:sessions.length
+  };
+}
+
 async function aiPlanTemplate(subjectList, opts){
-  const payload = {
-    goal: opts.goal || 'Complete this study template thoroughly',
-    targetDate: opts.targetDate || '',
-    dailyMinutes: Number(opts.minutes)||60,
-    currentLevel: opts.level || 'starting',
-    subjects: subjectList.map(s=>({
-      id:s.id,
-      name:s.name,
-      curriculum:(s.curriculum||[]).slice(s.index||0).map(x=>({
-        id:x.id,
+  const pendingBySubject = subjectList.map(subj=>({
+    subj,
+    pending:getStudyPlanBaseTopics(subj)
+  })).filter(x=>x.pending.length);
+
+  if(!pendingBySubject.length){
+    return {items:[],source:'local'};
+  }
+
+  // Template planning uses the dedicated bundle endpoint so the AI sees the
+  // entire curriculum while the app keeps ONE shared daily study budget.
+  // The AI estimates workload/order only; deterministic code creates sessions.
+  const payload={
+    goal:opts.goal||'Complete the curriculum thoroughly',
+    targetDate:opts.targetDate||'',
+    dailyMinutes:Number(opts.minutes)||60,
+    currentLevel:opts.level||'starting',
+    subjects:pendingBySubject.map(({subj,pending})=>({
+      id:String(subj.id),
+      name:String(subj.name||''),
+      curriculum:pending.map((x,i)=>({
+        id:String(x.id||i),
         phase:x.phase||'',
         label:x.baseLabel||x.label||'',
         difficulty:x.difficulty||null,
-        learningHours:x.learningHours,
-        practiceHours:x.practiceHours
+        learningHours:x.learningHours??null,
+        practiceHours:x.practiceHours??null
       }))
     }))
   };
+
   try{
     await trackAiCall();
-    const res=await fetch(WORKER_URL+'/plan-bundle',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const data=await res.json();
-    if(!res.ok || data.error || !Array.isArray(data.items)) throw new Error(data.error || 'AI template planner unavailable');
-    return {items:data.items, source:'ai'};
+    const {response:res,data}=await fetchJsonWithTimeout(
+      WORKER_URL+'/plan-bundle',
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},
+      15000
+    );
+    if(!res.ok || data?.error || !Array.isArray(data?.items)){
+      throw new Error(data?.error||'AI bundle planner unavailable');
+    }
+
+    const valid=new Set();
+    pendingBySubject.forEach(({subj,pending})=>pending.forEach(item=>valid.add(`${subj.id}::${item.id}`)));
+
+    const estimates=[];
+    const seen=new Set();
+    data.items.forEach((it,i)=>{
+      const subjectId=String(it?.subjectId??'');
+      const id=String(it?.id??'');
+      const key=`${subjectId}::${id}`;
+      if(!valid.has(key) || seen.has(key)) return;
+      const original=pendingBySubject.find(x=>String(x.subj.id)===subjectId)?.pending.find(x=>String(x.id)===id);
+      if(!original) return;
+      const rawMinutes=Number(it?.estimatedMinutes);
+      const estimatedMinutes=Number.isFinite(rawMinutes) && rawMinutes >= 15
+        ? Math.round(rawMinutes / 15) * 15
+        : estimateTemplateMinutes(original);
+      estimates.push({
+        subjectId,id,estimatedMinutes,
+        order:Number.isFinite(Number(it?.order)) ? Number(it.order) : i
+      });
+      seen.add(key);
+    });
+
+    // If the model collapses a curriculum into the same default duration for
+    // nearly every topic, do not let that bad estimate define the whole plan.
+    // Re-estimate only the suspiciously uniform set; genuinely varied AI output
+    // remains untouched.
+    const rawValues=estimates.map(x=>x.estimatedMinutes).filter(Number.isFinite);
+    const valueCounts=new Map();
+    rawValues.forEach(v=>valueCounts.set(v,(valueCounts.get(v)||0)+1));
+    const dominantCount=Math.max(0,...valueCounts.values());
+    const uniformModel=rawValues.length >= 3 && dominantCount / rawValues.length >= 0.85;
+    if(uniformModel){
+      estimates.forEach(x=>{
+        const original=pendingBySubject.find(y=>String(y.subj.id)===String(x.subjectId))?.pending.find(y=>String(y.id)===String(x.id));
+        if(original) x.estimatedMinutes=deterministicTopicEstimate(original);
+      });
+    }
+
+    // The Worker itself protects against omitted/truncated model items, but keep
+    // the client defensive too: every input topic must reach the deterministic splitter.
+    let nextOrder=estimates.reduce((m,x)=>Math.max(m,Number(x.order)||0),-1)+1;
+    pendingBySubject.forEach(({subj,pending})=>pending.forEach(item=>{
+      const key=`${subj.id}::${item.id}`;
+      if(seen.has(key)) return;
+      estimates.push({
+        subjectId:String(subj.id),
+        id:String(item.id),
+        estimatedMinutes:Math.max(15,Number(item.estimatedMinutes)||estimateTemplateMinutes(item)),
+        order:nextOrder++
+      });
+    }));
+
+    return {items:estimates,source:'ai'};
   }catch(err){
-    console.warn('AI template planner failed; using local estimates:', err.message);
+    console.warn('AI bundle planner failed; using local topic estimates:',err.message);
     const items=[];
-    subjectList.forEach((s,si)=> (s.curriculum||[]).slice(s.index||0).forEach((x,i)=>items.push({
-      subjectId:s.id,id:x.id,estimatedMinutes:Math.min(480, Math.max(30, estimateTemplateMinutes(x))),order:si*10000+i
+    pendingBySubject.forEach(({subj,pending})=>pending.forEach((item,i)=>items.push({
+      subjectId:String(subj.id),
+      id:String(item.id),
+      estimatedMinutes:Math.max(15,Number(item.estimatedMinutes)||estimateTemplateMinutes(item)),
+      order:i
     })));
-    return {items, source:'local'};
+    return {items,source:'local',error:err.message};
   }
 }
 
-function estimateTemplateMinutes(item){
-  if(Number.isFinite(Number(item?.learningHours)) && Number(item.learningHours)>0) return Math.max(15, Math.round(Number(item.learningHours)*60));
-  return estimateTopicMinutes(item);
-}
-
-function applyBundlePlan(subjectList, estimates, opts){
-  const sessionGroups = buildBundleStudySessions(subjectList, estimates, opts.startDate||isoDate(new Date()), opts.minutes);
-  const groupMap = new Map(sessionGroups.map(x=>[x.subjectId,x.sessions]));
-  subjectList.forEach(subj=>{
-    const pending=(subj.curriculum||[]).slice(subj.index||0);
-    const completed=(subj.curriculum||[]).slice(0,subj.index||0);
-    const estimateMap=new Map(estimates.filter(x=>x.subjectId===subj.id).map(x=>[x.id,x]));
-    const sessions=groupMap.get(subj.id)||[];
-    const byTopic=new Map();
-    sessions.forEach(s=>{ if(!byTopic.has(s.topicId)) byTopic.set(s.topicId,[]); byTopic.get(s.topicId).push(s); });
-    const ordered=pending.slice().sort((a,b)=>Number(estimateMap.get(a.id)?.order??999999)-Number(estimateMap.get(b.id)?.order??999999));
-    const planned=[];
-    ordered.forEach((item,i)=>{
-      const topicSessions=byTopic.get(item.id)||[];
-      const total=topicSessions.length||1;
-      topicSessions.forEach((session,si)=>planned.push({
-        ...item,
-        id:`${item.id}-s${session.sessionNumber}-${si}`,
-        parentTopicId:item.id,
-        originalTopicId:item.id,
-        baseLabel:item.baseLabel||item.label,
-        label:`${item.baseLabel||item.label} — Session ${session.sessionNumber}/${total}`,
-        sessionNumber:session.sessionNumber,
-        sessionTotal:total,
-        sessionMinutes:session.sessionMinutes,
-        learningMinutes:session.sessionMinutes,
-        practiceMinutes:0,
-        estimatedMinutes:session.estimatedMinutes,
-        scheduledDate:session.scheduledDate,
-        isStudySession:true
-      }));
-    });
-    subj.curriculum=completed.concat(planned);
-    subj.index=Math.min(subj.index||0,subj.curriculum.length);
-    subj.planSource=opts.source==='ai'?'ai':'smart-local';
-    subj.planUpdatedAt=new Date().toISOString();
-  });
-  return subjectList.reduce((n,s)=>n+(s.curriculum||[]).length-(s.index||0),0);
-}
-
 async function aiPlanSubject(subj, opts){
+  const pending = getStudyPlanBaseTopics(subj);
+  const completedSessions=(subj.curriculum||[]).slice(0,Number(subj.index)||0).filter(x=>x?.isStudySession);
   const payload = {
     subject: subj.name,
     goal: opts.goal || `Learn ${subj.name}`,
     targetDate: opts.targetDate || '',
     dailyMinutes: Number(opts.minutes)||60,
     currentLevel: opts.level || 'starting',
-    completedCount: subj.index||0,
-    curriculum: (subj.curriculum||[]).slice(subj.index||0).map((x,i)=>({
-      id:x.id||String(i),
-      phase:x.phase||'',
-      label:x.baseLabel||x.label||'',
-      difficulty:x.difficulty||null
+    completedCount: completedSessions.length,
+    curriculum: pending.map((x,i)=>({
+      id:x.id||String(i), phase:x.phase||'', label:x.baseLabel||x.label||'', difficulty:x.difficulty||null,
+      remainingMinutes:x.remainingMinutes||estimateTemplateMinutes(x)
     }))
   };
   try{
     await trackAiCall();
-    const res = await fetch(WORKER_URL + '/plan', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if(!res.ok || data.error || !Array.isArray(data.items)) throw new Error(data.error || 'AI planner unavailable');
+    const {response:res,data}=await fetchJsonWithTimeout(WORKER_URL+'/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)},15000);
+    if(!res.ok || data.error || !Array.isArray(data.items)) throw new Error(data.error||'AI planner unavailable');
 
-    const byId = new Map(subj.curriculum.map(x=>[x.id,x]));
-    const completed = subj.curriculum.slice(0, subj.index||0);
-    const planned = [];
-
-    data.items.forEach((it, i)=>{
-      const original = byId.get(it.id);
+    const byId=new Map(pending.map(x=>[x.id,x]));
+    const estimates=[];
+    data.items.forEach((it,i)=>{
+      const original=byId.get(it.id);
       if(!original) return;
-
-      const sessions = Array.isArray(it.sessions) && it.sessions.length
-        ? it.sessions
-        : [{
-            sessionNumber:1,
-            sessionTotal:1,
-            sessionMinutes:Number(it.learningMinutes)||Number(opts.minutes)||60,
-            scheduledDate:it.scheduledDate||isoDate(new Date())
-          }];
-
-      sessions.forEach((session, si)=>{
-        const sessionMinutes = Math.max(15, Number(session.sessionMinutes)||Number(opts.minutes)||60);
-        const sessionNumber = Number(session.sessionNumber)||si+1;
-        const sessionTotal = Number(session.sessionTotal)||sessions.length;
-        planned.push({
-          ...original,
-          id: `${original.id}-s${sessionNumber}-${i}`,
-          parentTopicId: original.id,
-          originalTopicId: original.id,
-          baseLabel: original.baseLabel || original.label,
-          label: `${original.baseLabel || original.label} — Session ${sessionNumber}/${sessionTotal}`,
-          sessionNumber,
-          sessionTotal,
-          sessionMinutes,
-          learningMinutes: sessionMinutes,
-          practiceMinutes: Number(session.practiceMinutes)||0,
-          scheduledDate: session.scheduledDate || addDays(isoDate(new Date()), planned.length),
-          isStudySession:true
-        });
-      });
+      const total=Math.max(15,Number(it.estimatedMinutes)||original.remainingMinutes||estimateTemplateMinutes(original));
+      estimates.push({subjectId:subj.id,id:original.id,estimatedMinutes:total,order:i});
+    });
+    pending.forEach((item,i)=>{
+      if(!estimates.some(x=>x.id===item.id)) estimates.push({subjectId:subj.id,id:item.id,estimatedMinutes:item.remainingMinutes||estimateTemplateMinutes(item),order:data.items.length+i});
     });
 
-    // If the AI ever omits a topic, keep it rather than silently losing curriculum.
-    const plannedParents = new Set(planned.map(x=>x.parentTopicId));
-    const missing = subj.curriculum.slice(subj.index||0).filter(x=>!plannedParents.has(x.id));
-    const fallback = buildStudySessions(missing, isoDate(new Date()), opts.minutes);
-
-    subj.curriculum = completed.concat(planned.concat(fallback));
-    subj.planSource = 'ai';
-    subj.planUpdatedAt = new Date().toISOString();
-    return {count:planned.length + fallback.length, source:'ai'};
+    const sessions=buildStudySessions(
+      estimates.map(x=>({...byId.get(x.id),...x,remainingMinutes:Math.max(0,Number(byId.get(x.id)?.remainingMinutes)||0)})),
+      opts.startDate||isoDate(new Date()),
+      opts.minutes,
+      opts.targetDate
+    );
+    subj.planTopics=pending.map(({completedMinutes,remainingMinutes,...topic})=>({...topic}));
+    subj.curriculum=completedSessions.concat(sessions);
+    subj.index=Math.min(Number(subj.index)||0,subj.curriculum.length);
+    subj.planSource='ai';
+    subj.planUpdatedAt=new Date().toISOString();
+    subj.planMeta=summarizeStudyPlan(subj,opts);
+    return {count:sessions.length,source:'ai',...subj.planMeta};
   }catch(err){
-    console.warn('AI planner failed; using local session planner:', err.message);
-    return localSmartPlan(subj, opts);
+    console.warn('AI planner failed; using local session planner:',err.message);
+    return localSmartPlan(subj,opts);
   }
+}
+
+function applyBundlePlan(subjectList, estimates, opts){
+  const sessionGroups=buildBundleStudySessions(subjectList,estimates,opts.startDate||isoDate(new Date()),opts.minutes,opts.targetDate);
+  const groupMap=new Map(sessionGroups.map(x=>[x.subjectId,x.sessions]));
+  subjectList.forEach(subj=>{
+    const pending=getStudyPlanBaseTopics(subj);
+    const completedSessions=(subj.curriculum||[]).slice(0,Number(subj.index)||0).filter(x=>x?.isStudySession);
+    const estimateMap=new Map(estimates.filter(x=>x.subjectId===subj.id).map(x=>[x.id,x]));
+    const sessions=groupMap.get(subj.id)||[];
+    const byTopic=new Map();
+    sessions.forEach(s=>{ if(!byTopic.has(s.topicId)) byTopic.set(s.topicId,[]); byTopic.get(s.topicId).push(s); });
+    const ordered=pending.slice().sort((a,b)=>Number(estimateMap.get(a.id)?.order??999999)-Number(estimateMap.get(b.id)?.order??999999));
+    const planned=[];
+    ordered.forEach(item=>{
+      const topicSessions=byTopic.get(item.id)||[];
+      const total=topicSessions.length||1;
+      topicSessions.forEach((session,si)=>planned.push({
+        ...item,
+        id:`${item.id}-s${session.sessionNumber}-${si}`,
+        parentTopicId:item.id, originalTopicId:item.id,
+        baseLabel:item.baseLabel||item.label,
+        label:`${item.baseLabel||item.label} — Session ${session.sessionNumber}/${total}`,
+        sessionNumber:session.sessionNumber, sessionTotal:total,
+        sessionMinutes:session.sessionMinutes,
+        estimatedMinutes:session.estimatedMinutes,
+        learningMinutes:session.sessionMinutes, practiceMinutes:0,
+        scheduledDate:session.scheduledDate, isStudySession:true,
+        isOverDeadline:!!session.isOverDeadline
+      }));
+    });
+    subj.planTopics=pending.map(({completedMinutes,remainingMinutes,...topic})=>({...topic}));
+    subj.curriculum=completedSessions.concat(planned);
+    subj.index=Math.min(Number(subj.index)||0,subj.curriculum.length);
+    subj.planSource=opts.source==='ai'?'ai':'smart-local';
+    subj.planUpdatedAt=new Date().toISOString();
+    subj.planMeta=summarizeStudyPlan(subj,opts);
+  });
+  return subjectList.reduce((n,s)=>n+(s.curriculum||[]).length-(s.index||0),0);
 }
 
 function renderStudyOverlay(){
@@ -2668,23 +2822,90 @@ function renderStudyOverlay(){
     </div>`;
   }
   const subject = getSubject(studySubject);
+  const pendingTopics = subject ? getStudyPlanBaseTopics(subject) : [];
+  const goalValue = (studyPlannerDraft.goal||`Master ${subject?.name||'this subject'}`).replace(/"/g,'&quot;');
+  const dateValue = studyPlannerDraft.targetDate||addDays(isoDate(new Date()),30);
+  const minutesValue = studyPlannerDraft.minutes||60;
+  const levelValue = studyPlannerDraft.level||'starting';
+
+  if(studyPlannerMode === 'choose'){
+    return `<div class="study-overlay open" id="studyOverlay">
+      <div class="study-overlay-panel">
+        <div class="study-overlay-head">
+          <h2>Build my study plan</h2>
+          <button class="settings-close" data-action="close-study-overlay">×</button>
+        </div>
+        <p class="note">Not everyone wants an AI-made plan. You can plan the subject yourself, or let Daily Rhythm estimate the work and turn it into realistic study sessions.</p>
+        <div style="display:grid;gap:10px;margin-top:14px;">
+          <button class="day-card" style="text-align:left;border:1px solid var(--line);background:var(--card);cursor:pointer;padding:16px;" data-action="planner-mode-ai">
+            <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">✨ Plan it for me</div>
+            <div class="note" style="margin:0;">Daily Rhythm estimates each topic, orders the work, and splits it into sessions based on your daily study time and deadline.</div>
+          </button>
+          <button class="day-card" style="text-align:left;border:1px solid var(--line);background:var(--card);cursor:pointer;padding:16px;" data-action="planner-mode-manual">
+            <div style="font-weight:800;font-size:1rem;margin-bottom:4px;">📝 I'll plan it myself</div>
+            <div class="note" style="margin:0;">You choose the topic order and how much time each topic deserves. Daily Rhythm only turns your choices into day-by-day sessions.</div>
+          </button>
+        </div>
+        <button class="btn-secondary" style="width:100%;margin-top:12px;" data-action="close-study-overlay">Cancel</button>
+      </div>
+    </div>`;
+  }
+
+  if(studyPlannerMode === 'manual'){
+    const rows = pendingTopics.map((item,i)=>{
+      const mins = Math.max(15, Number(subject?.manualTopicMinutes?.[item.id]) || Number(item.remainingMinutes) || estimateTemplateMinutes(item));
+      return `<div class="day-card" style="padding:12px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:24px;text-align:center;font-weight:800;">${i+1}</div>
+          <div style="flex:1;min-width:0;"><div style="font-weight:700;">${item.baseLabel||item.label}</div><div class="note" style="margin:2px 0 0;">${item.phase||'Topic'}</div></div>
+          <input class="edit-input manual-topic-minutes" data-topic-id="${item.id}" type="number" min="15" max="10000" step="15" value="${mins}" style="width:82px;" aria-label="Minutes for ${item.baseLabel||item.label}">
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;justify-content:flex-end;">
+          <button class="icon-btn" data-action="manual-topic-up" data-topic-id="${item.id}" ${i===0?'disabled':''}>↑</button>
+          <button class="icon-btn" data-action="manual-topic-down" data-topic-id="${item.id}" ${i===pendingTopics.length-1?'disabled':''}>↓</button>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="study-overlay open" id="studyOverlay">
+      <div class="study-overlay-panel">
+        <div class="study-overlay-head">
+          <h2>I'll plan it myself</h2>
+          <button class="settings-close" data-action="close-study-overlay">×</button>
+        </div>
+        <p class="note">Set the order and your own time estimate for each topic. Daily Rhythm won't decide what you should study — it will only split your plan into realistic sessions.</p>
+        <div class="reminder-card" style="margin-top:12px;">
+          <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="planDate" type="date" value="${dateValue}"></div>
+          <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="planMinutes" type="number" min="15" max="600" step="15" value="${minutesValue}"></div>
+        </div>
+        <div class="study-card" style="margin-top:10px;">
+          <div class="study-title">Your topic plan</div>
+          <div style="margin-top:8px;">${rows || '<p class="note">No remaining topics to plan.</p>'}</div>
+        </div>
+        <div class="study-action-grid">
+          <button class="btn-primary" data-action="build-manual-study-plan">${studyPlanBusy?'Building…':'Build my sessions'}</button>
+          <button class="btn-secondary" data-action="planner-back-choice">Back</button>
+        </div>
+        ${studyPlanStatus ? `<p class="note" style="margin-top:10px;color:var(--gold);">${studyPlanStatus}</p>` : ''}
+      </div>
+    </div>`;
+  }
+
   return `<div class="study-overlay open" id="studyOverlay">
     <div class="study-overlay-panel">
       <div class="study-overlay-head">
-        <h2>Build my study plan</h2>
+        <h2>Plan it for me</h2>
         <button class="settings-close" data-action="close-study-overlay">×</button>
       </div>
-      <p class="note">You don't need to give one fixed time per topic. AI estimates each topic separately based on its complexity and your level, then splits every topic into sessions that fit your daily study time.</p>
+      <p class="note">Daily Rhythm estimates each topic separately. If a topic takes 3 hours and you study 1 hour a day, it will split that topic across 3 separate 1-hour sessions instead of pretending the whole topic fits into one day.</p>
       <div class="reminder-card">
-        <div class="reminder-row"><label>Goal</label><input class="edit-input" id="planGoal" type="text" value="${(studyPlannerDraft.goal||`Master ${subject?.name||'this subject'}`).replace(/"/g,'&quot;')}" style="width:65%;"></div>
-        <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="planDate" type="date" value="${studyPlannerDraft.targetDate||addDays(isoDate(new Date()),30)}"></div>
-        <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="planMinutes" type="number" min="15" max="600" step="15" value="${studyPlannerDraft.minutes||60}"></div>
-        <p class="note" style="margin:8px 0 0;">AI will estimate different durations for different topics — for example 30 min, 3 hrs, or 6 hrs — and split them into realistic sessions.</p>
-        <div class="reminder-row"><label>Starting level</label><select class="edit-input" id="planLevel" style="width:55%;"><option ${studyPlannerDraft.level==='starting'?'selected':''}>starting</option><option ${studyPlannerDraft.level==='familiar'?'selected':''}>familiar</option><option ${studyPlannerDraft.level==='strong'?'selected':''}>strong</option></select></div>
+        <div class="reminder-row"><label>Goal</label><input class="edit-input" id="planGoal" type="text" value="${goalValue}" style="width:65%;"></div>
+        <div class="reminder-row"><label>Finish by</label><input class="edit-input" id="planDate" type="date" value="${dateValue}"></div>
+        <div class="reminder-row"><label>Study time/day</label><input class="edit-input" id="planMinutes" type="number" min="15" max="600" step="15" value="${minutesValue}"></div>
+        <div class="reminder-row"><label>Starting level</label><select class="edit-input" id="planLevel" style="width:55%;"><option ${levelValue==='starting'?'selected':''}>starting</option><option ${levelValue==='familiar'?'selected':''}>familiar</option><option ${levelValue==='strong'?'selected':''}>strong</option></select></div>
       </div>
       <div class="study-action-grid">
-        <button class="btn-primary" data-action="build-study-plan">Build plan</button>
-        <button class="btn-secondary" data-action="close-study-overlay">Cancel</button>
+        <button class="btn-primary" data-action="build-study-plan">${studyPlanBusy?'Planning…':'Build plan'}</button>
+        <button class="btn-secondary" data-action="planner-back-choice">Back</button>
       </div>
       ${studyPlanStatus ? `<p class="note" style="margin-top:10px;color:var(--gold);">${studyPlanStatus}</p>` : ''}
     </div>
@@ -2744,13 +2965,12 @@ function renderStudy(){
         <div class="study-kpi"><b>${notesCount}</b><span>note sets</span></div>
       </div>
       <div class="study-action-grid">
-        <button class="btn-primary" data-action="open-study-planner" ${studyPlanBusy && studyPlanBusySubject===subject.id?'disabled':''}>${studyPlanBusy && studyPlanBusySubject===subject.id?'<span class="planner-spinner" aria-hidden="true"></span> Planning…':'✦ Plan for me'}</button>
+        <button class="btn-primary" data-action="open-study-planner">✦ Plan for me</button>
         <button class="btn-secondary" data-action="open-notebook">📓 Subject notes</button>
         <button class="btn-secondary" data-action="open-bulk-paste">Paste syllabus</button>
         <button class="btn-secondary" data-action="${isEditingSubject?'done-editing-subject':'edit-subject'}">${isEditingSubject?'✓ Done editing':'Quick edit'}</button>
       </div>
       ${planSource==='Not planned yet' && pendingCount ? `<p class="note" style="margin-bottom:0;">Stop entering dates one by one. Plan once, then the queue runs from here.</p>` : ''}
-      <button class="btn-secondary" style="width:100%;margin-top:10px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'<span class="planner-spinner" aria-hidden="true"></span> Reading photo…':'📷 Add topics from a photo'}</button>
     </div>`;
 
   const editToggleRow = isEditingSubject ? `
@@ -2805,6 +3025,7 @@ function renderStudy(){
     cardHtml = `<div class="study-card">
       <div class="study-phase-tag">${item.phase||''}</div>
       <div class="study-title">${item.label}</div>
+      ${item.isStudySession ? `<div class="water-sub" style="margin:4px 0 0;">${Number(item.sessionMinutes)||60} min session${item.sessionTotal>1?` · ${item.sessionNumber}/${item.sessionTotal}`:''}${item.scheduledDate?` · ${item.scheduledDate}`:''}</div>` : ''}
       <div class="water-row" style="margin:8px 0 0;align-items:center;">
         <span class="water-sub" style="margin:0;">Due date (optional)</span>
         <input class="edit-input" type="date" value="${item.scheduledDate||''}" data-action="set-item-date" data-subject="${studySubject}" data-idx="${idx}" style="flex:0 0 auto;width:150px;">
@@ -2813,6 +3034,7 @@ function renderStudy(){
       <div class="study-actions-row">
         <button class="icon-btn" data-action="studysearch" data-label="${safeLabel}" title="Web search">\u{1F50D}</button>
         <button class="icon-btn" data-action="studyvideo" data-label="${safeLabel}" data-source="${item.source||''}" title="Video explainer">\u25B6</button>
+        ${item.isStudySession ? `<button class="icon-btn" data-action="study-session-timer" data-label="${safeLabel}" data-minutes="${Number(item.sessionMinutes)||60}" title="Start study timer">⏱</button>` : ''}
       </div>
       <div class="study-done-row">
         <div class="checkbox ${doneToday?'checked':''}" data-action="studydone" data-subject="${studySubject}"></div>
@@ -2825,6 +3047,7 @@ function renderStudy(){
       </div>
       ${doneToday ? `<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="studyextra" data-subject="${studySubject}">+ Have time \u2014 do this next one too</button>` : ''}
       ${extraToday ? `<div class="water-sub" style="margin-top:6px;">${1+extraToday} sessions done today</div>` : ''}
+      <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-study" data-subject="${studySubject}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo\u2026':'\u{1F4F7} Add topics from a photo'}</button>
       <div class="notes-wrap">
         <div class="notes-label">Notes</div>
         <textarea class="notes-textarea" data-action="studynote" data-key="${noteKey}" placeholder="Jot notes while you study...">${noteVal}</textarea>
@@ -2875,33 +3098,81 @@ function renderToday(){
   rhythmHtml += '</div>';
 
   const streakHtml = `<div class="streak-card">
-    <div><div class="streak-num">${streak}</div><div class="streak-label">day streak &middot; full day complete</div></div>
-    <div class="streak-note">${streak===0 ? "Complete every task, sleep, and protein to start one." : "Tasks, sleep, and protein \u2014 all landed."}</div>
+    <div><div class="streak-num">${streak}</div><div class="streak-label">day streak · full day complete</div></div>
+    <div class="streak-note">${streak===0 ? 'Complete your planned tracking to start one.' : 'Your daily tracking is moving.'}</div>
   </div>`;
 
   const idx = dates.indexOf(currentSwipeDate);
   const safeIdx = idx === -1 ? 0 : idx;
-
   let dotsHtml = '<div class="dots">';
   dates.forEach((iso)=>{ dotsHtml += `<div class="dot-nav ${iso===currentSwipeDate?'active':''}"></div>`; });
   dotsHtml += '</div>';
 
-  const cardHtml = renderDayCard(currentSwipeDate, currentSwipeDate===todayIso);
+  const selectedIso=currentSwipeDate;
+  const selectedEntry=entries[selectedIso]||{tasks:{}};
+  const selectedDow=weekdayIndex(selectedIso);
+  const taskList=getTasksForDow(selectedDow);
+  const isPast=selectedIso < isoDate(new Date());
+  const workoutActive=settings.workoutEnabled!==false && !selectedEntry.noWorkout;
+  const isEditing=!isPast && editingDow===selectedDow;
 
-  return `
-    ${rhythmHtml}
-    ${streakHtml}
-    <p class="swipe-hint">\u2190 swipe for previous / next day \u2192</p>
-    <div class="swipe-viewport" id="swipeViewport">
-      <div class="swipe-track" id="swipeTrack">${cardHtml}</div>
+  let taskRows='';
+  if(!workoutActive){
+    taskRows=`<div class="noworkout-note">No workout routine is active for this day. Sleep, water, and food tracking still work below.</div>`;
+  }else if(isEditing){
+    taskList.forEach(t=>{
+      taskRows+=`<div class="task-row edit-row">
+        <input class="edit-input edit-label" type="text" value="${t.label.replace(/"/g,'&quot;')}" data-action="edit-tasklabel" data-dow="${selectedDow}" data-taskid="${t.id}">
+        <input class="edit-input edit-sets" type="text" value="${(t.sets||'').replace(/"/g,'&quot;')}" data-action="edit-tasksets" data-dow="${selectedDow}" data-taskid="${t.id}" placeholder="sets/reps">
+        <button class="icon-btn" data-action="remove-task" data-dow="${selectedDow}" data-taskid="${t.id}" title="Remove">×</button>
+      </div>`;
+    });
+    taskRows+=`<button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="add-task" data-dow="${selectedDow}">+ Add exercise</button>
+      <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="scan-workout" data-dow="${selectedDow}" ${scanBusy?'disabled':''}>${scanBusy?'Reading photo…':'📷 Scan a workout plan'}</button>`;
+  }else{
+    taskList.forEach(t=>{
+      const done=!!(selectedEntry.tasks&&selectedEntry.tasks[t.id]);
+      taskRows+=`<div class="task-row">
+        <div class="checkbox ${done?'checked':''}" data-action="task" data-date="${selectedIso}" data-taskid="${t.id}"></div>
+        <div class="task-label ${done?'done':''}" data-action="task" data-date="${selectedIso}" data-taskid="${t.id}">${t.label}<span class="set-info">${t.sets}</span></div>
+        <div class="task-actions"><button class="icon-btn" data-action="timer" data-label="${t.label.replace(/"/g,'&quot;')}" data-seconds="${t.seconds}" title="Timer">⏱</button><button class="icon-btn" data-action="youtube" data-label="${t.label.replace(/"/g,'&quot;')}" title="YouTube">▶</button></div>
+      </div>`;
+    });
+  }
+
+  const workoutBlock=(settings.workoutEnabled!==false && !selectedEntry.noWorkout) ? `<div class="day-card workout-block">
+    <div class="block-head">
+      <div><div class="block-title">Workout</div><div class="block-sub">${workoutActive ? `${DAY_META[selectedDow].type} · ${taskList.length} planned exercise${taskList.length===1?'':'s'}` : 'No workout routine for this day'}</div></div>
+      ${(!isPast && settings.workoutEnabled!==false) ? `<div style="display:flex;align-items:center;gap:7px;">
+        <button class="add-exercise-btn" data-action="add-exercise-day" data-dow="${selectedDow}" title="Add exercise for this day"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Add exercise</button>
+        <button class="icon-btn" data-action="${isEditing?'done-editing':'edit-day'}" data-dow="${selectedDow}" title="${isEditing?'Done editing':'Edit exercises'}">${isEditing?'✓':'✎'}</button>
+      </div>` : ''}
     </div>
+    ${isPast?'<div class="locked-banner">🔒 This day is in the past — locked.</div>':''}
+    <div class="${isPast?'locked-content':''}">${taskRows}</div>
+  </div>` : '';
+
+  const sleepVal=selectedEntry.sleep||'';
+  const waterVal=selectedEntry.water||0;
+  const sleepHit=(selectedEntry.sleep||0)>=SLEEP_TARGET;
+  const waterHit=waterVal>=settings.waterTargetBottles;
+  const wellnessBlock=`<div class="day-card workout-block">
+    <div class="block-head"><div><div class="block-title">Sleep &amp; Water</div><div class="block-sub">Keep the basics visible even on non-workout days.</div></div></div>
+    <div class="wellness">
+      <div class="wellness-field ${sleepHit?'hit':''}"><label>Sleep</label><div class="input-row"><input type="number" min="0" max="14" step="0.5" placeholder="0" value="${sleepVal}" data-action="sleep" data-date="${selectedIso}"><span class="unit">hrs</span></div></div>
+      <div class="wellness-field ${waterHit?'hit':''}"><label>Water (target ${settings.waterTargetBottles})</label><div class="water-controls"><button class="icon-btn" data-action="water-minus" data-date="${selectedIso}">−</button><span class="water-value">${waterVal}</span><button class="icon-btn" data-action="water-plus" data-date="${selectedIso}">+</button></div><div class="water-sub">${(waterVal*settings.waterBottleLiters).toFixed(1)}L · bottle = ${settings.waterBottleLiters}L</div></div>
+    </div>
+  </div>`;
+
+  const foodBlock=renderFoodLogCard(selectedIso);
+
+  return `${rhythmHtml}${streakHtml}<p class="swipe-hint">← swipe for previous / next day →</p>
+    <div class="swipe-viewport" id="swipeViewport"><div class="swipe-track" id="swipeTrack"><div class="swipe-page">${workoutBlock}${wellnessBlock}${foodBlock}</div></div></div>
     ${dotsHtml}
     <button class="reset" id="resetBtn">Reset this week</button>
     ${renderFoodScanOverlay()}
     <button class="food-camera-fab ${foodScanBusy?'is-scanning':''}" data-action="scan-food" aria-label="${foodScanBusy?'AI is analyzing your meal':'Scan meal'}" title="${foodScanBusy?'AI is analyzing your meal':'Scan meal'}" ${foodScanBusy?'disabled':''}>
-      ${foodScanBusy
-        ? '<svg class="scan-spinner" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg>'
-        : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h2l1.2-2h3.6l1.2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13.5" r="3.2"/><path d="M17.5 10.5h.01"/></svg>'}
+      ${foodScanBusy ? '<svg class="scan-spinner" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/></svg>' : '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7.5h2l1.2-2h3.6l1.2 2H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2Z"/><circle cx="12" cy="13.5" r="3.2"/><path d="M17.5 10.5h.01"/></svg>'}
     </button>`;
 }
 
@@ -3062,9 +3333,9 @@ async function renderReminders(){
       <p class="note">Water isn't required for the streak right now \u2014 it's tracked separately. Say the word if you want it factored into the streak too.</p>
     </div>
     <div class="reminder-card">
-      <div class="section-label" style="margin-bottom:10px;">Sync with AI</div>
-      <p class="note" style="margin-top:0;">Copy a complete AI-ready snapshot of today's progress, workout, study, food, targets, trackers, and saved notes. Paste it into any AI chat for a check-in or planning help.</p>
-      <button class="btn-primary" id="copySummary" style="margin-top:6px;">Copy AI context</button>
+      <div class="section-label" style="margin-bottom:10px;">Sync with Claude</div>
+      <p class="note" style="margin-top:0;">This app can't talk to Claude live \u2014 it's a static site with no backend. Instead, this builds a clean summary of where things stand. Copy it and paste it into a Claude chat for a real check-in.</p>
+      <button class="btn-primary" id="copySummary" style="margin-top:6px;">Copy today's summary</button>
       <p class="note" id="copyStatus"></p>
     </div>
     <div class="reminder-card">
@@ -3130,11 +3401,11 @@ async function performRender(){
     <div class="tabpane ${activeTab==='calendar'?'active':''}" id="pane-calendar">${calHtml}</div>
     <div class="tabpane ${activeTab==='plus'?'active':''}" id="pane-plus">${plusHtml}</div>
 
-    <div class="bottom-nav" style="--nav-index:${(['home','workout','study','calendar','plus'].filter(t=>t!=='workout'||settings.workoutEnabled!==false).indexOf(activeTab))};--nav-count:${settings.workoutEnabled===false?4:5};">
+    <div class="bottom-nav" style="--nav-index:${(['home','workout','study','calendar','plus'].indexOf(activeTab))};--nav-count:5;">
       <button class="nav-btn ${activeTab==='home'?'active':''}" data-tab="home" title="Home" aria-label="Home">
         <svg viewBox="0 0 24 24"><path d="M3.8 10.8 12 3.9l8.2 6.9"/><path d="M5.8 9.6v9.1a1.6 1.6 0 0 0 1.6 1.6h9.2a1.6 1.6 0 0 0 1.6-1.6V9.6"/><path d="M9.4 20.2v-5.7h5.2v5.7"/></svg>
       </button>
-      <button class="nav-btn ${activeTab==='workout'?'active':''}" data-tab="workout" title="Workout" aria-label="Workout" ${settings.workoutEnabled===false?'style="display:none;"':''}>
+      <button class="nav-btn ${activeTab==='workout'?'active':''}" data-tab="workout" title="Workout" aria-label="Workout">
         <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M10 8.5v15M22 8.5v15M5.8 11.2v9.6M26.2 11.2v9.6M8.1 13.2h2.2M21.7 13.2h2.2M8.1 18.8h2.2M21.7 18.8h2.2M10 16h12"/></svg>
       </button>
       <button class="nav-btn ${activeTab==='study'?'active':''}" data-tab="study" title="Study" aria-label="Study">
@@ -3226,14 +3497,7 @@ function refreshBuddy(){
 }
 function patchWorkoutDay(date){
   currentSwipeDate=date;
-  const track=document.getElementById('swipeTrack');
-  if(!track) return render();
-  track.innerHTML=renderDayCard(date,date===isoDate(new Date()));
-  document.querySelectorAll('[data-action="jumpday"]').forEach(el=>{
-    const selected=el.dataset.date===date;
-    el.querySelector('.bar')?.classList.toggle('selected',selected);
-  });
-  bindWorkoutCard(track);
+  render();
 }
 function bindWorkoutCard(root){
   root.querySelectorAll('[data-action="task"]').forEach(el=>el.addEventListener('click',async()=>{
@@ -3358,6 +3622,50 @@ function attachHandlers(){
       entries[date].foodLog = entries[date].foodLog.filter(x=>x.id!==el.dataset.id);
       recalcFoodTotals(entries[date]);
       await saveEntries(); render();
+    });
+  });
+
+  document.querySelectorAll('[data-action="save-food-manual"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const date=el.dataset.date;
+      const name=(document.getElementById('foodName-'+date)?.value||'').trim();
+      if(!name) return;
+      const item={name,calories:parseFloat(document.getElementById('foodKcal-'+date)?.value)||0,protein:parseFloat(document.getElementById('foodP-'+date)?.value)||0,carbs:parseFloat(document.getElementById('foodC-'+date)?.value)||0,fat:parseFloat(document.getElementById('foodF-'+date)?.value)||0};
+      if(!isMealSaved(item)){
+        savedMeals.push({id:'saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),...item});
+        await saveSavedMeals();
+      }
+      render();
+    });
+  });
+  document.querySelectorAll('[data-action="save-food-item"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const date=el.dataset.date;
+      const item=(entries[date]?.foodLog||[]).find(x=>x.id===el.dataset.id);
+      if(!item) return;
+      if(!isMealSaved(item)){
+        savedMeals.push({id:'saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7),name:String(item.name||'Saved food'),calories:macroNumber(item.calories),protein:macroNumber(item.protein),carbs:macroNumber(item.carbs),fat:macroNumber(item.fat)});
+        await saveSavedMeals();
+      }
+      render();
+    });
+  });
+  document.querySelectorAll('[data-action="add-saved-food"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const item=savedMeals.find(x=>x.id===el.dataset.id);
+      if(!item) return;
+      const date=el.dataset.date;
+      if(!entries[date]) entries[date]={tasks:{}};
+      if(!entries[date].foodLog) entries[date].foodLog=[];
+      entries[date].foodLog.push({id:'food-saved-'+Date.now(),name:item.name,calories:macroNumber(item.calories),protein:macroNumber(item.protein),carbs:macroNumber(item.carbs),fat:macroNumber(item.fat),source:'saved'});
+      recalcFoodTotals(entries[date]);
+      await saveEntries(); render();
+    });
+  });
+  document.querySelectorAll('[data-action="delete-saved-food"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      savedMeals=savedMeals.filter(x=>x.id!==el.dataset.id);
+      await saveSavedMeals(); render();
     });
   });
 
@@ -3516,7 +3824,7 @@ function attachHandlers(){
 
 
   document.querySelectorAll('[data-action="open-study-planner"]').forEach(el=>{
-    el.addEventListener('click', ()=>{ studyOverlay='planner'; studyPlanStatus=''; render(); });
+    el.addEventListener('click', ()=>{ studyOverlay='planner'; studyPlanStatus=''; studyPlannerMode='choose'; render(); });
   });
   document.querySelectorAll('[data-action="open-bulk-paste"]').forEach(el=>{
     el.addEventListener('click', ()=>{ studyOverlay='paste'; render(); });
@@ -3584,6 +3892,13 @@ function attachHandlers(){
     foodScanResult = null;
     render();
   });
+  document.querySelectorAll('[data-action="study-session-timer"]').forEach(el=>{
+    el.addEventListener('click', (ev)=>{
+      ev.stopPropagation();
+      const minutes=Math.max(1, Number(el.dataset.minutes)||60);
+      openTimer(el.dataset.label, minutes*60);
+    });
+  });
   document.querySelectorAll('[data-action="topic-difficulty"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
       const subj=getSubject(el.dataset.subject); const idx=parseInt(el.dataset.idx);
@@ -3592,38 +3907,79 @@ function attachHandlers(){
       await saveSubjects(); render();
     });
   });
+  document.querySelectorAll('[data-action="planner-mode-ai"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studyPlannerMode='ai'; studyPlanStatus=''; render(); });
+  });
+  document.querySelectorAll('[data-action="planner-mode-manual"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studyPlannerMode='manual'; studyPlanStatus=''; render(); });
+  });
+  document.querySelectorAll('[data-action="planner-back-choice"]').forEach(el=>{
+    el.addEventListener('click', ()=>{ studyPlannerMode='choose'; studyPlanBusy=false; studyPlanStatus=''; render(); });
+  });
+  document.querySelectorAll('.manual-topic-minutes').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      const subj=getSubject(studySubject); if(!subj) return;
+      if(!subj.manualTopicMinutes) subj.manualTopicMinutes={};
+      subj.manualTopicMinutes[el.dataset.topicId]=Math.max(15,Number(el.value)||15);
+    });
+  });
+  document.querySelectorAll('[data-action="manual-topic-up"],[data-action="manual-topic-down"]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const subj=getSubject(studySubject); if(!subj) return;
+      const pending=getStudyPlanBaseTopics(subj);
+      const idx=pending.findIndex(x=>x.id===el.dataset.topicId);
+      const dir=el.dataset.action==='manual-topic-up' ? -1 : 1;
+      const swap=idx+dir;
+      if(idx<0 || swap<0 || swap>=pending.length) return;
+      const orderedIds=pending.map(x=>x.id);
+      [orderedIds[idx],orderedIds[swap]]=[orderedIds[swap],orderedIds[idx]];
+      subj.planTopicsOrder=orderedIds;
+      render();
+    });
+  });
+  const buildManualPlanBtn = document.querySelector('[data-action="build-manual-study-plan"]');
+  if(buildManualPlanBtn) buildManualPlanBtn.addEventListener('click', async ()=>{
+    const subj=getSubject(studySubject); if(!subj || studyPlanBusy) return;
+    const targetDate=document.getElementById('planDate')?.value||'';
+    const minutes=parseInt(document.getElementById('planMinutes')?.value||'60',10);
+    if(!targetDate){ studyPlanStatus='Pick an end date first.'; render(); return; }
+    if(targetDate < isoDate(new Date())){ studyPlanStatus='The end date needs to be today or later.'; render(); return; }
+    const pending=getStudyPlanBaseTopics(subj);
+    const orderIds=subj.planTopicsOrder||pending.map(x=>x.id);
+    const byId=new Map(pending.map(x=>[x.id,x]));
+    const minuteMap=new Map(Array.from(document.querySelectorAll('.manual-topic-minutes')).map(el=>[el.dataset.topicId,Math.max(15,Number(el.value)||15)]));
+    const ordered=orderIds.map(id=>byId.get(id)).filter(Boolean).map(item=>({...item,remainingMinutes:minuteMap.get(item.id)||Math.max(15,Number(item.remainingMinutes)||estimateTemplateMinutes(item)),estimatedMinutes:minuteMap.get(item.id)||Math.max(15,Number(item.remainingMinutes)||estimateTemplateMinutes(item))}));
+    studyPlannerDraft={goal:`Plan ${subj.name}`,targetDate,minutes:Math.max(15,minutes),level:'manual'};
+    studyPlanBusy=true; studyPlanStatus='Turning your choices into day-by-day sessions…'; render();
+    const completedSessions=(subj.curriculum||[]).slice(0,Number(subj.index)||0).filter(x=>x?.isStudySession);
+    const sessions=buildStudySessions(ordered,isoDate(new Date()),Math.max(15,minutes),targetDate);
+    subj.planTopics=ordered.map(({remainingMinutes,completedMinutes,...topic})=>({...topic}));
+    subj.curriculum=completedSessions.concat(sessions);
+    subj.index=Math.min(Number(subj.index)||0,subj.curriculum.length);
+    subj.planSource='manual'; subj.planUpdatedAt=new Date().toISOString(); subj.planMeta=summarizeStudyPlan(subj,studyPlannerDraft);
+    await saveSubjects(); studyPlanBusy=false;
+    studyPlanStatus=`Built ${sessions.length} study sessions using your topic order and time estimates.`;
+    render();
+  });
+
   const buildPlanBtn = document.querySelector('[data-action="build-study-plan"]');
   if(buildPlanBtn) buildPlanBtn.addEventListener('click', async ()=>{
     const subj=getSubject(studySubject);
-    if(!subj || studyPlanBusy) return;
+    if(!subj) return;
     studyPlannerDraft = {
       goal:(document.getElementById('planGoal')?.value||'').trim(),
       targetDate:document.getElementById('planDate')?.value||'',
       minutes:parseInt(document.getElementById('planMinutes')?.value||'60',10),
       level:document.getElementById('planLevel')?.value||'starting'
     };
-    const plannedSubjectId=subj.id;
-    studyPlanBusy=true;
-    studyPlanBusySubject=plannedSubjectId;
-    studyPlanStatus='';
-    // Close the modal immediately. The AI request continues in the background so the user
-    // can keep using the rest of the app. Only the Plan for me button remains in a loading state.
-    studyOverlay=null;
+    studyPlanBusy=true; studyPlanStatus='Breaking topics into realistic study sessions and placing them…'; render();
+    const result=await aiPlanSubject(subj,{...studyPlannerDraft,startDate:isoDate(new Date())});
+    await saveSubjects();
+    studyPlanBusy=false;
+    studyPlanStatus=result.source==='ai'
+      ? `AI built ${result.count} study sessions from your remaining topics and your real daily limit.`
+      : `Smart planner built ${result.count} realistic study sessions locally.`;
     render();
-    try{
-      const result=await aiPlanSubject(subj,{...studyPlannerDraft,startDate:isoDate(new Date())});
-      await saveSubjects();
-      studyPlanStatus=result.source==='ai'
-        ? `AI built ${result.count} study sessions from your remaining topics and your real daily limit.`
-        : `Smart planner built ${result.count} realistic study sessions locally.`;
-    }catch(err){
-      console.warn('Study planner request failed:',err);
-      studyPlanStatus='Planning failed. Please try Plan for me again.';
-    }finally{
-      studyPlanBusy=false;
-      studyPlanBusySubject=null;
-      render();
-    }
   });
   const bulkParseBtn = document.querySelector('[data-action="bulk-parse"]');
   if(bulkParseBtn) bulkParseBtn.addEventListener('click', async ()=>{
@@ -3894,6 +4250,16 @@ function attachHandlers(){
       await saveTaskOverrides(); render();
     });
   });
+  document.querySelectorAll('[data-action="add-exercise-day"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const dow = parseInt(el.dataset.dow);
+      const newTask = {id:'custom-'+Date.now(), label:'New exercise', sets:'', seconds:45};
+      taskOverrides[dow] = [...getTasksForDow(dow), newTask];
+      editingDow = dow;
+      await saveTaskOverrides();
+      render();
+    });
+  });
   document.querySelectorAll('[data-action="add-task"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
       const dow = parseInt(el.dataset.dow);
@@ -3960,11 +4326,11 @@ function attachHandlers(){
 
   const copyBtn = document.getElementById('copySummary');
   if(copyBtn) copyBtn.addEventListener('click', async ()=>{
-    const text = buildAiContext();
+    const text = buildClaudeSummary();
     const statusEl = document.getElementById('copyStatus');
     try{
       await navigator.clipboard.writeText(text);
-      if(statusEl) statusEl.textContent = 'Copied \u2014 paste it into any AI chat.';
+      if(statusEl) statusEl.textContent = 'Copied \u2014 paste it into a Claude chat.';
     }catch(e){
       if(statusEl) statusEl.textContent = 'Couldn\u2019t auto-copy \u2014 select and copy the text below.';
       alert(text);
@@ -3983,7 +4349,6 @@ function attachHandlers(){
   if(rerunWizardBtn) rerunWizardBtn.addEventListener('click', ()=>{
     settingsOpen = false;
     wizardWorkoutChoice = null;
-    wizardTemplate = null; wizardPlanBusy = false; wizardPlanStatus = '';
     wizardStep = 'intro';
     render();
   });
@@ -4049,15 +4414,21 @@ function attachHandlers(){
       const ensure = (id, name, curriculum) => {
         const normalized = (curriculum||[]).map((item,i)=>({
           ...item,
-          id:`${id}-${i+1}`,
+          id:item.id || `${id}-${i+1}`,
           phase:item.phase||'',
           label:item.label||'Untitled topic'
         }));
         const existing = subjects.find(s=>s.id===id);
-        if(existing){ existing.curriculum=normalized; existing.index=0; return; }
+        if(existing){
+          existing.curriculum=normalized;
+          existing.index=0;
+          return;
+        }
         subjects.push({id, name, curriculum:normalized, index:0});
       };
+
       subjects = [];
+
       if(preset === 'jee'){
         ensure('physics','Physics',JEE_NEET_PHYSICS_CURRICULUM);
         ensure('chem','Chemistry',JEE_NEET_CHEMISTRY_CURRICULUM);
@@ -4072,9 +4443,16 @@ function attachHandlers(){
         MBBS_TEMPLATES[preset].subjects.forEach(s=>ensure(s.id,s.name,s.curriculum));
         wizardTemplate={label:MBBS_TEMPLATES[preset].label,id:preset};
       } else return;
+
       studySubject=subjects[0]?.id || null;
-      studyPlannerDraft={goal:`Complete ${wizardTemplate.label}`,targetDate:addDays(isoDate(new Date()),30),minutes:60,level:'starting'};
+      studyPlannerDraft={
+        goal:`Complete ${wizardTemplate.label}`,
+        targetDate:addDays(isoDate(new Date()),30),
+        minutes:60,
+        level:'starting'
+      };
       wizardPlanStatus='';
+      wizardPlanBusy=false;
       await saveSubjects();
       wizardStep='template-plan';
       render();
@@ -4084,34 +4462,71 @@ function attachHandlers(){
   const wizardPlanTemplateBtn=document.querySelector('[data-action="wizard-plan-template"]');
   if(wizardPlanTemplateBtn) wizardPlanTemplateBtn.addEventListener('click', async ()=>{
     if(wizardPlanBusy) return;
+
     const targetDate=document.getElementById('wizardPlanDate')?.value||'';
     const minutes=parseInt(document.getElementById('wizardPlanMinutes')?.value||'60',10);
     const level=document.getElementById('wizardPlanLevel')?.value||'starting';
     const goal=(document.getElementById('wizardPlanGoal')?.value||'').trim();
-    if(!targetDate){ wizardPlanStatus='Pick an end date first.'; render(); return; }
-    if(targetDate < isoDate(new Date())){ wizardPlanStatus='The end date needs to be today or later.'; render(); return; }
+
+    if(!targetDate){
+      wizardPlanStatus='Pick an end date first.';
+      render();
+      return;
+    }
+    if(targetDate < isoDate(new Date())){
+      wizardPlanStatus='The end date needs to be today or later.';
+      render();
+      return;
+    }
+
     studyPlannerDraft={goal,targetDate,minutes:Math.max(15,minutes),level};
-    wizardPlanBusy=true; wizardPlanStatus='AI is estimating every topic and building your day-by-day sessions…'; render();
-    const result=await aiPlanTemplate(subjects,{...wizardPlanDraft,startDate:isoDate(new Date())});
-    const estimateItems=result.items||[];
-    applyBundlePlan(subjects,estimateItems,{...wizardPlanDraft,startDate:isoDate(new Date()),source:result.source});
-    await saveSubjects();
-    wizardPlanBusy=false;
-    const lastDates=subjects.flatMap(s=>(s.curriculum||[]).map(x=>x.scheduledDate).filter(Boolean));
-    const finish=lastDates.sort().pop();
-    const missedDeadline=!!(finish && finish>targetDate);
-    const deadlineNote=missedDeadline
-      ? ` Your ${targetDate} deadline is tighter than the current daily-time budget; the plan finishes ${finish}. Increase daily study time or move the deadline if you want it to fit.`
-      : ` It fits your ${targetDate} deadline.`;
-    wizardPlanStatus=result.source==='ai'
-      ? `Planned ${subjects.reduce((n,s)=>n+s.curriculum.length,0)} sessions across ${subjects.length} subjects${finish?` through ${finish}`:''}.${targetDate?deadlineNote:''}`
-      : `AI was unavailable, so a local planner used each template's built-in topic durations and split them into sessions${finish?` through ${finish}`:''}.${targetDate?deadlineNote:''}`;
-    wizardStep='done';
+    wizardPlanBusy=true;
+    wizardPlanStatus='Estimating every topic and building your day-by-day sessions…';
     render();
+
+    try{
+      const result=await aiPlanTemplate(subjects,{
+        ...studyPlannerDraft,
+        startDate:isoDate(new Date())
+      });
+
+      const estimateItems=result.items||[];
+      applyBundlePlan(subjects,estimateItems,{
+        ...studyPlannerDraft,
+        startDate:isoDate(new Date()),
+        source:result.source
+      });
+
+      await saveSubjects();
+
+      const lastDates=subjects.flatMap(s=>(s.curriculum||[]).map(x=>x.scheduledDate).filter(Boolean));
+      const finish=lastDates.sort().pop();
+      const missedDeadline=!!(finish && finish>targetDate);
+      const deadlineNote=missedDeadline
+        ? ` Your ${targetDate} deadline is tighter than the current daily-time budget; the plan currently finishes ${finish}. Increase daily study time or move the deadline if you want it to fit.`
+        : ` It fits your ${targetDate} deadline.`;
+
+      wizardPlanStatus=result.source==='ai'
+        ? `Planned ${subjects.reduce((n,s)=>n+s.curriculum.length,0)} study sessions across ${subjects.length} subjects${finish?` through ${finish}`:''}.${deadlineNote}`
+        : `AI was unavailable for part of the plan, so local estimates were used for those topics and split into sessions${finish?` through ${finish}`:''}.${deadlineNote}`;
+
+      wizardStep='done';
+    }catch(err){
+      console.error('Setup planner failed unexpectedly:',err);
+      wizardPlanStatus='The planner hit an unexpected error, so no plan was saved. You can try again or skip planning for now.';
+    }finally{
+      wizardPlanBusy=false;
+      render();
+    }
   });
+
   const wizardSkipPlanBtn=document.querySelector('[data-action="wizard-skip-template-plan"]');
   if(wizardSkipPlanBtn) wizardSkipPlanBtn.addEventListener('click', async ()=>{
-    wizardPlanBusy=false; wizardPlanStatus=''; await saveSubjects(); wizardStep='done'; render();
+    wizardPlanBusy=false;
+    wizardPlanStatus='';
+    await saveSubjects();
+    wizardStep='done';
+    render();
   });
 
   const wizToSubjectsBtn = document.querySelector('[data-action="wizard-to-subjects"]');
@@ -4229,7 +4644,7 @@ function initTabSwipe(){
     const dx = e.changedTouches[0].clientX - startX;
     const dy = e.changedTouches[0].clientY - startY;
     if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)*1.5) return; // require a real horizontal swipe, not a vertical scroll
-    const order = ['home', settings.workoutEnabled!==false ? 'workout' : null, 'study', 'calendar', 'plus'].filter(Boolean);
+    const order = ['home', 'workout', 'study', 'calendar', 'plus'];
     const idx = order.indexOf(activeTab);
     if(idx===-1) return;
     if(dx < 0 && idx < order.length-1){
@@ -4246,7 +4661,7 @@ function initTabSwipe(){
 
 (async ()=>{
   await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers();
-  await loadSettings(); await loadSubjects(); await loadAiSummaryCache(); await loadAiUsage(); await loadStudyNotes();
+  await loadSettings(); await loadSavedMeals(); await loadSubjects(); await loadAiSummaryCache(); await loadAiUsage(); await loadStudyNotes();
   const normalizedChanged = normalizeCurriculumData();
   if(normalizedChanged) await saveSubjects();
   if(!settings.wizardDone && subjects.length === 0) wizardStep = 'intro'; // truly new user — auto-show; otherwise it only opens via Settings
