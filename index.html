@@ -2564,12 +2564,13 @@ function isDuplicateTopicLabel(label, existingNormLabels){
 // content of one real list). Dedupes against what's already there AND within the new batch
 // itself, then re-sorts only the still-pending portion by difficulty \u2014 completed topics
 // never get reshuffled.
-function addTopicsToSubject(subj, rawItems){
+function addTopicsToSubject(subj, rawItems, preserveInputOrder=false){
   const existingNorm = subj.curriculum.map(t=>normalizeTopicLabel(t.label));
   const newOnes = [];
   let skipped = 0;
   rawItems.forEach(it=>{
     const label = (it.label || 'Untitled topic').trim();
+    if(/^topics\s*:??$/i.test(label)) return;
     const seenSoFar = existingNorm.concat(newOnes.map(n=>normalizeTopicLabel(n.label)));
     if(isDuplicateTopicLabel(label, seenSoFar)){ skipped++; return; }
     newOnes.push({ id: makeTopicId(), phase: it.phase || '', label, difficulty: it.difficulty || null, order: 0 });
@@ -2577,7 +2578,8 @@ function addTopicsToSubject(subj, rawItems){
   subj.curriculum = subj.curriculum.concat(newOnes);
   const doneCount = subj.index || 0;
   const done = subj.curriculum.slice(0, doneCount);
-  const pending = smartOrderCurriculum(subj.curriculum.slice(doneCount));
+  const pendingSource = subj.curriculum.slice(doneCount);
+  const pending = preserveInputOrder ? pendingSource : smartOrderCurriculum(pendingSource);
   pending.forEach((item,i)=>{ item.order = doneCount + i; });
   subj.curriculum = done.concat(pending);
   return { added: newOnes.length, skipped };
@@ -3106,6 +3108,10 @@ function renderStudyOverlay(){
         </div>
         <p class="note">Paste chapters/topics exactly as you have them. One line per topic. The app will split phases from lines like "Chapter 3: Kinematics" and build the queue for you.</p>
         <textarea id="bulkSyllabusInput" class="quick-paste" placeholder="Chapter 1: Units and measurements&#10;Dimensions and dimensional analysis&#10;Chapter 2: Kinematics&#10;Motion in a straight line&#10;Projectile motion"></textarea>
+        <div class="reminder-row" style="margin-top:10px;margin-bottom:0;">
+          <label for="bulkKeepOrder">Keep pasted order</label>
+          <input id="bulkKeepOrder" type="checkbox" style="width:18px;height:18px;accent-color:var(--gold);">
+        </div>
         <div class="study-action-grid" style="margin-top:10px;">
           <button class="btn-primary" data-action="bulk-parse">Build topics</button>
           <button class="btn-secondary" data-action="close-study-overlay">Cancel</button>
@@ -4333,13 +4339,16 @@ function attachHandlers(){
     let phase='';
     const rawItems=[];
     lines.forEach(line=>{
+      if(/^topics\s*:??$/i.test(line)) return;
       const m=line.match(/^(chapter|unit|module|phase|part|section)\s*[\dA-Za-z.\-]*\s*[:\-]\s*(.+)$/i);
       if(m){ phase=m[2].trim(); return; }
       rawItems.push({phase,label:line});
     });
-    const {added, skipped} = addTopicsToSubject(subj, rawItems);
+    const keepOrder=!!document.getElementById('bulkKeepOrder')?.checked;
+    const {added, skipped} = addTopicsToSubject(subj, rawItems, keepOrder);
     studyOverlay=null;
-    studyPlanStatus=`Added ${added} topic${added===1?'':'s'}${skipped?`, skipped ${skipped} duplicate${skipped===1?'':'s'}`:''}, sorted by difficulty. Tap \u201cPlan for me\u201d to add dates.`;
+    const orderNote=keepOrder ? ' in pasted order' : ' with smart ordering';
+    studyPlanStatus=`Added ${added} topic${added===1?'':'s'}${skipped?`, skipped ${skipped} duplicate${skipped===1?'':'s'}`:''}${orderNote}. Tap \u201cPlan for me\u201d to add dates.`;
     await saveSubjects(); render();
   });
   document.querySelectorAll('[data-action="daily-note"]').forEach(el=>{
