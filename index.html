@@ -330,14 +330,14 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 .home-focus-sub{font-size:.64rem;color:var(--muted);line-height:1.35;margin-top:6px;}
 .home-focus-arrow{align-self:flex-end;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2);border:1px solid var(--line);font-size:.9rem;}
 .home-focus-box.disabled{opacity:.52;cursor:default;}
-.focus-overlay{z-index:80;background:rgba(6,8,11,.82);padding:18px;}
-.focus-panel{width:min(460px,100%);max-height:min(720px,calc(100vh - 36px));background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 70px rgba(0,0,0,.42);}
+.focus-overlay{z-index:80;background:rgba(6,8,11,.48);padding:18px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);}
+.focus-panel{width:min(460px,100%);max-height:min(720px,calc(100vh - 36px));background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.055));border:1px solid rgba(255,255,255,.22);border-radius:28px;padding:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 28px 80px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.16);backdrop-filter:blur(28px) saturate(125%);-webkit-backdrop-filter:blur(28px) saturate(125%);}
 .focus-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
 .focus-mode{font-family:'Space Grotesk';font-weight:700;font-size:.98rem;}
 .focus-elapsed{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;color:var(--gold);font-variant-numeric:tabular-nums;}
 .focus-count{font-size:.61rem;color:var(--muted);margin-bottom:12px;}
 .focus-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:285px;padding:10px 0 16px;}
-.focus-card{width:100%;min-height:245px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(150deg,var(--surface-2),var(--surface));padding:26px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;touch-action:pan-y;user-select:none;cursor:grab;box-shadow:0 18px 42px rgba(0,0,0,.18);transition:transform .18s ease,opacity .18s ease,box-shadow .18s ease;}
+.focus-card{width:100%;min-height:245px;border:1px solid rgba(255,255,255,.18);border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.045));padding:26px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;touch-action:pan-y;user-select:none;cursor:grab;box-shadow:0 18px 42px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.10);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:transform .18s ease,opacity .18s ease,box-shadow .18s ease;}
 .focus-card:active{cursor:grabbing;}
 .focus-card.swipe-left{transform:translateX(-115%) rotate(-7deg);opacity:0;}
 .focus-card.swipe-right{transform:translateX(115%) rotate(7deg);opacity:0;}
@@ -353,7 +353,19 @@ html[data-swipe-dir="right"]::view-transition-new(root){animation-name:pdSlideIn
 .focus-empty{text-align:center;padding:38px 12px 30px;}
 .focus-empty-title{font-family:'Space Grotesk';font-weight:700;font-size:1.15rem;margin-bottom:6px;}
 .focus-empty-sub{font-size:.68rem;color:var(--muted);line-height:1.45;}
-html[data-theme="light"] .focus-overlay{background:rgba(35,32,27,.42);}
+.focus-session-note{width:100%;min-height:78px;max-height:150px;margin-top:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:.76rem;line-height:1.45;resize:vertical;outline:none;}
+.focus-session-note:focus{border-color:var(--gold);}
+.focus-background-bar{position:fixed;left:50%;bottom:calc(82px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:79;width:min(calc(100% - 28px),430px);display:flex;align-items:center;gap:9px;padding:9px 10px 9px 12px;border:1px solid rgba(240,237,230,.12);border-radius:16px;background:rgba(28,30,35,.94);backdrop-filter:blur(22px);box-shadow:0 14px 35px rgba(0,0,0,.35);}
+.focus-background-copy{min-width:0;flex:1;}
+.focus-background-title{font-weight:700;font-size:.72rem;}
+.focus-background-meta{font-size:.6rem;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.focus-background-time{font-family:'Space Grotesk';font-size:.82rem;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;}
+.focus-background-actions{display:flex;gap:5px;flex-shrink:0;}
+.focus-background-actions button{padding:7px 9px;border-radius:9px;font-size:.62rem;}
+
+html[data-theme="light"] .focus-overlay{background:rgba(35,32,27,.28);}
+html[data-theme="light"] .focus-panel{background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(255,255,255,.48));border-color:rgba(74,62,44,.16);box-shadow:0 28px 80px rgba(74,62,44,.20),inset 0 1px 0 rgba(255,255,255,.82);}
+html[data-theme="light"] .focus-card{background:linear-gradient(145deg,rgba(255,255,255,.72),rgba(255,255,255,.46));border-color:rgba(74,62,44,.14);box-shadow:0 18px 42px rgba(74,62,44,.13),inset 0 1px 0 rgba(255,255,255,.82);}
 @media(max-width:390px){.home-focus-grid{gap:9px}.home-focus-box{min-height:138px;padding:14px;border-radius:19px}.home-focus-title{font-size:.92rem}.focus-stage{min-height:255px}.focus-card{min-height:225px;padding:22px 16px}.focus-card-title{font-size:1.2rem}}
 .add-exercise-btn{display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(224,170,74,.22);background:rgba(224,170,74,.08);color:var(--gold);border-radius:999px;padding:6px 9px;font-size:.62rem;font-weight:700;cursor:pointer;white-space:nowrap;}
 .add-exercise-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;}
@@ -787,6 +799,191 @@ html[data-theme="light"] .bottom-nav:after{
 html[data-theme="light"] .nav-btn{color:rgba(48,44,38,.58);}
 html[data-theme="light"] .nav-btn.active{color:#b97917;}
 html[data-theme="light"] .progress-track,html[data-theme="light"] .food-progress .progress-track{background:rgba(74,62,44,.10)!important;}
+.study-files-fab{position:fixed;right:18px;bottom:calc(86px + env(safe-area-inset-bottom));width:44px;height:44px;border-radius:50%;border:1px solid rgba(240,237,230,.12);background:rgba(35,39,48,.94);color:var(--muted);display:flex;align-items:center;justify-content:center;z-index:34;box-shadow:0 10px 25px rgba(0,0,0,.34),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(14px);cursor:pointer;transition:transform .15s ease,background .15s ease,color .15s ease;}
+.study-files-fab:active{transform:scale(.9);background:var(--surface-2);color:var(--text);}.study-files-fab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.files-category-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:12px 0;}.files-category-btn{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);border-radius:11px;padding:9px 6px;font:inherit;font-size:.67rem;cursor:pointer;}.files-category-btn.active{color:var(--text);border-color:rgba(181,122,28,.48);background:rgba(181,122,28,.12);}.files-add-card{border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px;margin-top:10px;}.files-resource-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line);}.files-resource-row:first-child{border-top:0;}.files-resource-icon{width:34px;height:34px;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;flex:0 0 34px;font-size:17px;}.files-resource-copy{min-width:0;flex:1;}.files-resource-label{font-size:.78rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}.files-resource-meta{font-size:.61rem;color:var(--muted);margin-top:3px;line-height:1.35;}.files-resource-open{color:var(--text);text-decoration:none;}.files-text-preview{margin-top:7px;padding:9px;border-radius:10px;background:var(--surface-2);font-size:.68rem;line-height:1.5;color:var(--muted);white-space:pre-wrap;max-height:130px;overflow:auto;}
+@media(max-width:420px){.files-category-grid{gap:5px}.files-category-btn{font-size:.62rem;padding:8px 4px}.study-files-fab{right:14px;}}
+html[data-theme="light"] .study-files-fab{background:rgba(255,253,248,.94);color:#756d61;border-color:rgba(66,57,44,.11);box-shadow:0 10px 24px rgba(55,47,35,.15),inset 0 1px rgba(255,255,255,.95);}
+
+
+/* Rebuilt standalone Files modal */
+.files-rebuilt-backdrop{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.58);display:flex;align-items:center;justify-content:center;padding:18px;box-sizing:border-box;overscroll-behavior:contain;}
+.files-rebuilt-panel{width:min(760px,100%);max-height:min(92vh,900px);overflow:auto;background:var(--panel,#1b1d22);color:var(--text,#f4f4f4);border:1px solid var(--border,#30343b);border-radius:22px;padding:18px;box-shadow:0 24px 80px rgba(0,0,0,.45);}
+.files-rebuilt-panel .files-category-grid{margin-top:12px;}
+.files-rebuilt-panel .files-add-card{margin-top:12px;}.files-hub-sub{margin-top:-4px;margin-bottom:14px}.files-hub-options{display:grid;gap:10px}.files-hub-option{width:100%;display:grid;grid-template-columns:44px 1fr 24px;align-items:center;gap:12px;text-align:left;padding:14px 15px;border:1px solid var(--line);border-radius:17px;background:var(--surface-2);color:var(--text);cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:transform .15s ease,background .15s ease,border-color .15s ease}.files-hub-option:hover{transform:translateY(-1px);border-color:rgba(181,122,28,.42);background:var(--card)}.files-hub-option:active{transform:scale(.99)}.files-hub-icon{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:var(--card);font-size:21px;border:1px solid var(--line)}.files-hub-option b{display:block;font:700 .94rem 'Space Grotesk',sans-serif}.files-hub-option small{display:block;color:var(--muted);font:400 .72rem 'Inter',sans-serif;line-height:1.4;margin-top:3px}.files-hub-arrow{font-size:1.55rem;color:var(--muted);text-align:center}.files-hub-panel{max-width:560px}
+@media(max-width:600px){.files-rebuilt-backdrop{align-items:flex-end;padding:0;}.files-rebuilt-panel{width:100%;max-height:94vh;border-radius:22px 22px 0 0;padding:16px;}}
+
+/* Simple Files/Notes popup v2 — independent from app rendering, theme-aware */
+.simple-files-subject-row{display:flex;align-items:center;gap:9px;margin:10px 0 4px;padding:9px 10px;border:1px solid var(--simple-files-border);border-radius:14px;background:var(--simple-files-note-bg)}
+.simple-files-subject-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700;white-space:nowrap}
+.simple-files-subject-select{min-width:0;flex:1;font:600 .9rem 'Space Grotesk',sans-serif;color:var(--text);background:transparent;border:0;outline:none}
+.simple-files-section-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 8px}
+.simple-files-section-row .simple-files-section{margin:0}
+.simple-files-plus{width:36px;height:36px;border-radius:50%;border:1px solid var(--simple-files-border);background:var(--simple-files-note-bg);color:var(--text);font:700 1.35rem/1 system-ui,sans-serif;cursor:pointer;display:grid;place-items:center;box-shadow:inset 0 1px 0 var(--simple-files-highlight);transition:transform .15s ease,background .15s ease}
+.simple-files-plus:hover{transform:translateY(-1px)}
+.simple-files-plus:active{transform:scale(.96)}
+.simple-files-no-subjects{padding:12px;border:1px dashed var(--simple-files-border);border-radius:13px;color:var(--muted);font-size:.8rem}
+.simple-files-add-modal{position:absolute;inset:0;z-index:2;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.42);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.simple-files-add-dialog{width:min(470px,100%);padding:18px;border:1px solid var(--simple-files-border);border-radius:20px;background:var(--simple-files-bg);box-shadow:0 25px 70px rgba(0,0,0,.42),inset 0 1px 0 var(--simple-files-highlight);color:var(--text)}
+.simple-files-add-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:13px}
+.simple-files-add-title{font:700 1.08rem 'Space Grotesk',sans-serif}
+.simple-files-add-meta{font-size:.75rem;color:var(--muted);margin-top:4px;line-height:1.4}
+.simple-files-popup{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.62);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:var(--text)}
+.simple-files-panel{position:relative;width:min(560px,100%);max-height:min(780px,calc(100vh - 36px));overflow:auto;background:var(--simple-files-bg);color:var(--text);border:1px solid var(--simple-files-border);border-radius:22px;box-shadow:0 28px 90px rgba(0,0,0,.55),inset 0 1px 0 var(--simple-files-highlight);padding:18px}
+html[data-theme="dark"] .simple-files-panel{--simple-files-bg:linear-gradient(145deg,#1d2026,#17191e);--simple-files-border:rgba(255,255,255,.10);--simple-files-highlight:rgba(255,255,255,.05);--simple-files-note-bg:rgba(255,255,255,.035);--simple-files-input:#111318;--simple-files-reader:#15181e}
+html[data-theme="light"] .simple-files-panel{--simple-files-bg:linear-gradient(145deg,#fffdf9,#f5f1e9);--simple-files-border:rgba(50,45,35,.12);--simple-files-highlight:rgba(255,255,255,.9);--simple-files-note-bg:rgba(255,255,255,.68);--simple-files-input:#fffdfa;--simple-files-reader:#fffdf9;box-shadow:0 28px 80px rgba(70,58,42,.20),inset 0 1px 0 rgba(255,255,255,.95)}
+/* The note reader is mounted beside the Files popup, so give it its own theme variables too. */
+html[data-theme="dark"] .simple-files-reader{background:linear-gradient(145deg,#20242b,#171a20);color:#f7f7f4;--simple-files-border:rgba(255,255,255,.12);box-shadow:0 28px 90px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.05)}
+html[data-theme="dark"] .simple-files-reader-title{color:#ffffff}html[data-theme="dark"] .simple-files-reader-meta{color:#b9bec7}html[data-theme="dark"] .simple-files-reader-body{color:#f5f5f2}html[data-theme="dark"] .simple-files-reader-foot{background:rgba(0,0,0,.12)}
+html[data-theme="light"] .simple-files-reader{background:linear-gradient(145deg,#fffefa,#f6f2ea);color:#292621;--simple-files-border:rgba(50,45,35,.14);box-shadow:0 28px 90px rgba(70,58,42,.28),inset 0 1px 0 rgba(255,255,255,.95)}
+html[data-theme="light"] .simple-files-reader-title{color:#171512}html[data-theme="light"] .simple-files-reader-meta{color:#756f65}html[data-theme="light"] .simple-files-reader-body{color:#25221e}html[data-theme="light"] .simple-files-reader-foot{background:rgba(80,65,45,.035)}
+.simple-files-reader-body{font-size:1.02rem;line-height:1.78;font-weight:450;letter-spacing:.005em;text-shadow:none}
+.simple-files-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}.simple-files-title{font:700 1.2rem 'Space Grotesk',sans-serif;letter-spacing:-.02em}.simple-files-sub{font-size:.8rem;color:var(--muted);margin:0 0 14px;line-height:1.45}
+.simple-files-note{padding:13px 14px;border:1px solid var(--simple-files-border);border-radius:15px;background:var(--simple-files-note-bg);margin-bottom:9px;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}.simple-files-note:hover{transform:translateY(-1px)}.simple-files-note:active{transform:scale(.99)}.simple-files-note-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.simple-files-note-title{font-weight:600;font-size:.92rem}.simple-files-note-meta{font-size:.72rem;color:var(--muted);margin-top:3px}.simple-files-note-body{white-space:pre-wrap;font-size:.84rem;line-height:1.45;margin-top:8px;color:var(--text);display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:5.5em;opacity:.9}.simple-files-note-hint{font-size:.66rem;color:var(--muted);margin-top:7px}
+.simple-files-add{margin-top:14px;padding:14px;border-radius:16px;border:1px solid var(--simple-files-border);background:var(--simple-files-note-bg)}.simple-files-add h3{margin:0 0 9px;font-size:.9rem}.simple-files-input{width:100%;font:inherit;color:var(--text);background:var(--simple-files-input);border:1px solid var(--simple-files-border);border-radius:11px;padding:10px 11px;outline:none}.simple-files-input::placeholder{color:var(--muted)}.simple-files-input+ .simple-files-input{margin-top:8px}.simple-files-text{min-height:105px;resize:vertical}.simple-files-actions{display:flex;gap:8px;margin-top:10px}.simple-files-actions button{flex:1}.simple-files-empty{padding:22px 10px;text-align:center;color:var(--muted);font-size:.85rem;border:1px dashed var(--simple-files-border);border-radius:15px}.simple-files-section{font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:16px 0 8px}
+.simple-files-reader-backdrop{position:fixed;inset:0;z-index:100001;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.58);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.simple-files-reader{width:min(680px,100%);max-height:min(82vh,760px);display:flex;flex-direction:column;background:var(--simple-files-reader);color:var(--text);border:1px solid var(--simple-files-border);border-radius:20px;box-shadow:0 28px 90px rgba(0,0,0,.58);overflow:hidden}
+.simple-files-reader-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 18px 12px;border-bottom:1px solid var(--simple-files-border)}.simple-files-reader-title{font:700 1.18rem 'Space Grotesk',sans-serif;line-height:1.25}.simple-files-reader-meta{font-size:.75rem;color:var(--muted);margin-top:4px}.simple-files-reader-body{overflow:auto;padding:18px;font-size:.95rem;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}.simple-files-reader-foot{padding:10px 18px 14px;border-top:1px solid var(--simple-files-border)}
+@media(max-width:600px){.simple-files-popup{align-items:flex-end;padding:0}.simple-files-panel{width:100%;max-height:92vh;border-radius:22px 22px 0 0;padding:16px}.simple-files-reader-backdrop{align-items:flex-end;padding:0}.simple-files-reader{width:100%;max-height:90vh;border-radius:20px 20px 0 0}}
+
+/* Files Hub V7 additions */
+.files-v7-grid{grid-template-columns:1fr 1fr;}
+.files-v7-manager-panel{width:min(700px,100%);}
+.files-v7-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:16px 0 8px;}
+.files-v7-section-title{font:700 .78rem 'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);}
+.files-v7-list-card{padding:12px;}
+.files-v7-resource-row{min-height:54px;}
+.files-video-status{border:1px solid rgba(181,122,28,.35);background:rgba(181,122,28,.10);color:var(--text);border-radius:10px;padding:7px 9px;font:650 .65rem 'Inter',sans-serif;white-space:nowrap;cursor:pointer;}
+.files-video-status.watched{background:rgba(82,150,104,.12);border-color:rgba(82,150,104,.32);}
+.files-v7-note-card{padding:13px 14px;border:1px solid var(--simple-files-border);border-radius:15px;background:var(--simple-files-note-bg);margin-bottom:9px;cursor:pointer;}
+.files-v7-note-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.files-v7-note-preview{margin-top:8px;color:var(--text);font-size:.82rem;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;}
+.files-v7-note-hint{margin-top:7px;font-size:.64rem;color:var(--muted);}
+.files-v7-field{margin-top:10px;}.files-v7-field label{display:block;font-size:.67rem;color:var(--muted);font-weight:700;margin:0 0 5px;text-transform:uppercase;letter-spacing:.06em;}
+.files-v7-add-dialog{max-height:min(82vh,700px);overflow:auto;}
+@media(max-width:600px){.files-v7-grid{grid-template-columns:1fr;}.files-video-status{padding:6px 7px;font-size:.6rem;}.files-v7-manager-panel{max-height:94vh;}}
+
+
+/* V13 — compact library search + persistent file-preview storage */
+/* V14 — library search lives as a compact bar at the top of the Files hub */
+.files-v14-hub-search{display:flex;align-items:center;gap:8px;margin:14px 0 16px;width:100%;}
+.files-v14-search-trigger{flex:1;min-width:0;height:44px;display:flex;align-items:center;gap:10px;padding:0 13px;border:1px solid var(--simple-files-border);border-radius:13px;background:var(--simple-files-input);color:var(--muted);font:600 .82rem 'Inter',sans-serif;cursor:text;text-align:left;transition:border-color .18s ease,background .18s ease,transform .18s ease;}
+.files-v14-search-trigger:hover{border-color:rgba(229,166,62,.55);background:color-mix(in srgb,var(--simple-files-input) 88%,white 12%);}
+.files-v14-search-trigger span:first-child{font-size:1.2rem;line-height:1;color:var(--text);opacity:.78;}
+.files-v14-search-trigger span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.files-v14-search-filter{width:44px;height:44px;flex:0 0 44px;border:1px solid var(--simple-files-border);border-radius:13px;background:var(--simple-files-input);color:var(--text);font-size:1rem;cursor:pointer;}
+.files-v14-search-filter:hover{border-color:rgba(229,166,62,.55);}
+@media(max-width:600px){.files-v14-hub-search{margin:12px 0 14px}.files-v14-search-trigger,.files-v14-search-filter{height:42px}.files-v14-search-filter{width:42px;flex-basis:42px}}
+.files-v7-search-backdrop{position:fixed;inset:0;z-index:10020;display:flex;align-items:flex-start;justify-content:center;padding:72px 18px 24px;background:rgba(0,0,0,.52);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.files-v7-search-dialog{width:min(760px,100%);max-height:calc(100vh - 96px);display:flex;flex-direction:column;background:var(--simple-files-reader);color:var(--text);border:1px solid var(--simple-files-border);border-radius:20px;box-shadow:0 28px 90px rgba(0,0,0,.5);overflow:hidden}
+.files-v7-search-head{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--simple-files-border)}
+.files-v7-search-bar{height:42px;flex:1;display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid var(--simple-files-border);border-radius:13px;background:var(--simple-files-input)}
+.files-v7-search-icon{font-size:1.2rem;line-height:1;opacity:.72}.files-v7-search-bar input{min-width:0;width:100%;height:100%;padding:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;color:var(--text)!important;font:500 .9rem 'Inter',sans-serif}
+.files-v7-filter-btn{height:42px;padding:0 13px;border:1px solid var(--simple-files-border);border-radius:13px;background:var(--simple-files-input);color:var(--text);font:700 .72rem 'Inter',sans-serif;cursor:pointer}.files-v7-filter-btn:hover{border-color:rgba(229,166,62,.55)}
+.files-v7-search-filters{display:none;grid-template-columns:1fr 1fr;gap:10px;padding:10px 14px;border-bottom:1px solid var(--simple-files-border);background:rgba(255,255,255,.025)}.files-v7-search-filters.open{display:grid}.files-v7-search-filters label{display:block;margin-bottom:5px;color:var(--muted);font:700 .62rem 'Inter',sans-serif;text-transform:uppercase;letter-spacing:.07em}.files-v7-search-filters select{width:100%;height:38px;padding:0 10px;border:1px solid var(--simple-files-border);border-radius:10px;background:var(--simple-files-input);color:var(--text);font:500 .76rem 'Inter',sans-serif}
+.files-v7-search-hint{padding:7px 15px 2px;color:var(--muted);font-size:.64rem}.files-v7-search-results{margin:8px 14px 14px;overflow:auto;min-height:100px;border:1px solid var(--simple-files-border);border-radius:14px;background:var(--simple-files-note-bg)}
+@media(max-width:600px){.files-v7-search-backdrop{padding:58px 10px 10px}.files-v7-search-dialog{max-height:calc(100vh - 68px);border-radius:18px}.files-v7-search-head{padding:10px}.files-v7-filter-btn span{display:none}.files-v7-search-filters{grid-template-columns:1fr}.files-v7-search-results{margin:8px 10px 10px}}
+
+/* V11 — readability / visual clarity pass. Functional DOM and data logic unchanged. */
+:root{
+  --muted:#b8b4ad;
+  --line:rgba(255,255,255,.13);
+  --surface:#151820;
+  --surface-2:#20242d;
+  --text:#fffaf0;
+}
+body{color:var(--text);}
+.sub,.note,.task-meta,.plan-lane-head,.plan-copy span,.plan-date,.notebook-meta,.notebook-empty,
+.study-command-sub,.water-sub,.wellness-field .unit,.noworkout-row .task-label,.noworkout-note,
+.locked-banner,.manual-due-row label,.files-hub-option small,.files-hub-arrow,.simple-files-subject-label{
+  color:#b9b5ae!important;
+}
+.card-title,.section-title,.study-command-title,.notebook-title,.task-label,.plan-copy b,
+.modal h2,.settings-panel h2,.study-overlay-panel h2,.files-rebuilt-panel h2,.files-hub-option b{
+  color:#fffaf0;
+}
+.task-row{border-color:rgba(255,255,255,.11)!important;}
+.card,.streak-card,.day-card,.study-card,.tracker-card,.reminder-card,.settings-panel,.study-command,
+.notebook-card,.topic-edit-card,.rhythm,.wellness-field,.study-kpi{
+  border-color:rgba(255,255,255,.12)!important;
+}
+.btn-primary{font-weight:700;}
+.btn-secondary,.icon-btn,.settings-close,.appearance-option{
+  color:#f7f3eb!important;
+  border-color:rgba(255,255,255,.14)!important;
+}
+input,textarea,select,.edit-input,.quick-paste{
+  color:#fffaf0!important;
+  background:rgba(255,255,255,.075)!important;
+  border-color:rgba(255,255,255,.14)!important;
+}
+input::placeholder,textarea::placeholder{color:#aaa69e!important;opacity:1;}
+input:focus,textarea:focus,select:focus,.edit-input:focus,.quick-paste:focus{
+  border-color:rgba(229,166,62,.72)!important;
+  box-shadow:0 0 0 3px rgba(229,166,62,.10)!important;
+}
+.checkbox{border-color:rgba(255,255,255,.30)!important;background:rgba(255,255,255,.055)!important;}
+.checkbox.checked{border-color:var(--gold)!important;}
+/* Keep glass surfaces readable rather than translucent-to-the-point-of-low-contrast. */
+.streak-card,.day-card,.study-card,.tracker-card,.reminder-card,.settings-panel,.study-command{
+  background:linear-gradient(145deg,rgba(34,37,46,.97),rgba(19,22,28,.98))!important;
+  backdrop-filter:blur(18px) saturate(130%);
+}
+.wellness-field,.study-kpi{background:rgba(255,255,255,.065)!important;}
+.modal,.study-overlay-panel{background:linear-gradient(160deg,#292c33,#171a20)!important;}
+.files-rebuilt-panel{background:linear-gradient(160deg,#252933,#171a20)!important;border-color:rgba(255,255,255,.15)!important;}
+.files-hub-option{background:rgba(255,255,255,.055)!important;border-color:rgba(255,255,255,.13)!important;}
+.files-hub-icon{background:rgba(255,255,255,.075)!important;border-color:rgba(255,255,255,.12)!important;}
+/* Light theme: crisp paper/glass instead of pale-on-pale text. */
+html[data-theme="light"]{
+  --bg:#f3f1ec;--surface:#fffdf9;--surface-2:#e9e5dc;--text:#242321;--muted:#5f5b54;
+  --line:rgba(36,35,33,.14);
+}
+html[data-theme="light"] body{color:#242321;}
+html[data-theme="light"] .sub,html[data-theme="light"] .note,html[data-theme="light"] .task-meta,
+html[data-theme="light"] .plan-lane-head,html[data-theme="light"] .plan-copy span,
+html[data-theme="light"] .plan-date,html[data-theme="light"] .notebook-meta,
+html[data-theme="light"] .notebook-empty,html[data-theme="light"] .study-command-sub,
+html[data-theme="light"] .water-sub,html[data-theme="light"] .wellness-field .unit,
+html[data-theme="light"] .noworkout-row .task-label,html[data-theme="light"] .noworkout-note,
+html[data-theme="light"] .locked-banner,html[data-theme="light"] .manual-due-row label,
+html[data-theme="light"] .files-hub-option small,html[data-theme="light"] .files-hub-arrow,
+html[data-theme="light"] .simple-files-subject-label{color:#5f5b54!important;}
+html[data-theme="light"] .card-title,html[data-theme="light"] .section-title,
+html[data-theme="light"] .study-command-title,html[data-theme="light"] .notebook-title,
+html[data-theme="light"] .task-label,html[data-theme="light"] .plan-copy b,
+html[data-theme="light"] .modal h2,html[data-theme="light"] .settings-panel h2,
+html[data-theme="light"] .study-overlay-panel h2,html[data-theme="light"] .files-rebuilt-panel h2,
+html[data-theme="light"] .files-hub-option b{color:#242321!important;}
+html[data-theme="light"] .streak-card,html[data-theme="light"] .day-card,html[data-theme="light"] .study-card,
+html[data-theme="light"] .tracker-card,html[data-theme="light"] .reminder-card,
+html[data-theme="light"] .settings-panel,html[data-theme="light"] .study-command{
+  background:linear-gradient(145deg,#fffefa,#f7f4ed)!important;
+  border-color:rgba(36,35,33,.13)!important;
+}
+html[data-theme="light"] .wellness-field,html[data-theme="light"] .study-kpi{background:#eeebe4!important;border-color:rgba(36,35,33,.13)!important;}
+html[data-theme="light"] input,html[data-theme="light"] textarea,html[data-theme="light"] select,
+html[data-theme="light"] .edit-input,html[data-theme="light"] .quick-paste{
+  color:#242321!important;background:#fffdf9!important;border-color:rgba(36,35,33,.16)!important;
+}
+html[data-theme="light"] input::placeholder,html[data-theme="light"] textarea::placeholder{color:#777269!important;}
+html[data-theme="light"] .btn-secondary,html[data-theme="light"] .icon-btn,
+html[data-theme="light"] .settings-close,html[data-theme="light"] .appearance-option{
+  color:#292722!important;border-color:rgba(36,35,33,.15)!important;
+}
+html[data-theme="light"] .files-rebuilt-panel{background:linear-gradient(160deg,#fffefa,#f1eee7)!important;color:#242321!important;border-color:rgba(36,35,33,.15)!important;}
+html[data-theme="light"] .files-hub-option{background:#f7f4ed!important;border-color:rgba(36,35,33,.13)!important;}
+html[data-theme="light"] .files-hub-icon{background:#ebe7df!important;border-color:rgba(36,35,33,.12)!important;}
+html[data-theme="light"] .checkbox{background:#f4f1eb!important;border-color:rgba(36,35,33,.28)!important;}
+html[data-theme="light"] .task-row{border-color:rgba(36,35,33,.12)!important;}
+/* Launch / recovery copy should always be legible. */
+#launch small{color:#ddd7cc!important;}
+
+
+<style id="files-v15-search-css">
+.files-v14-hub-search{display:flex;gap:10px;align-items:center;margin:14px 0 16px}.files-v14-search-field{flex:1;min-width:0;height:46px;display:flex;align-items:center;gap:9px;padding:0 13px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.07);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}.files-v14-search-field:focus-within{border-color:rgba(255,190,70,.55);box-shadow:0 0 0 3px rgba(255,190,70,.09)}.files-v14-search-field input{width:100%;border:0;outline:0;background:transparent;color:inherit;font:inherit;font-size:.94rem}.files-v14-search-field input::placeholder{opacity:.55}.files-v14-search-icon{font-size:1.2rem;opacity:.75}.files-v14-search-filter{width:46px;height:46px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.07);color:inherit;cursor:pointer;font-size:1rem}.files-v14-hub-search-results{margin:-7px 0 15px;border:1px solid rgba(255,255,255,.12);border-radius:15px;background:rgba(25,27,33,.96);overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.22)}.files-v14-inline-result{width:100%;display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;border:0;border-bottom:1px solid rgba(255,255,255,.07);background:transparent;color:inherit;cursor:pointer}.files-v14-inline-result:last-child{border-bottom:0}.files-v14-inline-result:hover{background:rgba(255,255,255,.06)}.files-v14-inline-result span:last-child{min-width:0;display:flex;flex-direction:column;gap:2px}.files-v14-inline-result b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.files-v14-inline-result small{opacity:.62}.files-v14-no-results{padding:14px;text-align:center;opacity:.65;font-size:.9rem}
+html[data-theme="light"] .files-v14-search-field,html[data-theme="light"] .files-v14-search-filter{background:rgba(255,255,255,.82);border-color:rgba(0,0,0,.1)}html[data-theme="light"] .files-v14-hub-search-results{background:rgba(255,255,255,.98);border-color:rgba(0,0,0,.1)}html[data-theme="light"] .files-v14-inline-result{border-bottom-color:rgba(0,0,0,.07)}html[data-theme="light"] .files-v14-inline-result:hover{background:rgba(0,0,0,.04)}
+</style>
 </style>
 </head>
 <body>
@@ -1256,8 +1453,8 @@ let calMonth = new Date();
 let selectedCalDate = null;
 let currentSwipeDate = isoDate(new Date());
 let timerState = {seconds:0, remaining:0, running:false, interval:null, label:''};
-let focusState = {mode:null, queue:[], current:null, startedAt:0, elapsed:0, running:false, interval:null, swipeBusy:false, sessionSaved:false};
-let studyOverlay = null; // null | 'planner' | 'paste' | 'notebook'
+let focusState = {mode:null, queue:[], current:null, startedAt:0, elapsed:0, running:false, interval:null, swipeBusy:false, sessionSaved:false, minimized:false};
+let studyOverlay = null; // null | 'planner' | 'paste' | 'notebook' | 'files'\nlet filesCategory = 'notes';\nlet studyFiles = [];\nlet filePreviewId = null;
 let studyPlanBusy = false;
 let studyPlanStatus = '';
 let studyPlannerMode = 'choose'; // choose | ai | manual
@@ -1291,41 +1488,56 @@ function weekdayIndex(iso){
 
 /* storage: works both inside Claude artifact preview (window.storage)
    and on a real hosted site like GitHub Pages (localStorage fallback) */
+function safeJsonParse(raw,fallback){if(raw==null||raw==='')return fallback;try{return JSON.parse(raw);}catch(e){return fallback;}}
 async function storageGet(key){
+  // Always keep a browser-local fallback. Some preview hosts expose window.storage
+  // but return an empty value even when localStorage already contains the data.
+  let storageValue=null;
   try{
-    if(window.storage){ const r = await window.storage.get(key, false); return r ? r.value : null; }
+    if(window.storage&&typeof window.storage.get==='function'){
+      const result=await Promise.race([Promise.resolve(window.storage.get(key,false)),new Promise((_,reject)=>setTimeout(()=>reject(new Error('storage timeout')),800))]);
+      storageValue=result?.value ?? null;
+      if(storageValue!==null&&storageValue!==undefined&&storageValue!=='') return storageValue;
+    }
   }catch(e){}
-  try{ return localStorage.getItem(key); }catch(e){ return null; }
+  try{
+    const local=localStorage.getItem(key);
+    return local!==null ? local : storageValue;
+  }catch(e){return storageValue;}
 }
-async function storageSet(key, value){
+async function storageSet(key,value){
+  // Write to localStorage as well as the optional artifact storage so the app
+  // remains persistent when reopened from a file:// preview.
+  try{localStorage.setItem(key,value);}catch(e){}
   try{
-    if(window.storage){ await window.storage.set(key, value, false); return; }
+    if(window.storage&&typeof window.storage.set==='function'){
+      await Promise.race([Promise.resolve(window.storage.set(key,value,false)),new Promise((_,reject)=>setTimeout(()=>reject(new Error('storage timeout')),800))]);
+    }
   }catch(e){}
-  try{ localStorage.setItem(key, value); }catch(e){}
 }
 
 async function loadEntries(){
   const raw = await storageGet('tracker:entries');
-  entries = raw ? JSON.parse(raw) : {};
+  entries = safeJsonParse(raw, {});
 }
 async function saveEntries(){ await storageSet('tracker:entries', JSON.stringify(entries)); }
 async function loadTaskOverrides(){
   const raw = await storageGet('tracker:taskoverrides');
-  taskOverrides = raw ? JSON.parse(raw) : {};
+  taskOverrides = safeJsonParse(raw, {});
 }
 async function saveTaskOverrides(){ await storageSet('tracker:taskoverrides', JSON.stringify(taskOverrides)); }
 function getTasksForDow(dow){ return taskOverrides[dow] || TASKS[dow]; }
 
 async function loadCustomTrackers(){
   const raw = await storageGet('tracker:customtrackers');
-  customTrackers = raw ? JSON.parse(raw) : [];
+  customTrackers = safeJsonParse(raw, []);
 }
 async function saveCustomTrackers(){ await storageSet('tracker:customtrackers', JSON.stringify(customTrackers)); }
 async function loadSavedMeals(){
   const raw = await storageGet('tracker:savedmeals');
-  savedMeals = raw ? JSON.parse(raw) : [];
+  savedMeals = safeJsonParse(raw, []);
   if(!Array.isArray(savedMeals)) savedMeals = [];
-  savedMeals = savedMeals.map(x=>({
+  savedMeals = savedMeals.filter(x=>x && typeof x==='object').map(x=>({
     id: x.id || ('saved-'+Date.now()+'-'+Math.random().toString(36).slice(2,7)),
     name: String(x.name || 'Saved food'),
     calories: macroNumber(x.calories),
@@ -1384,25 +1596,190 @@ function applyAppearance(){
 
 async function loadSettings(){
   const raw = await storageGet('tracker:settings');
-  const defaults = { proteinTarget: 80, caloriesTarget: 2000, carbsTarget: 200, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: false, appearance: 'dark' };
+  let forceSetup = false;
+  try{ forceSetup = localStorage.getItem('daily-rhythm-force-setup') === '1'; }catch(e){}
+  const defaults = { proteinTarget: 80, caloriesTarget: 2000, carbsTarget: 200, waterBottleLiters: 2, waterTargetBottles: 2.5, workoutEnabled: true, wizardDone: location.protocol === 'file:' ? !forceSetup : false, appearance: 'dark' };
+  if(forceSetup){ try{ localStorage.removeItem('daily-rhythm-force-setup'); }catch(e){} }
   defaults.carbsTarget = 200; defaults.fatTarget = 65;
-  settings = raw ? Object.assign({}, defaults, JSON.parse(raw)) : defaults;
+  settings = raw ? Object.assign({}, defaults, safeJsonParse(raw, {})) : defaults;
+  try{ if(localStorage.getItem('daily-rhythm-setup-complete')==='1') settings.wizardDone=true; }catch(e){}
   settings.appearance = settings.appearance === 'light' ? 'light' : 'dark';
   applyAppearance();
 }
 async function saveSettings(){ await storageSet('tracker:settings', JSON.stringify(settings)); }
 async function loadStudyNotes(){
   const raw = await storageGet('tracker:studynotes');
-  studyNotes = raw ? JSON.parse(raw) : {};
+  studyNotes = safeJsonParse(raw, {});
 }
 let notesSaveTimer = null;
 function saveStudyNotesDebounced(){
   clearTimeout(notesSaveTimer);
   notesSaveTimer = setTimeout(()=>{ storageSet('tracker:studynotes', JSON.stringify(studyNotes)); }, 700);
 }
+
+let studyFilesDbPromise=null;
+function openStudyFilesDb(){
+  if(studyFilesDbPromise) return studyFilesDbPromise;
+  studyFilesDbPromise=new Promise((resolve,reject)=>{
+    if(!window.indexedDB){reject(new Error('IndexedDB unavailable'));return;}
+    const req=indexedDB.open('daily-rhythm-files-v1',1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('blobs'))db.createObjectStore('blobs');};
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error||new Error('Could not open file storage'));
+  }); return studyFilesDbPromise;
+}
+async function loadStudyFiles(){const raw=await storageGet('tracker:studyfiles');try{studyFiles=raw?JSON.parse(raw):[];}catch(e){studyFiles=[];}if(!Array.isArray(studyFiles))studyFiles=[]; studyFiles=studyFiles.filter(x=>x&&typeof x==='object'&&x.id);}
+async function saveStudyFilesMeta(){await storageSet('tracker:studyfiles',JSON.stringify(studyFiles));}
+function libraryNameNorm(name){return String(name||'').trim().toLowerCase().replace(/\s+/g,' ');}
+function libraryHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0).toString(36);}
+function libraryKeyForName(name){const n=libraryNameNorm(name)||'untitled subject';return `lib-${libraryHash(n)}-${n.replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,36)}`;}
+function librarySubjectByKey(key){return librarySubjects.find(x=>String(x.key)===String(key))||null;}
+function ensureLibrarySubjectFor(subject){
+  if(!subject)return null;
+  let key=subject.libraryKey||null;
+  let rec=key?librarySubjectByKey(key):null;
+  if(!rec){
+    const wanted=libraryNameNorm(subject.name);
+    rec=librarySubjects.find(x=>libraryNameNorm(x.name)===wanted)||null;
+    key=rec?.key||libraryKeyForName(subject.name);
+  }
+  if(!rec){rec={key,name:String(subject.name||'Untitled subject'),status:'current',currentSubjectId:subject.id,progress:0,archivedAt:null,snapshot:null};librarySubjects.push(rec);}
+  else{rec.name=String(subject.name||rec.name||'Untitled subject');rec.status='current';rec.currentSubjectId=subject.id;}
+  subject.libraryKey=key;
+  return key;
+}
+async function loadLibraryData(){
+  librarySubjects=safeJsonParse(await storageGet('tracker:librarysubjects'),[]);
+  if(!Array.isArray(librarySubjects))librarySubjects=[];
+  libraryNotes=safeJsonParse(await storageGet('tracker:librarynotes'),{});
+  if(!libraryNotes||typeof libraryNotes!=='object'||Array.isArray(libraryNotes))libraryNotes={};
+}
+async function saveLibraryData(){await storageSet('tracker:librarysubjects',JSON.stringify(librarySubjects));await storageSet('tracker:librarynotes',JSON.stringify(libraryNotes));}
+async function normalizeLibraryData(){
+  let changed=false;
+  const beforeSubjects=JSON.stringify(librarySubjects);
+  subjects.forEach(s=>{const old=s.libraryKey;ensureLibrarySubjectFor(s);if(old!==s.libraryKey)changed=true;});
+  studyFiles.forEach(item=>{
+    if(item&&item.category==='subject'&&!item.librarySubjectKey){
+      const subj=subjects.find(s=>String(s.id)===String(item.subjectId));
+      if(subj){item.librarySubjectKey=ensureLibrarySubjectFor(subj);changed=true;}
+    }
+  });
+  // Existing subject notes remain where they are, but get a library identity before a subject is archived.
+  subjects.forEach(subj=>{
+    const lk=ensureLibrarySubjectFor(subj);
+    (subj.curriculum||[]).forEach((item,i)=>{
+      const key=noteKeyFor(subj.id,item,i);const value=studyNotes[key];
+      if(typeof value==='string'&&value.trim()){
+        if(!libraryNotes[key]){libraryNotes[key]={librarySubjectKey:lk,subjectName:subj.name,title:item.label||'Untitled topic',kind:'curriculum'};changed=true;}
+      }
+    });
+  });
+  if(JSON.stringify(librarySubjects)!==beforeSubjects)changed=true;
+  if(changed){await saveSubjects();await saveStudyFilesMeta();await saveLibraryData();}
+}
+async function archiveSubjectToLibrary(subj){
+  if(!subj)return;
+  const lk=ensureLibrarySubjectFor(subj);
+  const total=(subj.curriculum||[]).length;const done=Math.max(0,Math.min(total,Number(subj.index)||0));
+  const rec=librarySubjectByKey(lk)||{key:lk,name:subj.name};
+  rec.name=subj.name;rec.status='archived';rec.currentSubjectId=null;rec.progress=total?Math.round(done/total*100):0;rec.archivedAt=new Date().toISOString();
+  rec.snapshot={curriculum:JSON.parse(JSON.stringify(subj.curriculum||[])),index:done,progress:rec.progress};
+  // Preserve every existing resource under this library identity.
+  studyFiles.forEach(item=>{if(item&&item.category==='subject'&&String(item.subjectId)===String(subj.id))item.librarySubjectKey=lk;});
+  (subj.curriculum||[]).forEach((item,i)=>{
+    const key=noteKeyFor(subj.id,item,i);const value=studyNotes[key];
+    if(typeof value==='string'&&value.trim())libraryNotes[key]={librarySubjectKey:lk,subjectName:subj.name,title:item.label||'Untitled topic',kind:'curriculum'};
+  });
+  Object.keys(studyNotes||{}).forEach(key=>{
+    const n=studyNotes[key];
+    if(n&&typeof n==='object'&&String(n.subjectId)===String(subj.id)&&String(n.body||'').trim())libraryNotes[key]={librarySubjectKey:lk,subjectName:subj.name,title:n.title||'Untitled note',kind:'free'};
+  });
+  await saveSubjects();await saveStudyFilesMeta();await saveLibraryData();saveStudyNotesDebounced();
+}
+
+async function putStudyFileBlob(id,blob){const db=await openStudyFilesDb();return new Promise((resolve,reject)=>{const tx=db.transaction('blobs','readwrite');tx.objectStore('blobs').put(blob,id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||new Error('File save failed'));});}
+async function getStudyFileBlob(id){const db=await openStudyFilesDb();return new Promise((resolve,reject)=>{const tx=db.transaction('blobs','readonly');const req=tx.objectStore('blobs').get(id);req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||new Error('File read failed'));});}
+async function deleteStudyFileBlob(id){try{const db=await openStudyFilesDb();await new Promise((resolve,reject)=>{const tx=db.transaction('blobs','readwrite');tx.objectStore('blobs').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}catch(e){}}
+function fileCategoryLabel(c){return({notes:'Notes',textbooks:'Textbooks',videos:'Videos',other:'Other'})[c]||'Other';}
+function fileTypeIcon(x){if(x.kind==='link')return '🔗';if(x.kind==='text')return '📝';if((x.mime||'').startsWith('video/'))return '🎥';if(x.mime==='application/pdf')return '📕';return '📄';}
+function escapeFileHtml(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');}
+async function openStudyFile(id){
+  const item=studyFiles.find(x=>x.id===id);
+  if(!item)return;
+  if(item.kind==='link'&&item.url){window.open(item.url,'_blank','noopener,noreferrer');return;}
+  if(item.kind==='text'){filePreviewId=id;refreshFilesManager();return;}
+  try{
+    const blob=await getStudyFileBlob(id);
+    if(!blob){alert('That file is no longer available in local storage.');return;}
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+  }catch(e){alert('Could not open this file.');}
+}
+async function addStudyFileFromForm(){
+  const root=document.getElementById('dailyRhythmFilesOverlay');
+  if(!root)return false;
+  const label=(root.querySelector('#studyFileLabel')?.value||'').trim();
+  const category=['textbooks','other'].includes(filesCategory)?filesCategory:(filesCategory==='videos'?'other':'other');
+  const kind=root.querySelector('#studyFileKind')?.value||'file';
+  if(!label){alert('Give the resource a label first.');return false;}
+  const id='file-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+  const item={id,label,category,kind,createdAt:new Date().toISOString()};
+  if(kind==='link'){
+    let url=(root.querySelector('#studyFileUrl')?.value||'').trim();
+    if(!/^https?:\/\//i.test(url))url='https://'+url;
+    try{new URL(url);}catch(e){alert('Enter a valid link.');return false;}
+    item.url=url;item.mime='text/uri-list';
+  }else if(kind==='text'){
+    const text=(root.querySelector('#studyFileText')?.value||'').trim();
+    if(!text){alert('Write something in the text box first.');return false;}
+    item.text=text;item.mime='text/plain';
+  }else{
+    const file=root.querySelector('#studyFileInput')?.files?.[0];
+    if(!file){alert('Choose a file first.');return false;}
+    item.fileName=file.name;item.mime=file.type||'application/octet-stream';item.size=file.size;
+    await putStudyFileBlob(id,file);
+  }
+  studyFiles.unshift(item);
+  filesCategory=category;
+  await saveStudyFilesMeta();
+  filePreviewId=null;
+  return true;
+}
+async function deleteStudyFile(id){
+  const item=studyFiles.find(x=>x.id===id);
+  if(!item)return false;
+  if(!confirm(`Delete "${item.label}"?`))return false;
+  studyFiles=studyFiles.filter(x=>x.id!==id);
+  if(item.kind==='file')await deleteStudyFileBlob(id);
+  await saveStudyFilesMeta();
+  if(filePreviewId===id)filePreviewId=null;
+  return true;
+}
+function renderStudyFileForm(){return `<div class="files-add-card"><div class="section-label" style="margin-bottom:8px;">Add to ${fileCategoryLabel(filesCategory)}</div><input class="edit-input" id="studyFileLabel" type="text" placeholder="Label — e.g. Gray's Anatomy PDF"><div class="study-action-grid" style="margin-top:8px;"><select class="edit-input" id="studyFileKind"><option value="file">File</option><option value="link">Link</option><option value="text">Text box</option></select><select class="edit-input" id="studyFileCategory"><option value="notes" ${filesCategory==='notes'?'selected':''}>Notes</option><option value="textbooks" ${filesCategory==='textbooks'?'selected':''}>Textbooks</option><option value="videos" ${filesCategory==='videos'?'selected':''}>Videos</option><option value="other" ${filesCategory==='other'?'selected':''}>Other</option></select></div><div id="studyFileInputWrap" style="margin-top:8px;"><input class="edit-input" id="studyFileInput" type="file"></div><button class="btn-primary" style="width:100%;margin-top:9px;" data-action="add-study-file">+ Add resource</button></div>`;}
+function renderStudyFilesOverlay(){
+  const safeFiles = Array.isArray(studyFiles) ? studyFiles : [];
+  const category = ['notes','textbooks','videos','other'].includes(filesCategory) ? filesCategory : 'notes';
+  filesCategory = category;
+  const items = safeFiles.filter(x => x && x.category === category);
+  const preview = filePreviewId ? safeFiles.find(x => x && x.id === filePreviewId) : null;
+  const categories = [['notes','📝','Notes'],['textbooks','📚','Textbooks'],['videos','🎥','Videos'],['other','📦','Other']];
+  const itemHtml = items.length ? items.map(item=>{
+    const kind = item.kind || 'file';
+    const icon = fileTypeIcon(item);
+    const label = escapeFileHtml(item.label || 'Untitled');
+    const meta = escapeFileHtml(item.fileName || (kind==='link'?'Link':kind==='text'?'Text box':'File')) + (item.size ? ` · ${(Number(item.size)/1024/1024).toFixed(1)} MB` : '');
+    const open = kind==='link' ? `<a class="icon-btn files-resource-open" href="${escapeFileHtml(item.url||'#')}" target="_blank" rel="noopener noreferrer" title="Open link">↗</a>` : `<button class="icon-btn" data-action="open-study-file" data-id="${escapeFileHtml(item.id)}" title="Open">↗</button>`;
+    return `<div class="files-resource-row"><div class="files-resource-icon">${icon}</div><div class="files-resource-copy"><div class="files-resource-label">${label}</div><div class="files-resource-meta">${meta}</div></div>${open}<button class="icon-btn" data-action="delete-study-file" data-id="${escapeFileHtml(item.id)}" title="Delete">×</button></div>`;
+  }).join('') : '<div class="notebook-empty">Nothing saved here yet. Add a file, link or text box above.</div>';
+  const previewHtml = preview && preview.kind === 'text' ? `<div class="notebook-card" style="margin-bottom:10px;"><div class="notebook-head"><div><div class="notebook-title">${escapeFileHtml(preview.label || 'Text box')}</div><div class="notebook-meta">Text box</div></div><button class="icon-btn" data-action="close-file-preview">×</button></div><div class="files-text-preview" style="max-height:320px;color:var(--text);">${escapeFileHtml(preview.text || '')}</div></div>` : '';
+  return `<div class="study-overlay open" id="studyOverlay"><div class="study-overlay-panel"><div class="study-overlay-head"><h2>📁 Files</h2><button class="settings-close" data-action="close-study-overlay">×</button></div><p class="note" style="margin-top:-4px;">Keep notes, textbooks, videos, links, PDFs and other study material in one place.</p><div class="files-category-grid">${categories.map(([id,icon,label])=>`<button class="files-category-btn ${category===id?'active':''}" data-action="files-category" data-category="${id}">${icon}<br>${label}</button>`).join('')}</div>${previewHtml}${renderStudyFileForm()}<div class="notebook-card" style="margin-top:10px;"><div class="section-label" style="margin-bottom:6px;">${fileCategoryLabel(category)}</div>${itemHtml}</div><div class="study-action-grid" style="margin-top:10px;"><button class="btn-secondary" data-action="close-study-overlay">Close</button></div></div></div>`;
+}
 async function loadReminder(){
   const raw = await storageGet('tracker:reminder');
-  return raw ? JSON.parse(raw) : null;
+  if(!raw) return null;
+  const parsed = safeJsonParse(raw, null);
+  return parsed && typeof parsed === 'object' ? parsed : null;
 }
 async function saveReminder(data){ await storageSet('tracker:reminder', JSON.stringify(data)); }
 
@@ -1689,6 +2066,8 @@ function focusUpdateClock(){
   focusState.elapsed=focusNow();
   const el=document.getElementById('focusElapsed');
   if(el) el.textContent=fmtTime(focusState.elapsed);
+  const bg=document.getElementById('focusBackgroundElapsed');
+  if(bg) bg.textContent=fmtTime(focusState.elapsed);
 }
 function stopFocusClock(){
   clearInterval(focusState.interval);
@@ -1758,7 +2137,7 @@ function getFocusQueue(mode){ return mode==='workout' ? getFocusWorkoutQueue() :
 function beginFocus(mode){
   stopFocusClock();
   recordFocusSession();
-  focusState={mode,queue:getFocusQueue(mode),current:null,startedAt:Date.now(),elapsed:0,running:false,interval:null,swipeBusy:false,sessionSaved:false};
+  focusState={mode,queue:getFocusQueue(mode),current:null,startedAt:Date.now(),elapsed:0,running:false,interval:null,swipeBusy:false,sessionSaved:false,minimized:false};
   focusState.current=focusState.queue.shift()||null;
   startFocusClock();
   render();
@@ -1840,7 +2219,7 @@ async function focusSkipCurrent(){
 async function closeFocus(){
   stopFocusClock();
   await recordFocusSession();
-  focusState={mode:null,queue:[],current:null,startedAt:0,elapsed:0,running:false,interval:null,swipeBusy:false,sessionSaved:false};
+  focusState={mode:null,queue:[],current:null,startedAt:0,elapsed:0,running:false,interval:null,swipeBusy:false,sessionSaved:false,minimized:false};
   render();
 }
 function focusCardMeta(item){
@@ -1863,12 +2242,28 @@ function bindFocusControls(){
   document.querySelectorAll('[data-action="close-focus"]').forEach(el=>{
     el.onclick=()=>closeFocus();
   });
+  document.querySelectorAll('[data-action="minimize-focus"]').forEach(el=>{
+    el.onclick=()=>minimizeFocus();
+  });
+  document.querySelectorAll('[data-action="resume-focus"]').forEach(el=>{
+    el.onclick=()=>resumeFocus();
+  });
+  document.querySelectorAll('[data-action="stop-focus"]').forEach(el=>{
+    el.onclick=()=>closeFocus();
+  });
+  document.querySelectorAll('[data-action="focus-note"]').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      if(!el.dataset.key) return;
+      studyNotes[el.dataset.key]=el.value;
+      saveStudyNotesDebounced();
+    });
+  });
   const focusCard=document.getElementById('focusCard');
   if(focusCard){
     let startX=0,startY=0;
-    focusCard.onpointerdown=ev=>{ startX=ev.clientX; startY=ev.clientY; };
+    focusCard.onpointerdown=ev=>{ if(ev.target.closest('textarea')) return; startX=ev.clientX; startY=ev.clientY; };
     focusCard.onpointerup=ev=>{
-      if(focusState.swipeBusy) return;
+      if(ev.target.closest('textarea') || focusState.swipeBusy) return;
       const dx=ev.clientX-startX, dy=ev.clientY-startY;
       if(Math.abs(dx)<70 || Math.abs(dx)<Math.abs(dy)*1.15) return;
       if(dx>0) focusFinishCurrent(); else focusSkipCurrent();
@@ -1876,8 +2271,39 @@ function bindFocusControls(){
   }
 }
 
+function focusCurrentNoteKey(item){
+  if(!item || item.type!=='study') return null;
+  const subj=getSubject(item.subjectId);
+  if(!subj) return null;
+  const idx=(subj.curriculum||[]).findIndex(x=>x&&x.id===item.curriculumId);
+  const base=idx>=0 ? subj.curriculum[idx] : item;
+  return noteKeyFor(subj.id, base, Math.max(0,idx));
+}
+function minimizeFocus(){
+  if(!focusState.mode) return;
+  focusState.minimized=true;
+  render();
+}
+function resumeFocus(){
+  if(!focusState.mode) return;
+  focusState.minimized=false;
+  activeTab='home';
+  render();
+}
+function renderFocusBackgroundBar(){
+  if(!focusState.mode || !focusState.minimized) return '';
+  const modeLabel=focusState.mode==='workout'?'Workout':'Study';
+  const item=focusState.current;
+  const title=item ? escapeFocusText(item.label) : 'Session finished';
+  return `<div class="focus-background-bar" id="focusBackgroundBar">
+    <div class="focus-background-copy"><div class="focus-background-title">${modeLabel} running in background</div><div class="focus-background-meta">${title}</div></div>
+    <div class="focus-background-time" id="focusBackgroundElapsed">${fmtTime(focusState.elapsed)}</div>
+    <div class="focus-background-actions"><button class="btn-secondary" data-action="resume-focus">Resume</button><button class="btn-secondary" data-action="stop-focus">Stop</button></div>
+  </div>`;
+}
+
 function renderFocusOverlay(){
-  if(!focusState.mode) return '';
+  if(!focusState.mode || focusState.minimized) return '';
   const modeLabel=focusState.mode==='workout'?'Workout':'Study';
   const item=focusState.current;
   if(!item){
@@ -1896,11 +2322,12 @@ function renderFocusOverlay(){
           <div class="focus-card-kicker">${modeLabel}</div>
           <div class="focus-card-title">${escapeFocusText(item.label)}</div>
           <div class="focus-card-meta">${focusCardMeta(item)}</div>
+          ${item.type==='study' ? (()=>{ const nk=focusCurrentNoteKey(item); const nv=nk ? (studyNotes[nk]||'') : ''; return `<textarea class="focus-session-note" data-action="focus-note" data-key="${nk||''}" placeholder="Jot notes while you study...">${String(nv).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>`; })() : ''}
           <div class="focus-hint">← skip · complete →</div>
         </div>
       </div>
       <div class="focus-actions"><button class="btn-secondary focus-skip" data-action="focus-skip">Skip</button><button class="btn-primary focus-done" data-action="focus-complete">✓ Complete</button></div>
-      <button class="modal-close" data-action="close-focus">Close session</button>
+      <div style="display:flex;justify-content:center;gap:14px;margin-top:6px;"><button class="modal-close" data-action="minimize-focus">Run in background</button><button class="modal-close" data-action="close-focus">Stop session</button></div>
     </div>
   </div>`;
 }
@@ -2248,7 +2675,7 @@ function subjectBacklogCount(subj){
 
 async function loadSubjects(){
   const raw = await storageGet('tracker:subjects');
-  if(raw){ subjects = JSON.parse(raw); return; }
+  if(raw){ subjects = safeJsonParse(raw, []); if(!Array.isArray(subjects)) subjects=[]; return; }
   // No subjects saved yet. If this looks like an existing v1 install (real prior AI/Quantum
   // progress), migrate that progress in silently. Otherwise leave it empty — that's what
   // triggers the setup wizard for a genuinely new user.
@@ -2266,7 +2693,7 @@ async function loadSubjects(){
 async function saveSubjects(){ await storageSet('tracker:subjects', JSON.stringify(subjects)); }
 async function loadAiSummaryCache(){
   const raw = await storageGet('tracker:aisummary');
-  aiSummaryCache = raw ? JSON.parse(raw) : { date: null, text: '', lastRefreshAt: 0 };
+  aiSummaryCache = raw ? safeJsonParse(raw, {date:null,text:'',lastRefreshAt:0}) : {date:null,text:'',lastRefreshAt:0};
 }
 async function saveAiSummaryCache(){ await storageSet('tracker:aisummary', JSON.stringify(aiSummaryCache)); }
 
@@ -2610,7 +3037,7 @@ function scanPhoto(mode, onSuccess){
 function makeTopicId(){ return 'topic-'+Date.now()+'-'+Math.random().toString(36).slice(2,8); }
 async function loadAiUsage(){
   const raw = await storageGet('tracker:aiusage');
-  aiUsage = raw ? JSON.parse(raw) : { date: null, count: 0 };
+  aiUsage = raw ? safeJsonParse(raw, {date:null,count:0}) : {date:null,count:0};
 }
 async function saveAiUsage(){ await storageSet('tracker:aiusage', JSON.stringify(aiUsage)); }
 async function trackAiCall(){
@@ -2711,12 +3138,21 @@ function normalizeCurriculumData(){
 }
 
 function noteKeyFor(subjectId, item, idx){
-  const stable = item && item.id ? item.id : idx;
+  // Planned focus sessions can be split from one original topic. Keep their notes
+  // attached to the original topic so notes remain available before, during, and
+  // after the subject is completed.
+  const stable = item && (item.originalTopicId || item.parentTopicId || item.id) ? (item.originalTopicId || item.parentTopicId || item.id) : idx;
   const legacy = `${subjectId}-${idx}`;
   const next = `${subjectId}::${stable}`;
+  const oldItemKey = item && item.id ? `${subjectId}::${item.id}` : null;
   if(studyNotes[legacy] && studyNotes[next] == null){
     studyNotes[next] = studyNotes[legacy];
     delete studyNotes[legacy];
+    saveStudyNotesDebounced();
+  }
+  if(oldItemKey && oldItemKey !== next && studyNotes[oldItemKey] && studyNotes[next] == null){
+    studyNotes[next] = studyNotes[oldItemKey];
+    delete studyNotes[oldItemKey];
     saveStudyNotesDebounced();
   }
   return next;
@@ -3426,7 +3862,7 @@ function renderStudy(){
       ${rows || '<p class="note" style="margin:0 0 8px;">No topics yet \u2014 add one below.</p>'}
       <button class="btn-secondary" style="width:100%;margin-top:8px;" data-action="add-topic" data-subject="${studySubject}">+ Add topic</button>
     </div>`;
-    return `${chipsHtml}${addSubjectRow}${commandHtml}${editToggleRow}${editorHtml}<button class="reset" style="margin-top:20px;" data-action="subject-delete" data-id="${studySubject}">Delete "${subject.name}"</button>${renderStudyOverlay()}`;
+    return `${chipsHtml}${addSubjectRow}${commandHtml}${editToggleRow}${editorHtml}<button class="reset" style="margin-top:20px;" data-action="subject-delete" data-id="${studySubject}">Delete "${subject.name}"</button><button class="study-files-fab" data-action="open-files-notes" aria-label="Open Files" title="Files"><svg viewBox="0 0 24 24"><path d="M3.8 7.8h6l1.8 2h8.6v8.4a2 2 0 0 1-2 2H5.8a2 2 0 0 1-2-2Z"/><path d="M3.8 7.8v-1a2 2 0 0 1 2-2h4l1.8 2h4.4"/></svg></button>${renderStudyOverlay()}`;
   }
 
   const curriculum = subject.curriculum;
@@ -3516,7 +3952,7 @@ function renderStudy(){
       <button class="icon-btn" data-action="extra-add" title="Add">+</button>
     </div>`;
 
-  return `${chipsHtml}${addSubjectRow}${commandHtml}${editToggleRow}${progressHtml}${cardHtml}${upcoming}${extrasHtml}${deleteSubjectRow}${renderStudyOverlay()}`;
+  return `${chipsHtml}${addSubjectRow}${commandHtml}${editToggleRow}${progressHtml}${cardHtml}${upcoming}${extrasHtml}${deleteSubjectRow}<button class="study-files-fab" data-action="open-files-notes" aria-label="Open Files" title="Files"><svg viewBox="0 0 24 24"><path d="M3.8 7.8h6l1.8 2h8.6v8.4a2 2 0 0 1-2 2H5.8a2 2 0 0 1-2-2Z"/><path d="M3.8 7.8v-1a2 2 0 0 1 2-2h4l1.8 2h4.4"/></svg></button>${renderStudyOverlay()}`;
 }
 
 function renderToday(){
@@ -3839,6 +4275,8 @@ async function performRender(){
     <div class="tabpane ${activeTab==='study'?'active':''}" id="pane-study">${studyHtml}</div>
     <div class="tabpane ${activeTab==='calendar'?'active':''}" id="pane-calendar">${calHtml}</div>
     <div class="tabpane ${activeTab==='plus'?'active':''}" id="pane-plus">${plusHtml}</div>
+
+    ${renderFocusBackgroundBar()}
 
     <div class="bottom-nav" style="--nav-index:${(['home','workout','study','calendar','plus'].indexOf(activeTab))};--nav-count:5;">
       <button class="nav-btn ${activeTab==='home'?'active':''}" data-tab="home" title="Home" aria-label="Home">
@@ -4182,7 +4620,8 @@ function attachHandlers(){
       const input = document.getElementById('newSubjectName');
       const name = input ? input.value.trim() : '';
       if(!name) return;
-      const newSubj = {id:'subj-'+Date.now(), name, curriculum:[], index:0};
+      const newSubj = {id:'subj-'+Date.now(), name, curriculum:[], index:0, libraryKey:libraryKeyForName(name)};
+      ensureLibrarySubjectFor(newSubj);
       subjects.push(newSubj);
       if(wizardStep === 'subjects' || wizardStep === 'template-plan'){
         wizardTargetSubjectIds = Array.from(new Set([...wizardTargetSubjectIds, newSubj.id]));
@@ -4193,7 +4632,9 @@ function attachHandlers(){
   });
   document.querySelectorAll('[data-action="subject-delete"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
-      if(!confirm(`Delete this subject and its curriculum progress? This can't be undone.`)) return;
+      if(!confirm(`Remove this subject from the Study Engine? Its Files, Notes and archived progress will remain available in Files.`)) return;
+      const removed = subjects.find(s=>s.id===el.dataset.id);
+      if(removed) await archiveSubjectToLibrary(removed);
       subjects = subjects.filter(s=>s.id!==el.dataset.id);
       studySubject = subjects[0]?.id || null;
       await saveSubjects(); render();
@@ -4299,8 +4740,22 @@ function attachHandlers(){
   document.querySelectorAll('[data-action="open-notebook"]').forEach(el=>{
     el.addEventListener('click', ()=>{ studyOverlay='notebook'; render(); });
   });
-  document.querySelectorAll('[data-action="close-study-overlay"]').forEach(el=>{
-    el.addEventListener('click', ()=>{ studyOverlay=null; studyPlanBusy=false; render(); });
+  document.querySelectorAll('[data-action="export-all-notes"]').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const lines=['Daily Rhythm — All Notes',''];
+      let count=0;
+      subjects.forEach(subj=>{
+        (subj.curriculum||[]).forEach((item,i)=>{
+          const key=noteKeyFor(subj.id,item,i);
+          const text=(studyNotes[key]||'').trim();
+          if(text){ count++; lines.push(`# ${subj.name} — ${item.label}`); lines.push(text); lines.push(''); }
+        });
+      });
+      if(!count){ alert('No notes to export yet.'); return; }
+      const content=lines.join('\n');
+      if(navigator.share){ try{ await navigator.share({title:'Daily Rhythm — All Notes',text:content}); return;}catch(e){} }
+      const blob=new Blob([content],{type:'text/plain'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='daily-rhythm-all-notes.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
   });
   document.querySelectorAll('[data-action="export-notes"]').forEach(el=>{
     el.addEventListener('click', async ()=>{
@@ -4852,7 +5307,17 @@ function attachHandlers(){
     });
   });
   const rerunWizardBtn = document.getElementById('rerunWizard');
-  if(rerunWizardBtn) rerunWizardBtn.addEventListener('click', ()=>{
+  if(rerunWizardBtn) rerunWizardBtn.addEventListener('click', async ()=>{
+    const keep=confirm('Keep your current Daily Rhythm data and add the new setup on top of it?\n\nOK = Keep current data\nCancel = Choose whether to start fresh.');
+    if(!keep){
+      const fresh=confirm('Start fresh? This will delete the current Daily Rhythm data, including subjects, notes, files, progress, meals and settings.');
+      if(!fresh)return;
+      try{ localStorage.clear(); }catch(e){}
+      try{ if(window.storage?.clear) await window.storage.clear(false); }catch(e){}
+      try{ await new Promise((resolve)=>{const req=indexedDB.deleteDatabase('daily-rhythm-files-v1');req.onsuccess=req.onerror=req.onblocked=()=>resolve();}); }catch(e){}
+      location.reload();
+      return;
+    }
     settingsOpen = false;
     wizardWorkoutChoice = null;
     wizardStep = 'intro';
@@ -4926,11 +5391,12 @@ function attachHandlers(){
         }));
         const existing = subjects.find(s=>s.id===id);
         if(existing){
+          ensureLibrarySubjectFor(existing);
           existing.curriculum=normalized;
           existing.index=0;
           return;
         }
-        subjects.push({id, name, curriculum:normalized, index:0});
+        const created={id, name, curriculum:normalized, index:0, libraryKey:libraryKeyForName(name)}; ensureLibrarySubjectFor(created); subjects.push(created);
       };
 
       // Setup Wizard is additive. Never wipe the user's existing study plan.
@@ -5056,6 +5522,7 @@ function attachHandlers(){
   const wizFinishBtn = document.querySelector('[data-action="wizard-finish"]');
   if(wizFinishBtn) wizFinishBtn.addEventListener('click', async ()=>{
     settings.wizardDone = true;
+    try{localStorage.setItem('daily-rhythm-setup-complete','1'); localStorage.setItem('daily-rhythm-setup-complete-at',new Date().toISOString());}catch(e){}
     await saveSettings();
     wizardStep = null; wizardWorkoutChoice = null; wizardTargetSubjectIds = [];
     render();
@@ -5145,49 +5612,313 @@ if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
 }
 
-function initTabSwipe(){
-  const app = document.getElementById('app');
-  if(!app) return;
-  let startX=0, startY=0, startTarget=null;
-  app.addEventListener('touchstart', (e)=>{
-    if(e.touches.length!==1) return;
-    startX=e.touches[0].clientX; startY=e.touches[0].clientY; startTarget=e.target;
-  }, {passive:true});
-  app.addEventListener('touchend', (e)=>{
-    if(!startTarget) return;
-    const target = startTarget; startTarget=null;
-    // don't hijack the Workout day-swipe-deck's own gesture, and don't switch tabs while any overlay is open
-    if(target.closest && target.closest('.swipe-viewport')) return;
-    if(settingsOpen || wizardStep || studyOverlay) return;
-    const dx = e.changedTouches[0].clientX - startX;
-    const dy = e.changedTouches[0].clientY - startY;
-    if(Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy)*1.5) return; // require a real horizontal swipe, not a vertical scroll
-    const order = ['home', 'workout', 'study', 'calendar', 'plus'];
-    const idx = order.indexOf(activeTab);
-    if(idx===-1) return;
-    if(dx < 0 && idx < order.length-1){
-      window.__tabSwipeDirection = 'left';
-      activeTab = order[idx+1];
-      render();
-    } else if(dx > 0 && idx > 0){
-      window.__tabSwipeDirection = 'right';
-      activeTab = order[idx-1];
-      render();
+
+async function clearDailyRhythmDataAndReload(){
+  try{
+    if(window.storage && typeof window.storage.clear==='function'){
+      await Promise.race([
+        Promise.resolve(window.storage.clear(false)),
+        new Promise((_,reject)=>setTimeout(()=>reject(new Error('storage clear timeout')),1200))
+      ]);
     }
-  }, {passive:true});
+  }catch(e){}
+  try{localStorage.clear(); localStorage.setItem('daily-rhythm-force-setup','1');}catch(e){}
+  try{
+    if(window.indexedDB){
+      await new Promise(resolve=>{
+        const req=indexedDB.deleteDatabase('daily-rhythm-files-v1');
+        req.onsuccess=req.onerror=req.onblocked=()=>resolve();
+        setTimeout(resolve,1500);
+      });
+    }
+  }catch(e){}
+  location.reload();
+}
+
+function forceSetupStartupFlag(){
+  try{ return localStorage.getItem('daily-rhythm-force-setup') === '1'; }catch(e){ return false; }
 }
 
 (async ()=>{
-  await loadEntries(); await loadTaskOverrides(); await loadCustomTrackers();
-  await loadSettings(); await loadSavedMeals(); await loadSubjects(); await loadAiSummaryCache(); await loadAiUsage(); await loadStudyNotes();
-  const normalizedChanged = normalizeCurriculumData();
-  if(normalizedChanged) await saveSubjects();
-  if(!settings.wizardDone && subjects.length === 0) wizardStep = 'intro'; // truly new user — auto-show; otherwise it only opens via Settings
-  await render();
-  initTabSwipe();
-  setTimeout(()=>document.getElementById('launch')?.classList.add('out'), 900);
-  scheduleReminderCheck();
+  const bootStartedAt=Date.now();
+  const bootStep=async(name,fn,fallback)=>{
+    try{return await fn();}
+    catch(error){console.warn(`Daily Rhythm startup step failed: ${name}`,error);return fallback();}
+  };
+  try{
+    await bootStep('entries',loadEntries,()=>{entries={};});
+    await bootStep('task overrides',loadTaskOverrides,()=>{taskOverrides={};});
+    await bootStep('custom trackers',loadCustomTrackers,()=>{customTrackers=[];});
+    await bootStep('settings',loadSettings,()=>{settings={proteinTarget:80,caloriesTarget:2000,carbsTarget:200,fatTarget:65,waterBottleLiters:2,waterTargetBottles:2.5,workoutEnabled:true,wizardDone:false,appearance:'dark'};applyAppearance();});
+    await bootStep('saved meals',loadSavedMeals,()=>{savedMeals=[];});
+    await bootStep('subjects',loadSubjects,()=>{subjects=[];});
+    await bootStep('AI summary cache',loadAiSummaryCache,()=>{aiSummaryCache={date:null,text:'',lastRefreshAt:0};});
+    await bootStep('AI usage',loadAiUsage,()=>{aiUsage={date:null,count:0};});
+    await bootStep('study notes',loadStudyNotes,()=>{studyNotes={};});
+    await bootStep('study files',loadStudyFiles,()=>{studyFiles=[];});
+    await bootStep('long-term library',loadLibraryData,()=>{librarySubjects=[];libraryNotes={};});
+    await bootStep('library normalization',normalizeLibraryData,()=>{});
+    await bootStep('curriculum normalization',async()=>{const normalizedChanged=normalizeCurriculumData();if(normalizedChanged) await saveSubjects();},()=>{});
+    // Local file previews can receive a fresh browser origin whenever the generated HTML is reopened.
+    // Do not trap the user in the setup wizard there; the wizard remains available from Settings.
+    if(!settings.wizardDone&&subjects.length===0&&location.protocol!=='file:') wizardStep='intro';
+    if(forceSetupStartupFlag()){ wizardStep='intro'; }
+    try{
+      await render();
+    }catch(error){
+      console.error('Daily Rhythm render failed during startup:',error);
+      wizardStep=null;
+      try{await render();}
+      catch(secondError){
+        console.error('Daily Rhythm fallback render failed:',secondError);
+        const app=document.getElementById('app');
+        if(app) app.innerHTML=`<div class="card" style="max-width:620px;margin:80px auto;padding:28px;text-align:center"><h2 style="margin:0 0 10px">Daily Rhythm opened in recovery mode</h2><p class="note">Your saved data was not intentionally deleted. One part of the normal dashboard could not render in this browser preview.</p><button class="btn-primary" onclick="location.reload()">Reload setup</button></div>`;
+      }
+    }
+    initTabSwipe();
+    scheduleReminderCheck();
+  }catch(error){
+    console.error('Daily Rhythm startup non-fatal error:',error);
+    // Never replace the app with a recovery/setup screen on normal launch.
+    // If a late startup helper fails, keep the already-rendered dashboard visible.
+    try{
+      const app=document.getElementById('app');
+      if(app && app.querySelector('.loading')){ wizardStep=null; await render(); }
+    }catch(renderError){
+      console.error('Daily Rhythm final render retry failed:',renderError);
+      // Leave the existing app DOM intact rather than replacing it with a blocking screen.
+    }
+  }finally{
+    document.getElementById('launch')?.classList.add('out');
+  }
 })();
+
+// Never allow the launch animation to cover a usable recovery screen.
+setTimeout(()=>{
+  const app=document.getElementById('app');
+  const launch=document.getElementById('launch');
+  if(launch && !launch.classList.contains('out') && app){
+    launch.classList.add('out');
+    if(app.querySelector('.loading')){
+      wizardStep='intro';
+      try{render();}catch(e){app.innerHTML='<div class="card" style="max-width:620px;margin:80px auto;padding:28px;text-align:center"><h2>Daily Rhythm is ready to retry</h2><p class="note">The launch screen was cleared. Reload this file once.</p><button class="btn-primary" onclick="location.reload()">Reload</button></div>';}
+    }
+  }
+},3000);
+
+/* -------------------------------------------------------------------------
+   Files Hub V7 — resource organizer
+   Four top-level areas: Subject Notes, Textbooks, YouTube/Videos, Other.
+   This layer is intentionally independent from the main app renderer.
+   ------------------------------------------------------------------------- */
+let filesOverlayOpen = false;
+let simpleFilesSelectedSubjectId = null;
+let filesManagerCategory = 'textbooks';
+let filesManagerSubjectId = null;
+
+function filesV7Escape(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function filesV7Subjects(){
+  const current=(Array.isArray(subjects)?subjects.filter(s=>s&&s.id):[]).map(s=>({id:s.libraryKey||libraryKeyForName(s.name),name:s.name||'Untitled subject',currentId:s.id,status:'current',progress:null}));
+  const currentKeys=new Set(current.map(x=>x.id));
+  const archived=(Array.isArray(librarySubjects)?librarySubjects.filter(x=>x&&x.status==='archived'&&!currentKeys.has(String(x.key))):[]).map(x=>({id:x.key,name:x.name||'Archived subject',currentId:null,status:'archived',progress:Number.isFinite(Number(x.progress))?Number(x.progress):null}));
+  return current.concat(archived);
+}
+function filesV7CurrentSubjectByLibraryKey(key){return subjects.find(s=>String(s.libraryKey||libraryKeyForName(s.name))===String(key))||null;}
+function filesV7KindIcon(item){
+  if(item?.kind==='youtube') return '▶️';
+  if(item?.kind==='link') return '🔗';
+  if(item?.kind==='text') return '📝';
+  const mime=item?.mime||'';
+  if(mime.startsWith('image/')) return '🖼️';
+  if(mime.startsWith('video/')) return '🎥';
+  if(mime==='application/pdf') return '📕';
+  if(mime.includes('word')||mime.includes('document')) return '📄';
+  return '📎';
+}
+function filesV7FormatSize(n){const x=Number(n)||0;if(!x)return '';if(x<1024)return `${x} B`;if(x<1024*1024)return `${(x/1024).toFixed(1)} KB`;return `${(x/1024/1024).toFixed(1)} MB`;}
+function filesV7SubjectName(id){return filesV7Subjects().find(s=>String(s.id)===String(id))?.name||librarySubjectByKey(id)?.name||'Unassigned';}
+function filesV7YouTubeUrl(url){try{const u=new URL(url);return /(^|\.)youtube\.com$|(^|\.)youtu\.be$/.test(u.hostname.replace(/^www\./,''))}catch(e){return false;}}
+function filesV7NormalizeUrl(url){let u=String(url||'').trim();if(!/^https?:\/\//i.test(u))u='https://'+u;try{new URL(u);return u}catch(e){return null;}}
+
+function filesV7HubHtml(){return `<div id="dailyRhythmFilesOverlay" class="files-rebuilt-backdrop" role="dialog" aria-modal="true" aria-label="Files">
+  <div class="files-rebuilt-panel files-hub-panel">
+    <div class="study-overlay-head"><h2>📁 Files</h2><button type="button" class="settings-close" data-files-action="close">×</button></div>
+    <p class="note files-hub-sub">Your study resources, organized in one place.</p>
+    <div class="files-v14-hub-search"><div class="files-v14-search-field"><span class="files-v14-search-icon">⌕</span><input id="filesV14HubSearchInput" type="search" placeholder="Search your library..." autocomplete="off" aria-label="Search your library"></div><button type="button" class="files-v14-search-filter" data-files-action="open-search-filter">☷</button></div><div id="filesV14HubSearchResults" class="files-v14-hub-search-results" hidden></div>
+    <div class="files-hub-options files-v7-grid"><button type="button" class="files-hub-option" data-files-action="hub-subject-notes"><span class="files-hub-icon">📝</span><span><b>Subject Notes</b><small>Notes and resources organized by your Study Planner subjects.</small></span><span class="files-hub-arrow">›</span></button>
+      <button type="button" class="files-hub-option" data-files-action="hub-textbooks"><span class="files-hub-icon">📚</span><span><b>Textbooks</b><small>Add PDFs, documents, videos, images and links.</small></span><span class="files-hub-arrow">›</span></button>
+      <button type="button" class="files-hub-option" data-files-action="hub-videos"><span class="files-hub-icon">▶️</span><span><b>YouTube / Videos</b><small>Keep videos together and track watched or watch again.</small></span><span class="files-hub-arrow">›</span></button>
+      <button type="button" class="files-hub-option" data-files-action="hub-other"><span class="files-hub-icon">📦</span><span><b>Other</b><small>Store anything else — files, photos, videos and links.</small></span><span class="files-hub-arrow">›</span></button>
+    </div>
+  </div>
+</div>`;}
+
+function filesV7ResourceList(items,{youtubeMode=false}={}){
+  if(!items.length)return '<div class="notebook-empty">Nothing saved here yet. Tap ＋ to add something.</div>';
+  return items.map(item=>{
+    const icon=filesV7KindIcon(item), label=filesV7Escape(item.label||'Untitled');
+    let meta=item.kind==='youtube'?'YouTube video':item.kind==='link'?'Link':item.kind==='text'?'Text':filesV7Escape(item.fileName||'File');
+    if(item.size)meta+=` · ${filesV7FormatSize(item.size)}`; if(item.description)meta+=` · ${filesV7Escape(item.description)}`;
+    if(item.subjectId)meta+=` · ${filesV7Escape(filesV7SubjectName(item.subjectId))}`;
+    const open=item.kind==='link'||item.kind==='youtube'
+      ? `<a class="icon-btn files-resource-open" href="${filesV7Escape(item.url||'#')}" target="_blank" rel="noopener noreferrer" title="Open link">↗</a>`
+      : `<button type="button" class="icon-btn" data-files-action="open" data-id="${filesV7Escape(item.id)}" title="Open">↗</button>`;
+    const watch=item.kind==='youtube'?`<button type="button" class="files-video-status ${item.watched?'watched':''}" data-files-action="toggle-watch" data-id="${filesV7Escape(item.id)}">${item.watched?'↻ Watch again':'▶ Watch now'}</button>`:'';
+    return `<div class="files-resource-row files-v7-resource-row"><div class="files-resource-icon">${icon}</div><div class="files-resource-copy"><div class="files-resource-label">${label}</div><div class="files-resource-meta">${meta}${item.watched&&item.kind==='youtube'?' · ✓ Watched':''}</div></div>${watch}${open}<button type="button" class="icon-btn" data-files-action="delete" data-id="${filesV7Escape(item.id)}" title="Delete">×</button></div>`;
+  }).join('');
+}
+
+function filesV7ManagerHtml(category='textbooks'){
+  const cat=['textbooks','videos','other'].includes(category)?category:'textbooks';
+  filesManagerCategory=cat;
+  const items=(Array.isArray(studyFiles)?studyFiles:[]).filter(x=>x&&x.category===cat);
+  const titles={textbooks:'📚 Textbooks',videos:'▶️ YouTube / Videos',other:'📦 Other'};
+  const descriptions={textbooks:'Your manually added study books and supporting resources.',videos:'YouTube and video resources with watch tracking.',other:'Anything you want to keep handy.'};
+  return `<div id="dailyRhythmFilesOverlay" class="files-rebuilt-backdrop" role="dialog" aria-modal="true" aria-label="${titles[cat]}">
+    <div class="files-rebuilt-panel files-v7-manager-panel">
+      <div class="study-overlay-head"><h2>${titles[cat]}</h2><button type="button" class="settings-close" data-files-action="close">×</button></div>
+      <p class="note" style="margin-top:-4px;">${descriptions[cat]}</p>
+      <div class="files-v7-toolbar"><div class="files-v7-section-title">Your resources</div><button type="button" class="simple-files-plus" data-files-action="open-add" title="Add resource" aria-label="Add resource">＋</button></div>
+      <div class="notebook-card files-v7-list-card">${filesV7ResourceList(items,{youtubeMode:cat==='videos'})}</div>
+      <div class="study-action-grid" style="margin-top:12px;"><button type="button" class="btn-secondary" data-files-action="back-hub">Back to Files</button></div>
+    </div>
+  </div>`;
+}
+
+function filesV7SubjectHtml(){
+  const list=filesV7Subjects();
+  const activeKey=studySubject?getSubject(studySubject)?.libraryKey:null;
+  if(!simpleFilesSelectedSubjectId || !list.some(s=>String(s.id)===String(simpleFilesSelectedSubjectId))) simpleFilesSelectedSubjectId=activeKey||list[0]?.id||null;
+  const subject=list.find(s=>String(s.id)===String(simpleFilesSelectedSubjectId));
+  const status=subject?.status==='archived'?`Archived${subject.progress!=null?` · ${subject.progress}% progress`:''}`:'Current Study Engine';
+  return `<div id="dailyRhythmFilesOverlay" class="files-rebuilt-backdrop" role="dialog" aria-modal="true" aria-label="Subject Notes">
+    <div class="files-rebuilt-panel files-v7-manager-panel">
+      <div class="study-overlay-head"><h2>📝 Subject Notes</h2><button type="button" class="settings-close" data-files-action="close">×</button></div>
+      <div class="simple-files-subject-row files-v7-subject-picker"><span class="simple-files-subject-label">Subject</span><select id="filesV7SubjectSelect" class="simple-files-subject-select">${list.map(s=>`<option value="${filesV7Escape(s.id)}" ${String(s.id)===String(simpleFilesSelectedSubjectId)?'selected':''}>${filesV7Escape(s.name)}${s.status==='archived'?' · Archived':''}</option>`).join('')}</select></div>
+      <p class="note" style="margin:8px 0 0;"><b>${filesV7Escape(subject?.name||'this subject')}</b> · ${filesV7Escape(status)}. Resources stay here even when the subject leaves the Study Engine.</p>
+      <div class="files-v7-toolbar"><div class="files-v7-section-title">Resources</div><button type="button" class="simple-files-plus" data-files-action="open-add" title="Add resource" aria-label="Add resource">＋</button></div>
+      <div class="notebook-card files-v7-list-card" id="filesV7SubjectList"></div>
+      <div class="study-action-grid" style="margin-top:12px;"><button type="button" class="btn-secondary" data-files-action="back-hub">Back to Files</button></div>
+    </div>
+  </div>`;
+}
+
+function filesV7SubjectItems(libraryKey){
+  const out=[]; const lib=librarySubjectByKey(libraryKey); const subject=filesV7CurrentSubjectByLibraryKey(libraryKey);
+  if(subject){
+    (subject.curriculum||[]).forEach((item,i)=>{const key=noteKeyFor(subject.id,item,i);const body=(studyNotes[key]||'').trim();if(body){libraryNotes[key]=libraryNotes[key]||{librarySubjectKey:libraryKey,subjectName:subject.name,title:item.label||'Untitled topic',kind:'curriculum'};out.push({id:'note-'+key,key,title:item.label||'Untitled topic',meta:'Subject note',body,kind:'text',subjectId:subject.id,librarySubjectKey:libraryKey,isCurriculumNote:true});}});
+  }
+  Object.keys(studyNotes||{}).filter(k=>k.startsWith('free::')).forEach(key=>{const n=studyNotes[key];if(n&&typeof n==='object'&&String(n.subjectId)===String(subject?.id||'')&&String(n.body||'').trim())out.push({id:key,key,title:n.title||'Untitled note',meta:'Added note',body:String(n.body),kind:'text',subjectId:subject?.id,librarySubjectKey:libraryKey,freeNote:true});});
+  Object.keys(libraryNotes||{}).forEach(key=>{const m=libraryNotes[key];if(!m||String(m.librarySubjectKey)!==String(libraryKey)||studyNotes[key]==null||String(studyNotes[key]||'').trim()==='')return;if(out.some(x=>x.key===key))return;out.push({id:'note-'+key,key,title:m.title||'Untitled note',meta:'Archived note',body:String(studyNotes[key]),kind:'text',librarySubjectKey:libraryKey,isArchivedNote:true});});
+  (Array.isArray(studyFiles)?studyFiles:[]).filter(x=>x&&x.category==='subject'&&String(x.librarySubjectKey||'')===String(libraryKey)).forEach(x=>out.push(x));
+  // Legacy resources from before the library migration are still discoverable.
+  if(subject)(Array.isArray(studyFiles)?studyFiles:[]).filter(x=>x&&x.category==='subject'&&!x.librarySubjectKey&&String(x.subjectId)===String(subject.id)).forEach(x=>out.push(x));
+  return out;
+}
+function filesV7RenderSubjectList(root){
+  const list=root.querySelector('#filesV7SubjectList'); if(!list)return;
+  const items=filesV7SubjectItems(simpleFilesSelectedSubjectId);
+  list.innerHTML=items.length?items.map(item=>{
+    if(item.kind==='text')return `<div class="files-v7-note-card" data-note-id="${filesV7Escape(item.id)}"><div class="files-v7-note-head"><div><div class="files-resource-label">📝 ${filesV7Escape(item.title)}</div><div class="files-resource-meta">${filesV7Escape(item.meta||'Note')}</div></div><button type="button" class="icon-btn" data-files-action="delete-note" data-id="${filesV7Escape(item.id)}" title="Delete note">×</button></div><div class="files-v7-note-preview">${filesV7Escape(item.body)}</div><div class="files-v7-note-hint">Click to read full note ↗</div></div>`;
+    return `<div class="files-resource-row files-v7-resource-row"><div class="files-resource-icon">${filesV7KindIcon(item)}</div><div class="files-resource-copy"><div class="files-resource-label">${filesV7Escape(item.label||'Untitled')}</div><div class="files-resource-meta">${filesV7Escape(item.kind==='youtube'?'YouTube video':item.kind==='link'?'Link':item.fileName||'File')}</div></div>${item.kind==='youtube'?`<button type="button" class="files-video-status ${item.watched?'watched':''}" data-files-action="toggle-watch" data-id="${filesV7Escape(item.id)}">${item.watched?'↻ Watch again':'▶ Watch now'}</button>`:''}${item.kind==='link'||item.kind==='youtube'?`<a class="icon-btn files-resource-open" href="${filesV7Escape(item.url||'#')}" target="_blank" rel="noopener noreferrer" title="Open">↗</a>`:`<button type="button" class="icon-btn" data-files-action="open" data-id="${filesV7Escape(item.id)}" title="Open">↗</button>`}<button type="button" class="icon-btn" data-files-action="delete" data-id="${filesV7Escape(item.id)}" title="Delete">×</button></div>`;
+  }).join(''):'<div class="notebook-empty">No notes or extra resources for this subject yet. Tap ＋ to add one.</div>';
+  root.querySelectorAll('[data-note-id]').forEach(card=>card.onclick=(ev)=>{if(ev.target.closest('[data-files-action]'))return;const item=filesV7SubjectItems(simpleFilesSelectedSubjectId).find(x=>String(x.id)===String(card.dataset.noteId));if(item)filesV7OpenTextReader(item);});
+}
+
+function filesV7SearchItems(){
+  const q=String(filesLibrarySearchQuery||'').trim().toLowerCase();
+  const type=filesLibrarySearchType;
+  const subject=filesLibrarySearchSubject;
+  const results=[];
+  const add=(item,kind,libraryKey)=>{
+    const hay=String(item.title||item.label||'').toLowerCase()+' '+String(item.description||'').toLowerCase();
+    if(q&&!hay.includes(q))return;
+    if(type!=='all'&&type!==kind)return;
+    if(subject!=='all'&&String(libraryKey||'')!==String(subject))return;
+    results.push({item,kind,libraryKey});
+  };
+  Object.keys(studyNotes||{}).forEach(key=>{
+    const raw=studyNotes[key]; let meta=libraryNotes[key]||{};
+    if(typeof raw==='string'&&raw.trim()){
+      const current=subjects.find(s=>key.startsWith(String(s.id)+'::')||key.startsWith(String(s.id)+'-'));
+      const lk=meta.librarySubjectKey||current?.libraryKey;
+      const title=meta.title||key.split('::').pop()||'Untitled note';
+      add({id:'note-'+key,key,title,description:'',body:raw,meta:meta.kind==='free'?'Added note':'Subject note'},'notes',lk);
+    }else if(raw&&typeof raw==='object'&&String(raw.body||'').trim()){
+      const current=subjects.find(s=>String(s.id)===String(raw.subjectId));
+      const lk=meta.librarySubjectKey||current?.libraryKey;
+      add({id:key,key,title:raw.title||'Untitled note',description:raw.description||'',body:String(raw.body),meta:'Added note'},'notes',lk);
+    }
+  });
+  (Array.isArray(studyFiles)?studyFiles:[]).forEach(item=>{
+    if(!item)return;
+    const kind=item.kind==='youtube'?'youtube':item.kind==='link'?'links':item.category==='textbooks'?'textbooks':item.category==='videos'?'videos':'files';
+    const lk=item.librarySubjectKey||(subjects.find(s=>String(s.id)===String(item.subjectId))?.libraryKey)||'';
+    add(item,kind,lk);
+  });
+  return results;
+}
+function filesV7SearchHtml(){
+  const subjectsList=filesV7Subjects();
+  return `<div id="filesV7SearchModal" class="files-v7-search-backdrop" style="z-index:10020"><div class="files-v7-search-dialog" role="dialog" aria-modal="true"><div class="files-v7-search-head"><div class="files-v7-search-bar"><span class="files-v7-search-icon">⌕</span><input id="filesV7SearchInput" placeholder="Search your library..." value="${filesV7Escape(filesLibrarySearchQuery)}" autocomplete="off"></div><button type="button" class="files-v7-filter-btn" data-files-action="toggle-search-filters">☷ <span>Filter</span></button><button type="button" class="icon-btn" data-files-action="close-search">×</button></div><div class="files-v7-search-filters" id="filesV7SearchFilters"><div><label>Search in</label><select id="filesV7SearchType"><option value="all">Everything</option><option value="notes">Notes</option><option value="files">Files</option><option value="textbooks">Textbooks</option><option value="videos">Videos</option><option value="youtube">YouTube</option><option value="links">Links</option></select></div><div><label>Subject</label><select id="filesV7SearchSubject"><option value="all">All subjects</option>${subjectsList.map(s=>`<option value="${filesV7Escape(s.id)}">${filesV7Escape(s.name)}${s.status==='archived'?' · Archived':''}</option>`).join('')}</select></div></div><div class="files-v7-search-hint">Searches titles and descriptions only.</div><div id="filesV7SearchResults" class="files-v7-search-results"></div></div></div>`;
+}
+function filesV7RenderSearchResults(root){
+  const box=root.querySelector('#filesV7SearchResults');if(!box)return;const results=filesV7SearchItems();
+  if(!results.length){box.innerHTML='<div class="notebook-empty">No matching resources yet.</div>';return;}
+  box.innerHTML=results.map((r,i)=>{const it=r.item;const subject=filesV7SubjectName(r.libraryKey);const icon=r.kind==='notes'?'📝':filesV7KindIcon(it);const meta=r.kind==='notes'?'Note':r.kind==='youtube'?'YouTube video':r.kind==='links'?'Link':r.kind==='textbooks'?'Textbook':'File';return `<div class="files-resource-row files-v7-resource-row" data-search-index="${i}"><div class="files-resource-icon">${icon}</div><div class="files-resource-copy"><div class="files-resource-label">${filesV7Escape(it.title||it.label||'Untitled')}</div><div class="files-resource-meta">${filesV7Escape(meta)}${subject!=='Unassigned'?' · '+filesV7Escape(subject):''}${it.description?' · '+filesV7Escape(it.description):''}</div></div><button type="button" class="icon-btn" data-files-action="search-open" data-search-index="${i}" title="Open">↗</button></div>`;}).join('');
+  root._searchResults=results;
+}
+function filesV7ShowSearch(){filesV7Close();filesOverlayOpen=true;document.body.insertAdjacentHTML('beforeend',filesV7SearchHtml());const root=document.getElementById('filesV7SearchModal');const type=root.querySelector('#filesV7SearchType');const subj=root.querySelector('#filesV7SearchSubject');type.value=filesLibrarySearchType;subj.value=filesLibrarySearchSubject;const input=root.querySelector('#filesV7SearchInput');const filters=root.querySelector('#filesV7SearchFilters');const rerender=()=>{filesLibrarySearchQuery=input.value;filesLibrarySearchType=type.value;filesLibrarySearchSubject=subj.value;filesV7RenderSearchResults(root);};input.addEventListener('input',rerender);type.addEventListener('change',rerender);subj.addEventListener('change',rerender);filesV7RenderSearchResults(root);setTimeout(()=>input.focus(),0);}
+function filesV7AddModal(){
+  const subjectMode=filesManagerCategory==='subject';
+  const subjectName=filesV7SubjectName(simpleFilesSelectedSubjectId);
+  const title=subjectMode?`＋ Add to ${filesV7Escape(subjectName)}`:filesManagerCategory==='textbooks'?'＋ Add textbook/resource':filesManagerCategory==='videos'?'＋ Add video':'＋ Add resource';
+  const subjectPicker=subjectMode?'':`<div class="files-v7-field"><label>Category</label><select id="filesV7AddCategory" class="simple-files-input"><option value="${filesManagerCategory}">${filesManagerCategory==='textbooks'?'Textbooks':filesManagerCategory==='videos'?'YouTube / Videos':'Other'}</option></select></div>`;
+  return `<div id="filesV7AddModal" class="simple-files-add-modal"><div class="simple-files-add-dialog files-v7-add-dialog" role="dialog" aria-modal="true"><div class="simple-files-add-head"><div><div class="simple-files-add-title">${title}</div><div class="simple-files-add-meta">Choose one resource type. You can add files, links or text.</div></div><button type="button" class="icon-btn" data-files-action="close-add">×</button></div>${subjectPicker}<div class="files-v7-field"><label>Name</label><input class="simple-files-input" id="filesV7AddLabel" placeholder="e.g. Gray's Anatomy / Cell injury lecture"></div><div class="files-v7-field"><label>Description <span class="note">(optional)</span></label><textarea class="simple-files-input" id="filesV7AddDescription" rows="2" placeholder="What is this resource useful for?"></textarea></div><div class="files-v7-field"><label>Type</label><select class="simple-files-input" id="filesV7AddKind"><option value="file">File</option><option value="link">Normal link</option><option value="youtube">YouTube video</option><option value="text">Text</option></select></div><div id="filesV7AddInputWrap"><input class="simple-files-input" id="filesV7AddFile" type="file"></div><div class="simple-files-actions"><button type="button" class="btn-secondary" data-files-action="close-add">Cancel</button><button type="button" class="btn-primary" id="filesV7AddSave">Add</button></div></div></div>`;
+}
+function filesV7SyncAddInput(root){const kind=root.querySelector('#filesV7AddKind')?.value||'file';const wrap=root.querySelector('#filesV7AddInputWrap');if(!wrap)return;if(kind==='text')wrap.innerHTML='<textarea class="simple-files-input simple-files-text" id="filesV7AddText" placeholder="Write your note or text here..."></textarea>';else if(kind==='link'||kind==='youtube')wrap.innerHTML=`<input class="simple-files-input" id="filesV7AddUrl" type="url" placeholder="${kind==='youtube'?'https://www.youtube.com/watch?v=...':'https://example.com/resource'}">`;else wrap.innerHTML='<input class="simple-files-input" id="filesV7AddFile" type="file">';}
+async function filesV7SaveAdd(root){
+  const label=(root.querySelector('#filesV7AddLabel')?.value||'').trim()||'Untitled resource'; const kind=root.querySelector('#filesV7AddKind')?.value||'file';
+  const category=filesManagerCategory==='subject'?'subject':filesManagerCategory; const id='file-'+Date.now()+'-'+Math.random().toString(36).slice(2,8); const item={id,label,kind,category,description:(root.querySelector('#filesV7AddDescription')?.value||'').trim(),createdAt:new Date().toISOString()};
+  if(category==='subject'){item.librarySubjectKey=simpleFilesSelectedSubjectId; const current=filesV7CurrentSubjectByLibraryKey(simpleFilesSelectedSubjectId); if(current)item.subjectId=current.id;}
+  if(kind==='text'){const text=(root.querySelector('#filesV7AddText')?.value||'').trim();if(!text){alert('Write something first.');return false;}item.text=text;item.mime='text/plain';}
+  else if(kind==='link'||kind==='youtube'){const url=filesV7NormalizeUrl(root.querySelector('#filesV7AddUrl')?.value);if(!url){alert('Enter a valid link.');return false;}if(kind==='youtube'&&!filesV7YouTubeUrl(url)){alert('That does not look like a YouTube link.');return false;}item.url=url;item.mime='text/uri-list';item.watched=false;}
+  else{const file=root.querySelector('#filesV7AddFile')?.files?.[0];if(!file){alert('Choose a file first.');return false;}item.fileName=file.name;item.mime=file.type||'application/octet-stream';item.size=file.size;await putStudyFileBlob(id,file);}
+  studyFiles.unshift(item);await saveStudyFilesMeta();return true;
+}
+function filesV7OpenTextReader(item){const root=document.createElement('div');root.className='simple-files-reader-backdrop';root.id='filesV7Reader';root.innerHTML=`<div class="simple-files-reader" role="dialog" aria-modal="true"><div class="simple-files-reader-head"><div><div class="simple-files-reader-title">${filesV7Escape(item.title||item.label||'Text')}</div><div class="simple-files-reader-meta">${filesV7Escape(item.meta||'Text')}</div></div><button type="button" class="icon-btn" data-reader-close>×</button></div><div class="simple-files-reader-body">${filesV7Escape(item.body||item.text||'')}</div><div class="simple-files-reader-foot"><button type="button" class="btn-secondary" style="width:100%;" data-reader-close>Close</button></div></div>`;document.body.appendChild(root);root.querySelectorAll('[data-reader-close]').forEach(b=>b.onclick=()=>root.remove());root.onclick=e=>{if(e.target===root)root.remove();};}
+async function filesV7OpenItem(id){const item=studyFiles.find(x=>x&&x.id===id);if(!item)return;if(item.kind==='link'||item.kind==='youtube'){window.open(item.url,'_blank','noopener,noreferrer');return;}if(item.kind==='text'){filesV7OpenTextReader(item);return;}try{const blob=await getStudyFileBlob(id);if(!blob){alert('That file is no longer available.');return;}const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);}catch(e){alert('Could not open this file.');}}
+async function filesV7DeleteItem(id){const item=studyFiles.find(x=>x&&x.id===id);if(!item||!confirm(`Delete "${item.label||'resource'}"?`))return false;studyFiles=studyFiles.filter(x=>x.id!==id);if(item.kind==='file')await deleteStudyFileBlob(id);await saveStudyFilesMeta();return true;}
+function filesV7Close(){filesOverlayOpen=false;document.getElementById('dailyRhythmFilesOverlay')?.remove();document.getElementById('filesV7AddModal')?.remove();document.getElementById('filesV7SearchModal')?.remove();}
+function filesV7ShowHub(){
+  filesV7Close();filesOverlayOpen=true;document.body.insertAdjacentHTML('beforeend',filesV7HubHtml());
+  const overlay=document.getElementById('dailyRhythmFilesOverlay');
+  const input=overlay?.querySelector('#filesV14HubSearchInput');
+  const box=overlay?.querySelector('#filesV14HubSearchResults');
+  const renderInline=()=>{
+    if(!input||!box)return;
+    filesLibrarySearchQuery=input.value;
+    if(!input.value.trim()){box.hidden=true;box.innerHTML='';return;}
+    const results=filesV7SearchItems();
+    if(!results.length){box.hidden=false;box.innerHTML='<div class="files-v14-no-results">No matching resources.</div>';return;}
+    box.hidden=false;
+    box.innerHTML=results.slice(0,8).map((r,i)=>{const it=r.item;const subject=filesV7SubjectName(r.libraryKey);const icon=r.kind==='notes'?'📝':filesV7KindIcon(it);const meta=r.kind==='notes'?'Note':r.kind==='youtube'?'YouTube video':r.kind==='links'?'Link':r.kind==='textbooks'?'Textbook':'File';return `<button type="button" class="files-v14-inline-result" data-files-action="hub-search-open" data-search-index="${i}"><span class="files-resource-icon">${icon}</span><span><b>${filesV7Escape(it.title||it.label||'Untitled')}</b><small>${filesV7Escape(meta)}${subject!=='Unassigned'?' · '+filesV7Escape(subject):''}</small></span></button>`;}).join('');
+    box._searchResults=results;
+  };
+  input?.addEventListener('input',renderInline);
+  input?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();filesV7ShowSearch();const q=input.value.trim();const r=document.getElementById('filesV7SearchInput');if(r){r.value=q;r.dispatchEvent(new Event('input',{bubbles:true}));}}});
+}
+function filesV7ShowSubject(){filesV7Close();filesOverlayOpen=true;filesManagerCategory='subject';document.body.insertAdjacentHTML('beforeend',filesV7SubjectHtml());filesV7RenderSubjectList(document.getElementById('dailyRhythmFilesOverlay'));}
+function filesV7ShowManager(cat){filesV7Close();filesOverlayOpen=true;filesManagerCategory=cat;document.body.insertAdjacentHTML('beforeend',filesV7ManagerHtml(cat));}
+function filesV7ShowAdd(){const overlay=document.getElementById('dailyRhythmFilesOverlay');if(!overlay)return;overlay.insertAdjacentHTML('beforeend',filesV7AddModal());const modal=overlay.querySelector('#filesV7AddModal');filesV7SyncAddInput(modal);modal.querySelector('#filesV7AddKind').onchange=()=>filesV7SyncAddInput(modal);modal.querySelector('#filesV7AddSave').onclick=async()=>{const b=modal.querySelector('#filesV7AddSave');b.disabled=true;try{if(await filesV7SaveAdd(modal)){modal.remove();if(filesManagerCategory==='subject')filesV7RenderSubjectList(overlay);else filesV7ShowManager(filesManagerCategory);}}finally{b.disabled=false;}};modal.querySelectorAll('[data-files-action="close-add"]').forEach(b=>b.onclick=()=>modal.remove());modal.onclick=e=>{if(e.target===modal)modal.remove();};}
+function filesV7RefreshCurrent(){const old=document.getElementById('dailyRhythmFilesOverlay');if(!old)return;if(filesManagerCategory==='subject')filesV7ShowSubject();else filesV7ShowManager(filesManagerCategory);}
+function filesV7HandleClick(ev){const el=ev.target?.closest?.('[data-files-action]');if(!el)return;ev.preventDefault();ev.stopPropagation();const a=el.dataset.filesAction;
+  if(a==='close'){filesV7Close();return;} if(a==='open-search'){filesV7ShowSearch();return;} if(a==='open-search-filter'){filesV7ShowSearch();return;} if(a==='hub-search-open'){const root=document.getElementById('dailyRhythmFilesOverlay');const r=root?._searchResults?.[Number(el.dataset.searchIndex)];if(r){if(r.kind==='notes')filesV7OpenTextReader(r.item);else filesV7OpenItem(r.item.id);}return;} if(a==='close-search'){document.getElementById('filesV7SearchModal')?.remove();filesOverlayOpen=false;return;} if(a==='toggle-search-filters'){const panel=document.getElementById('filesV7SearchFilters');if(panel)panel.classList.toggle('open');return;} if(a==='search-open'){const root=document.getElementById('filesV7SearchModal');const r=root?._searchResults?.[Number(el.dataset.searchIndex)];if(r){if(r.kind==='notes')filesV7OpenTextReader(r.item);else filesV7OpenItem(r.item.id);}return;} if(a==='hub-subject-notes'){filesV7ShowSubject();return;} if(a==='hub-textbooks'){filesV7ShowManager('textbooks');return;} if(a==='hub-videos'){filesV7ShowManager('videos');return;} if(a==='hub-other'){filesV7ShowManager('other');return;} if(a==='back-hub'){filesV7ShowHub();return;} if(a==='open-add'){filesV7ShowAdd();return;} if(a==='close-add'){el.closest('#filesV7AddModal')?.remove();return;} if(a==='open'){filesV7OpenItem(el.dataset.id);return;} if(a==='delete'){filesV7DeleteItem(el.dataset.id).then(()=>filesV7RefreshCurrent());return;} if(a==='toggle-watch'){const item=studyFiles.find(x=>x&&x.id===el.dataset.id);if(item){item.watched=!item.watched;saveStudyFilesMeta().then(()=>filesV7RefreshCurrent());}return;} if(a==='delete-note'){const id=el.dataset.id;const key=id.startsWith('note-')?id.slice(5):id;delete libraryNotes[key];if(id.startsWith('note-')){delete studyNotes[key];saveStudyNotesDebounced();}else{delete studyNotes[id];saveStudyNotesDebounced();}saveLibraryData();filesV7RenderSubjectList(document.getElementById('dailyRhythmFilesOverlay'));return;}}
+function filesV7HandleChange(ev){if(ev.target?.id==='filesV7SubjectSelect'){simpleFilesSelectedSubjectId=ev.target.value||null;filesV7RenderSubjectList(document.getElementById('dailyRhythmFilesOverlay'));}}
+function openFilesManager(){filesV7ShowHub();}
+function openSimpleFilesPopup(){filesV7ShowSubject();}
+document.addEventListener('click',filesV7HandleClick,true);document.addEventListener('change',filesV7HandleChange,true);
+document.addEventListener('click',(ev)=>{const btn=ev.target?.closest?.('[data-action="open-files-notes"]');if(!btn)return;ev.preventDefault();ev.stopPropagation();filesV7ShowHub();},true);
 </script>
 </body>
 </html>
