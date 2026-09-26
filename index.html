@@ -2098,10 +2098,6 @@ function renderWizard(){
       <div class="wrap" style="padding-top:34px;">
         <h1 style="font-size:1.3rem;">Choose a study template</h1>
         <p class="sub">Templates load the curriculum first. When you choose one, we'll immediately ask when you want to finish and how much time you can study each day — then plan it for you.</p>
-        <div class="section-label" style="margin:14px 0 8px;">Computer-Based Wealth Programme</div>
-        <div class="water-row" style="gap:8px;margin-bottom:12px;">
-          <button class="btn-secondary" style="width:100%;" data-action="subject-preset" data-preset="computer-wealth">Sep 25 → Dec 31 · 98-day programme</button>
-        </div>
         <div class="section-label" style="margin:14px 0 8px;">Entrance exams</div>
         <div class="water-row" style="gap:8px;margin-bottom:10px;">
           <button class="btn-secondary" style="flex:1;" data-action="subject-preset" data-preset="jee">JEE</button>
@@ -4955,28 +4951,18 @@ function attachHandlers(){
       } else if(MBBS_TEMPLATES[preset]){
         MBBS_TEMPLATES[preset].subjects.forEach(s=>ensure(s.id,s.name,s.curriculum));
         wizardTemplate={label:MBBS_TEMPLATES[preset].label,id:preset};
-      } else if(preset === 'computer-wealth'){
-        ensure('computer-wealth','Computer-Based Wealth Programme',COMPUTER_WEALTH_CURRICULUM);
-        wizardTemplate={label:'Computer-Based Wealth Programme',id:preset};
       } else return;
 
       wizardTargetSubjectIds = subjects
         .filter(s=>!existingIds.has(s.id))
         .map(s=>s.id);
-      // If a template subject already existed, include it as an explicit target
-      // only when the user selected that template. It will be updated in place,
-      // while all unrelated subjects remain untouched.
-      if(!wizardTargetSubjectIds.length){
-        const templateIds = preset === 'computer-wealth' ? ['computer-wealth'] : [];
-        wizardTargetSubjectIds = subjects.filter(s=>templateIds.includes(s.id)).map(s=>s.id);
-      }
       studySubject=subjects.find(s=>wizardTargetSubjectIds.includes(s.id))?.id || subjects[0]?.id || null;
       studyPlannerDraft={
         goal:`Complete ${wizardTemplate.label}`,
         targetDate:addDays(isoDate(new Date()),30),
         minutes:60,
         level:'starting',
-        keepOrder: preset === 'computer-wealth'
+        keepOrder: false
       };
       wizardPlanStatus='';
       wizardPlanBusy=false;
